@@ -1,7 +1,11 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
+import { GoogleAIFileManager, FileState } from "@google/generative-ai/server"
+import { Blob } from "buffer"
 import prisma from "./prisma"
+import { supabase } from "./supabase"
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY || "")
+const fileManager = new GoogleAIFileManager(process.env.GOOGLE_GEMINI_API_KEY || "")
 
 // 캐시된 모델 이름 (서버 재시작 시까지 유지)
 let cachedModelName: string | null = null
@@ -92,8 +96,11 @@ export interface TextAnalysisResult {
   analysis: string
 }
 
+// The new return type from the fileManager.uploadFile method
+type UploadedFile = Awaited<ReturnType<typeof fileManager.uploadFile>>["file"]
+
 export interface UploadedGeminiFile {
-  file: Awaited<ReturnType<typeof uploadFileToGemini>>
+  file: UploadedFile
   filename: string
 }
 
@@ -129,20 +136,62 @@ async function getPrompt(name: string, variables: Record<string, string>): Promi
 }
 
 /**
- * Gemini File API를 사용하여 파일을 업로드하고 URI를 반환합니다.
+ * Downloads a file from Supabase Storage and uploads it to Gemini.
  */
-export async function uploadFileToGemini(filePath: string, mimeType: string) {
-  const { GoogleAIFileManager } = await import("@google/generative-ai/server")
+export async function uploadFileToGemini(supabasePath: string, mimeType: string) {
+  // 1. Download from Supabase
+  const { data: blob, error: downloadError } = await supabase.storage
+    .from("uploads")
+    .download(supabasePath)
 
-  const fileManager = new GoogleAIFileManager(process.env.GOOGLE_GEMINI_API_KEY || "")
+  if (downloadError) {
+    console.error("Supabase download error:", downloadError)
+    throw new Error(`Failed to download file from Supabase: ${supabasePath}`)
+  }
 
-  const uploadResponse = await fileManager.uploadFile(filePath, {
-    mimeType,
-    displayName: filePath.split("/").pop() || "uploaded-file",
-  })
+  const buffer = Buffer.from(await blob.arrayBuffer())
 
-  console.log(`✓ File uploaded: ${uploadResponse.file.displayName}`)
-  return uploadResponse.file
+  // 2. Upload to Gemini using a temporary file
+  try {
+    const fs = await import("fs/promises")
+    const path = await import("path")
+    const os = await import("os")
+
+    const tempDir = os.tmpdir()
+    const tempFilePath = path.join(tempDir, `gemini-upload-${Date.now()}-${supabasePath.split("/").pop()}`)
+
+    await fs.writeFile(tempFilePath, buffer)
+
+    const displayName = supabasePath.split("/").pop() || "uploaded-file"
+
+    console.log(`Uploading ${displayName} to Gemini...`)
+    const uploadResult = await fileManager.uploadFile(tempFilePath, {
+      mimeType,
+      displayName,
+    })
+
+    // Clean up temp file
+    await fs.unlink(tempFilePath)
+
+    console.log(`✓ File uploaded: ${uploadResult.file.displayName} (${uploadResult.file.uri})`)
+
+    // Wait until the file is processed and ready
+    let file = uploadResult.file
+    while (file.state === FileState.PROCESSING) {
+      process.stdout.write(".");
+      await new Promise(resolve => setTimeout(resolve, 5_000)); // Wait 5 seconds
+      file = await fileManager.getFile(file.name);
+    }
+
+    if (file.state === FileState.FAILED) {
+      throw new Error("File processing failed on Gemini.");
+    }
+
+    return file
+  } catch (error) {
+    console.error(`Gemini upload error for ${supabasePath}:`, error)
+    throw new Error(`Failed to upload file to Gemini.`)
+  }
 }
 
 /**
