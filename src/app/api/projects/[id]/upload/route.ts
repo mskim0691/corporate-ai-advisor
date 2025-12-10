@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth"
 import prisma from "@/lib/prisma"
 import path from "path"
 import fs from "fs/promises"
+import crypto from "crypto"
 
 // Conditionally import supabase only if env vars are present
 const USE_SUPABASE = !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY)
@@ -63,8 +64,11 @@ export async function POST(
       const bytes = await file.arrayBuffer()
       const buffer = Buffer.from(bytes)
 
-      const filename = `${Date.now()}_${file.name}`
-      const filePath = `${userId}/${id}/${filename}`
+      // Sanitize filename: remove Korean characters and special chars
+      // Use UUID for storage, but keep original filename in database
+      const fileExtension = path.extname(file.name)
+      const sanitizedFilename = `${Date.now()}_${crypto.randomUUID()}${fileExtension}`
+      const filePath = `${userId}/${id}/${sanitizedFilename}`
 
       if (USE_SUPABASE) {
         // Upload to Supabase Storage
