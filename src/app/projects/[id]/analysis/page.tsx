@@ -189,128 +189,137 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
               >
                 <style jsx global>{`
                   .prose h1 {
-                    color: #1e3a8a;
-                    font-size: 2.25rem;
-                    font-weight: 800;
-                    margin-top: 3rem;
-                    margin-bottom: 2rem;
-                    padding: 1.5rem 0 1rem 0;
-                    border-bottom: 4px solid #2563eb;
-                    letter-spacing: -0.02em;
-                    line-height: 1.3;
+                    color: #0f172a;
+                    font-size: 2.5rem;
+                    font-weight: 900;
+                    margin-top: 3.5rem;
+                    margin-bottom: 2.5rem;
+                    padding: 2rem 0 1.5rem 0;
+                    border-bottom: 6px solid #1e40af;
+                    letter-spacing: -0.03em;
+                    line-height: 1.2;
+                    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
                   }
 
                   .prose h2 {
-                    color: #1e40af;
-                    font-size: 2rem;
-                    font-weight: 800;
-                    margin-top: 3rem;
-                    margin-bottom: 1.5rem;
-                    padding: 1.25rem 1.5rem;
-                    border-left: 6px solid #2563eb;
-                    line-height: 1.4;
-                    background-color: #eff6ff;
-                    border-radius: 0.375rem;
-                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+                    color: #ffffff;
+                    font-size: 2.125rem;
+                    font-weight: 900;
+                    margin-top: 4rem;
+                    margin-bottom: 2rem;
+                    padding: 1.75rem 2rem;
+                    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+                    border-radius: 0.5rem;
+                    line-height: 1.3;
+                    box-shadow: 0 4px 6px rgba(30, 64, 175, 0.2);
+                    letter-spacing: -0.02em;
                   }
 
                   .prose h3 {
-                    color: #2563eb;
-                    font-size: 1.5rem;
-                    font-weight: 700;
-                    margin-top: 2rem;
-                    margin-bottom: 1rem;
-                    padding: 0.75rem 0 0.5rem 1rem;
-                    border-left: 4px solid #60a5fa;
+                    color: #1e40af;
+                    font-size: 1.625rem;
+                    font-weight: 800;
+                    margin-top: 2.5rem;
+                    margin-bottom: 1.25rem;
+                    padding: 1rem 1.5rem;
+                    border-left: 6px solid #3b82f6;
+                    background: linear-gradient(to right, #eff6ff 0%, #ffffff 100%);
                     line-height: 1.4;
-                    background-color: #eff6ff;
-                    padding-right: 1rem;
-                    border-radius: 0.25rem;
+                    border-radius: 0.375rem;
+                    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.1);
                   }
 
                   .prose h4 {
                     color: #1e40af;
-                    font-size: 1.25rem;
-                    font-weight: 600;
-                    margin-top: 1.75rem;
-                    margin-bottom: 0.875rem;
-                    padding: 0.5rem 0 0.375rem 0.875rem;
-                    border-left: 3px solid #93c5fd;
+                    font-size: 1.375rem;
+                    font-weight: 700;
+                    margin-top: 2rem;
+                    margin-bottom: 1rem;
+                    padding: 0.75rem 0 0.5rem 1.25rem;
+                    border-left: 4px solid #60a5fa;
                     line-height: 1.5;
+                    background-color: #f8fafc;
+                    border-radius: 0.25rem;
                   }
 
                   .prose h5 {
                     color: #3b82f6;
-                    font-size: 1.125rem;
-                    font-weight: 600;
-                    margin-top: 1.5rem;
-                    margin-bottom: 0.75rem;
-                    padding-left: 0.75rem;
-                    border-left: 2px solid #bfdbfe;
+                    font-size: 1.25rem;
+                    font-weight: 700;
+                    margin-top: 1.75rem;
+                    margin-bottom: 0.875rem;
+                    padding-left: 1rem;
+                    border-left: 3px solid #93c5fd;
                     line-height: 1.5;
                   }
 
                   .prose h6 {
                     color: #60a5fa;
-                    font-size: 1rem;
+                    font-size: 1.125rem;
                     font-weight: 600;
-                    margin-top: 1.25rem;
-                    margin-bottom: 0.625rem;
-                    padding-left: 0.625rem;
-                    border-left: 2px solid #dbeafe;
+                    margin-top: 1.5rem;
+                    margin-bottom: 0.75rem;
+                    padding-left: 0.875rem;
+                    border-left: 2px solid #bfdbfe;
                     line-height: 1.6;
                   }
 
                   .prose p {
-                    color: #374151;
+                    color: #1f2937;
                     line-height: 2;
-                    margin-bottom: 1.5rem;
-                    font-size: 1.05rem;
+                    margin-bottom: 2rem;
+                    font-size: 1.0625rem;
                     text-align: justify;
                     word-break: keep-all;
+                    letter-spacing: -0.01em;
                   }
 
                   .prose ul, .prose ol {
-                    margin-top: 1.25rem;
-                    margin-bottom: 2rem;
-                    padding-left: 2rem;
-                    background-color: #f8fafc;
-                    padding: 1.25rem 1.25rem 1.25rem 2.5rem;
-                    border-radius: 0.5rem;
-                    border-left: 4px solid #93c5fd;
+                    margin-top: 1.5rem;
+                    margin-bottom: 2.5rem;
+                    padding: 1.75rem 1.5rem 1.75rem 3rem;
+                    background: linear-gradient(to right, #f8fafc 0%, #ffffff 100%);
+                    border-radius: 0.75rem;
+                    border-left: 5px solid #3b82f6;
+                    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.08);
                   }
 
                   .prose li {
-                    color: #374151;
-                    line-height: 2;
-                    margin-bottom: 1rem;
-                    font-size: 1.05rem;
+                    color: #1f2937;
+                    line-height: 2.2;
+                    margin-bottom: 1.25rem;
+                    font-size: 1.0625rem;
+                    letter-spacing: -0.01em;
                   }
 
                   .prose ul > li {
-                    padding-left: 1rem;
+                    padding-left: 1.5rem;
                     position: relative;
                   }
 
                   .prose ul > li::marker {
-                    color: #2563eb;
-                    font-weight: 800;
-                    font-size: 1.25rem;
+                    color: #1e40af;
+                    font-weight: 900;
+                    font-size: 1.5rem;
                   }
 
                   .prose ol > li {
-                    padding-left: 1rem;
+                    padding-left: 1.5rem;
                   }
 
                   .prose ol > li::marker {
-                    color: #2563eb;
-                    font-weight: 800;
-                    font-size: 1.125rem;
+                    color: #1e40af;
+                    font-weight: 900;
+                    font-size: 1.25rem;
                   }
 
                   .prose strong {
-                    color: #1e40af;
-                    font-weight: 800;
+                    color: #000000;
+                    font-weight: 900;
+                    background: linear-gradient(to right, #fef08a 0%, #fde047 100%);
+                    padding: 0.125rem 0.5rem;
+                    border-radius: 0.25rem;
+                    box-shadow: 0 1px 2px rgba(234, 179, 8, 0.2);
                   }
 
                   .prose em {
@@ -324,19 +333,20 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
 
                   .prose blockquote {
                     border-left: 6px solid #3b82f6;
-                    padding: 1.5rem 2rem;
+                    padding: 2rem 2.5rem;
                     font-style: normal;
                     color: #1e40af;
-                    background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
-                    margin: 2.5rem 0;
-                    border-radius: 0.75rem;
-                    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+                    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+                    margin: 3rem 0;
+                    border-radius: 1rem;
+                    box-shadow: 0 8px 16px rgba(59, 130, 246, 0.2);
                     font-size: 1.125rem;
                     font-weight: 600;
+                    line-height: 2;
                   }
 
                   .prose blockquote p {
-                    margin-bottom: 0.75rem;
+                    margin-bottom: 1rem;
                   }
 
                   .prose blockquote p:last-child {
@@ -346,20 +356,23 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
                   .prose code {
                     background-color: #fee2e2;
                     color: #991b1b;
-                    padding: 0.25rem 0.5rem;
+                    padding: 0.3rem 0.6rem;
                     border-radius: 0.375rem;
                     font-size: 0.9375rem;
                     font-weight: 600;
-                    border: 1px solid #fecaca;
+                    border: 1px solid #fca5a5;
+                    box-shadow: 0 1px 2px rgba(220, 38, 38, 0.1);
                   }
 
                   .prose pre {
                     background-color: #1e293b;
                     color: #e2e8f0;
-                    padding: 1.5rem;
-                    border-radius: 0.5rem;
+                    padding: 2rem;
+                    border-radius: 0.75rem;
                     overflow-x: auto;
-                    margin: 2rem 0;
+                    margin: 2.5rem 0;
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+                    border: 1px solid #334155;
                   }
 
                   .prose pre code {
@@ -368,32 +381,36 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
                     padding: 0;
                     border: none;
                     font-weight: normal;
+                    box-shadow: none;
                   }
 
                   .prose table {
                     width: 100%;
                     border-collapse: separate;
                     border-spacing: 0;
-                    margin: 2rem 0;
-                    border-radius: 0.5rem;
+                    margin: 2.5rem 0;
+                    border-radius: 0.75rem;
                     overflow: hidden;
-                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
                   }
 
                   .prose th {
-                    background: linear-gradient(to bottom, #dbeafe, #bfdbfe);
-                    color: #1e3a8a;
-                    font-weight: 700;
-                    padding: 1rem;
+                    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+                    color: #ffffff;
+                    font-weight: 800;
+                    padding: 1.25rem 1.5rem;
                     text-align: left;
-                    border: 1px solid #93c5fd;
-                    font-size: 1rem;
+                    border: none;
+                    font-size: 1.0625rem;
+                    letter-spacing: -0.01em;
                   }
 
                   .prose td {
-                    padding: 1rem;
+                    padding: 1.25rem 1.5rem;
                     border: 1px solid #e5e7eb;
                     background-color: #ffffff;
+                    font-size: 1rem;
+                    transition: background-color 0.2s ease;
                   }
 
                   .prose tr:nth-child(even) td {
@@ -401,7 +418,8 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
                   }
 
                   .prose tr:hover td {
-                    background-color: #f0f9ff;
+                    background-color: #eff6ff;
+                    cursor: pointer;
                   }
 
                   .prose hr {
@@ -413,12 +431,15 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
                   .prose a {
                     color: #2563eb;
                     text-decoration: underline;
-                    font-weight: 500;
-                    transition: color 0.2s;
+                    text-underline-offset: 0.25rem;
+                    font-weight: 600;
+                    transition: all 0.2s ease;
                   }
 
                   .prose a:hover {
-                    color: #1d4ed8;
+                    color: #1e40af;
+                    text-decoration-thickness: 2px;
+                    text-shadow: 0 1px 2px rgba(37, 99, 235, 0.2);
                   }
                 `}</style>
                 <ReactMarkdown
