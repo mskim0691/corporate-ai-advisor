@@ -5,6 +5,11 @@ import path from "path"
 import fs from "fs/promises"
 import crypto from "crypto"
 
+// Route segment config to increase body size limit
+export const runtime = 'nodejs'
+export const maxDuration = 60 // Maximum allowed execution time in seconds
+export const dynamic = 'force-dynamic'
+
 // Conditionally import supabase only if env vars are present
 const USE_SUPABASE = !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY)
 let supabase: any = null
