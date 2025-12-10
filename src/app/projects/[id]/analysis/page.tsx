@@ -189,102 +189,76 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
               >
                 <style jsx global>{`
                   .prose h1 {
-                    color: #ffffff;
-                    font-size: 2.0625rem;
-                    font-weight: 900;
-                    margin-top: 2.25rem;
-                    margin-bottom: 1.875rem;
-                    padding: 1.5rem 1.875rem;
-                    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #3b82f6 100%);
-                    border-radius: 0.75rem;
-                    box-shadow: 0 7.5px 18px rgba(30, 58, 138, 0.5);
-                    letter-spacing: -0.025em;
-                    text-transform: uppercase;
-                    border: 3px solid #1e3a8a;
-                    position: relative;
-                    overflow: hidden;
-                  }
-
-                  .prose h1::before {
-                    content: '';
-                    position: absolute;
-                    top: 0;
-                    left: -100%;
-                    width: 100%;
-                    height: 100%;
-                    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-                    animation: shimmer 3s infinite;
-                  }
-
-                  @keyframes shimmer {
-                    100% { left: 100%; }
+                    color: #1e3a8a;
+                    font-size: 2.25rem;
+                    font-weight: 800;
+                    margin-top: 3rem;
+                    margin-bottom: 2rem;
+                    padding: 1.5rem 0 1rem 0;
+                    border-bottom: 4px solid #2563eb;
+                    letter-spacing: -0.02em;
+                    line-height: 1.3;
                   }
 
                   .prose h2 {
-                    color: #ffffff;
-                    font-size: 1.6875rem;
-                    font-weight: 800;
-                    margin-top: 2.25rem;
-                    margin-bottom: 1.5rem;
-                    padding: 1.125rem 1.5rem;
-                    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
-                    border-radius: 0.5625rem;
-                    box-shadow: 0 6px 15px rgba(37, 99, 235, 0.4);
-                    border-left: 7.5px solid #1e40af;
+                    color: #1e40af;
+                    font-size: 1.875rem;
+                    font-weight: 700;
+                    margin-top: 2.5rem;
+                    margin-bottom: 1.25rem;
+                    padding: 1rem 0 0.75rem 1.25rem;
+                    border-left: 5px solid #3b82f6;
+                    line-height: 1.4;
+                    background-color: #f0f9ff;
+                    padding-right: 1rem;
+                    border-radius: 0.25rem;
                   }
 
                   .prose h3 {
-                    color: #1e40af;
-                    font-size: 1.40625rem;
+                    color: #2563eb;
+                    font-size: 1.5rem;
                     font-weight: 700;
-                    margin-top: 1.875rem;
-                    margin-bottom: 1.3125rem;
-                    padding: 0.9375rem 1.3125rem;
-                    border-left: 6px solid #3b82f6;
-                    background: linear-gradient(to right, #dbeafe 0%, #eff6ff 60%, #ffffff 100%);
-                    border-radius: 0.46875rem;
-                    box-shadow: 0 3px 9px rgba(59, 130, 246, 0.25);
-                    border-bottom: 3px solid #93c5fd;
+                    margin-top: 2rem;
+                    margin-bottom: 1rem;
+                    padding: 0.75rem 0 0.5rem 1rem;
+                    border-left: 4px solid #60a5fa;
+                    line-height: 1.4;
+                    background-color: #eff6ff;
+                    padding-right: 1rem;
+                    border-radius: 0.25rem;
                   }
 
                   .prose h4 {
-                    color: #1e3a8a;
-                    font-size: 1.125rem;
-                    font-weight: 700;
-                    margin-top: 1.5rem;
-                    margin-bottom: 1.125rem;
-                    padding: 0.75rem 1.125rem;
-                    padding-left: 1.3125rem;
-                    border-left: 4.5px solid #60a5fa;
-                    background: linear-gradient(to right, #eff6ff 0%, #f8fafc 100%);
-                    border-radius: 0.375rem;
-                    box-shadow: 0 1.5px 6px rgba(96, 165, 250, 0.2);
+                    color: #1e40af;
+                    font-size: 1.25rem;
+                    font-weight: 600;
+                    margin-top: 1.75rem;
+                    margin-bottom: 0.875rem;
+                    padding: 0.5rem 0 0.375rem 0.875rem;
+                    border-left: 3px solid #93c5fd;
+                    line-height: 1.5;
                   }
 
                   .prose h5 {
-                    color: #2563eb;
-                    font-size: 0.9375rem;
-                    font-weight: 700;
-                    margin-top: 1.3125rem;
+                    color: #3b82f6;
+                    font-size: 1.125rem;
+                    font-weight: 600;
+                    margin-top: 1.5rem;
                     margin-bottom: 0.75rem;
-                    padding: 0.5625rem 0.9375rem;
-                    padding-left: 1.125rem;
-                    border-left: 3.75px solid #93c5fd;
-                    background-color: #f0f9ff;
-                    border-radius: 0.28125rem;
+                    padding-left: 0.75rem;
+                    border-left: 2px solid #bfdbfe;
+                    line-height: 1.5;
                   }
 
                   .prose h6 {
-                    color: #3b82f6;
-                    font-size: 0.84375rem;
+                    color: #60a5fa;
+                    font-size: 1rem;
                     font-weight: 600;
-                    margin-top: 1.125rem;
-                    margin-bottom: 0.65625rem;
-                    padding: 0.46875rem 0.75rem;
-                    padding-left: 0.9375rem;
-                    border-left: 3px solid #bfdbfe;
-                    background-color: #f8fafc;
-                    border-radius: 0.1875rem;
+                    margin-top: 1.25rem;
+                    margin-bottom: 0.625rem;
+                    padding-left: 0.625rem;
+                    border-left: 2px solid #dbeafe;
+                    line-height: 1.6;
                   }
 
                   .prose p {
