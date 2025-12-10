@@ -33,12 +33,12 @@ export default function NewProjectPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files)
-      const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB in bytes
+      const MAX_FILE_SIZE = 4 * 1024 * 1024 // 4MB in bytes
 
       // Check file sizes
       const oversizedFiles = newFiles.filter(file => file.size > MAX_FILE_SIZE)
       if (oversizedFiles.length > 0) {
-        setError(`다음 파일의 크기가 10MB를 초과합니다: ${oversizedFiles.map(f => f.name).join(', ')}`)
+        setError(`다음 파일의 크기가 4MB를 초과합니다: ${oversizedFiles.map(f => f.name).join(', ')}`)
         return
       }
 
@@ -52,12 +52,12 @@ export default function NewProjectPage() {
     setIsDragging(false)
 
     const droppedFiles = Array.from(e.dataTransfer.files)
-    const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB in bytes
+    const MAX_FILE_SIZE = 4 * 1024 * 1024 // 4MB in bytes
 
     // Check file sizes
     const oversizedFiles = droppedFiles.filter(file => file.size > MAX_FILE_SIZE)
     if (oversizedFiles.length > 0) {
-      setError(`다음 파일의 크기가 10MB를 초과합니다: ${oversizedFiles.map(f => f.name).join(', ')}`)
+      setError(`다음 파일의 크기가 4MB를 초과합니다: ${oversizedFiles.map(f => f.name).join(', ')}`)
       return
     }
 
@@ -253,7 +253,7 @@ export default function NewProjectPage() {
                   파일을 드래그 앤 드롭하거나 클릭하여 업로드
                 </p>
                 <p className="text-xs text-gray-500 mb-4">
-                  PDF, DOCX, XLSX, JPG, PNG (파일당 최대 10MB)
+                  PDF, DOCX, XLSX, JPG, PNG (파일당 최대 4MB)
                 </p>
                 <input
                   type="file"
