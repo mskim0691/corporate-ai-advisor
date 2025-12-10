@@ -20,6 +20,7 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
   const [error, setError] = useState<string | null>(null)
   const [generatingPresentation, setGeneratingPresentation] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [showMarkdown, setShowMarkdown] = useState(false)
 
   useEffect(() => {
     params.then(({ id }) => {
@@ -158,13 +159,22 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
               컨설팅제안서
             </Button>
             {isAdmin && (
-              <Button
-                onClick={handleGeneratePresentation}
-                disabled={generatingPresentation}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                {generatingPresentation ? "생성 중..." : analysisData ? "리포트" : "리포트 생성"}
-              </Button>
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowMarkdown(!showMarkdown)}
+                  className={showMarkdown ? "bg-green-100 text-green-800 border-green-300" : ""}
+                >
+                  {showMarkdown ? "렌더링 보기" : "마크다운 보기"}
+                </Button>
+                <Button
+                  onClick={handleGeneratePresentation}
+                  disabled={generatingPresentation}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  {generatingPresentation ? "생성 중..." : analysisData ? "리포트" : "리포트 생성"}
+                </Button>
+              </>
             )}
             <Button
               variant="outline"
@@ -180,13 +190,20 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
 
         <Card className="shadow-xl">
           <CardContent className="p-0 flex justify-center">
-            <div className="bg-white rounded-lg" style={{ width: '95%' }}>
-              <div
-                className="prose prose-lg max-w-none p-8 md:p-12"
-                style={{
-                  fontFamily: "'Noto Sans KR', sans-serif"
-                }}
-              >
+            {showMarkdown ? (
+              <div className="bg-white rounded-lg w-full p-8">
+                <pre className="whitespace-pre-wrap font-mono text-sm bg-gray-50 p-6 rounded-lg overflow-auto max-h-screen border border-gray-200">
+                  {processedText}
+                </pre>
+              </div>
+            ) : (
+              <div className="bg-white rounded-lg" style={{ width: '95%' }}>
+                <div
+                  className="prose prose-lg max-w-none p-8 md:p-12"
+                  style={{
+                    fontFamily: "'Noto Sans KR', sans-serif"
+                  }}
+                >
                 <style jsx global>{`
                   .prose h1 {
                     color: #0f172a;
@@ -477,6 +494,7 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
                 </ReactMarkdown>
               </div>
             </div>
+            )}
           </CardContent>
         </Card>
 
