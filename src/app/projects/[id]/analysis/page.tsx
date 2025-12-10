@@ -339,7 +339,6 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
                     background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
                     margin: 3rem 0;
                     border-radius: 1rem;
-                    box-shadow: 0 8px 16px rgba(59, 130, 246, 0.2);
                     font-size: 1.125rem;
                     font-weight: 600;
                     line-height: 2;
