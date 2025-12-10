@@ -35,7 +35,25 @@ export function SlideViewer({ slides }: SlideViewerProps) {
     }
   }
 
+  // Safety check for empty slides or invalid data
+  if (!slides || slides.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-gray-600">슬라이드 데이터가 없습니다.</div>
+      </div>
+    )
+  }
+
   const slide = slides[currentSlide]
+
+  // Safety check for invalid slide data
+  if (!slide || !slide.title) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-red-600">슬라이드 데이터 형식이 올바르지 않습니다.</div>
+      </div>
+    )
+  }
 
   // Helper function to process content and handle escaped newlines
   const processContent = (content: string) => {
