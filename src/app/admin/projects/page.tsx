@@ -211,11 +211,11 @@ export default function ProjectsPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     {project.status === 'completed' && (
                       <Link
-                        href={`/projects/${project.id}/report`}
+                        href={`/projects/${project.id}/analysis`}
                         className="text-blue-600 hover:text-blue-900"
                         target="_blank"
                       >
-                        리포트 보기
+                        컨설팅 제안서 보기
                       </Link>
                     )}
                   </td>
