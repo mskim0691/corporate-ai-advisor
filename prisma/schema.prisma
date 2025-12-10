@@ -1,0 +1,122 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  passwordHash  String         @map("password_hash")
+  name          String?
+  role          String         @default("user") // 'user' or 'admin'
+  createdAt     DateTime       @default(now()) @map("created_at")
+  subscription  Subscription?
+  usageLogs     UsageLog[]
+  projects      Project[]
+  paymentLogs   PaymentLog[]
+
+  @@map("users")
+}
+
+model Subscription {
+  id                   String    @id @default(uuid())
+  userId               String    @unique @map("user_id")
+  plan                 String    @default("free") // 'free' or 'pro'
+  status               String    @default("active")
+  stripeSubscriptionId String?   @map("stripe_subscription_id")
+  currentPeriodStart   DateTime? @map("current_period_start")
+  currentPeriodEnd     DateTime? @map("current_period_end")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+model UsageLog {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  yearMonth String   @map("year_month") // Format: '2025-01'
+  count     Int      @default(0)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, yearMonth])
+  @@map("usage_logs")
+}
+
+model Project {
+  id             String   @id @default(uuid())
+  userId         String   @map("user_id")
+  companyName    String   @map("company_name")
+  businessNumber String   @map("business_number")
+  representative String
+  industry       String?
+  status         String   @default("pending") // 'pending', 'processing', 'completed', 'failed'
+  createdAt      DateTime @default(now()) @map("created_at")
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  files          File[]
+  report         Report?
+
+  @@map("projects")
+}
+
+model File {
+  id         String   @id @default(uuid())
+  projectId  String   @map("project_id")
+  filename   String
+  filePath   String   @map("file_path")
+  fileType   String?  @map("file_type")
+  fileSize   Int?     @map("file_size")
+  uploadedAt DateTime @default(now()) @map("uploaded_at")
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("files")
+}
+
+model Report {
+  id                    String    @id @default(uuid())
+  projectId             String    @unique @map("project_id")
+  initialRiskAnalysis   String?   @map("initial_risk_analysis") // Initial risk analysis (step 0)
+  additionalRequest     String?   @map("additional_request") // User's additional analysis request
+  textAnalysis          String?   @map("text_analysis") // Detailed analysis result (step 1)
+  analysisData          String?   @map("analysis_data") // JSON string for slides (step 2)
+  pdfUrl                String?   @map("pdf_url")
+  shareToken            String?   @unique @map("share_token")
+  sharePassword         String?   @map("share_password")
+  shareExpiresAt        DateTime? @map("share_expires_at")
+  viewCount             Int       @default(0) @map("view_count")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  project               Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("reports")
+}
+
+model Prompt {
+  id          String   @id @default(uuid())
+  name        String   @unique // 'initial_risk', 'detailed_analysis', 'presentation'
+  content     String   // The actual prompt text
+  description String?  // Description of what this prompt does
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("prompts")
+}
+
+model PaymentLog {
+  id              String   @id @default(uuid())
+  userId          String   @map("user_id")
+  amount          Float    // Payment amount
+  currency        String   @default("KRW")
+  paymentMethod   String?  @map("payment_method") // 'card', 'transfer', etc.
+  status          String   // 'pending', 'completed', 'failed', 'refunded'
+  transactionId   String?  @unique @map("transaction_id") // External payment ID
+  description     String?  // Payment description
+  paidAt          DateTime? @map("paid_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("payment_logs")
+}
