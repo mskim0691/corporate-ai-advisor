@@ -54,7 +54,7 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
       try {
         const response = await fetch('/api/user/subscription')
         const data = await response.json()
-        setIsAdmin(data.isAdmin || false)
+        setIsAdmin(data.role === 'admin')
       } catch (err) {
         console.error('Failed to fetch user role:', err)
       }
