@@ -202,16 +202,16 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
 
                   .prose h2 {
                     color: #1e40af;
-                    font-size: 1.875rem;
-                    font-weight: 700;
-                    margin-top: 2.5rem;
-                    margin-bottom: 1.25rem;
-                    padding: 1rem 0 0.75rem 1.25rem;
-                    border-left: 5px solid #3b82f6;
+                    font-size: 2rem;
+                    font-weight: 800;
+                    margin-top: 3rem;
+                    margin-bottom: 1.5rem;
+                    padding: 1.25rem 1.5rem;
+                    border-left: 6px solid #2563eb;
                     line-height: 1.4;
-                    background-color: #f0f9ff;
-                    padding-right: 1rem;
-                    border-radius: 0.25rem;
+                    background-color: #eff6ff;
+                    border-radius: 0.375rem;
+                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
                   }
 
                   .prose h3 {
