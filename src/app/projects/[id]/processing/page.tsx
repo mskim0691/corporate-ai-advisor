@@ -74,7 +74,7 @@ export default function ProcessingPage({ params }: { params: Promise<{ id: strin
             <div className="flex flex-col items-center">
               <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600"></div>
               <p className="mt-4 text-sm text-gray-600">
-                약 2-3분 소요됩니다
+                약 3-5분 소요됩니다
               </p>
             </div>
           ) : (
