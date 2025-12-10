@@ -65,21 +65,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return session
     },
     async redirect({ url, baseUrl }) {
-      // Always use the production URL for redirects if available
-      const productionUrl = process.env.NEXT_PUBLIC_APP_URL || baseUrl
+      // Use NEXT_PUBLIC_APP_URL if available, otherwise use baseUrl
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || baseUrl
 
-      // If the URL is relative, prepend the production URL
+      // If the URL is relative, prepend the app URL
       if (url.startsWith("/")) {
-        return `${productionUrl}${url}`
+        return `${appUrl}${url}`
       }
 
-      // If the URL is already absolute and points to our domain, use it
-      if (url.startsWith(productionUrl)) {
+      // If the URL is already absolute and starts with our baseUrl or appUrl, allow it
+      if (url.startsWith(baseUrl) || (process.env.NEXT_PUBLIC_APP_URL && url.startsWith(process.env.NEXT_PUBLIC_APP_URL))) {
         return url
       }
 
-      // For any other case, return the production URL
-      return productionUrl
+      // For external URLs or other cases, redirect to the app URL root
+      return appUrl
     },
   },
   pages: {
