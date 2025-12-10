@@ -199,13 +199,6 @@ export default async function DashboardPage() {
                               컨설팅제안서
                             </Button>
                           </Link>
-                          {isAdmin && (
-                            <Link href={`/projects/${project.id}/report`}>
-                              <Button variant="outline" size="sm">
-                                리포트
-                              </Button>
-                            </Link>
-                          )}
                         </>
                       )}
                       <DeleteProjectButton
