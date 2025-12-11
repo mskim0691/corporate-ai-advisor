@@ -21,6 +21,8 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
   const [generatingPresentation, setGeneratingPresentation] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
   const [showMarkdown, setShowMarkdown] = useState(false)
+  const [userCredits, setUserCredits] = useState(0)
+  const [presentationCost, setPresentationCost] = useState(50)
 
   useEffect(() => {
     params.then(({ id }) => {
@@ -55,13 +57,28 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
         const response = await fetch('/api/user/subscription')
         const data = await response.json()
         setIsAdmin(data.role === 'admin')
+        setUserCredits(data.credits || 0)
       } catch (err) {
         console.error('Failed to fetch user role:', err)
       }
     }
 
+    const fetchPresentationCost = async () => {
+      try {
+        const response = await fetch('/api/admin/credit-prices')
+        const data = await response.json()
+        const premiumPrice = data.find((p: any) => p.type === 'premium_presentation')
+        if (premiumPrice) {
+          setPresentationCost(premiumPrice.credits)
+        }
+      } catch (err) {
+        console.error('Failed to fetch presentation cost:', err)
+      }
+    }
+
     fetchAnalysis()
     fetchUserRole()
+    fetchPresentationCost()
   }, [projectId])
 
   const handleGeneratePresentation = async () => {
@@ -158,7 +175,7 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
             >
               컨설팅제안서
             </Button>
-            {isAdmin && (
+{isAdmin ? (
               <>
                 <Button
                   variant="outline"
@@ -175,6 +192,20 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
                   {generatingPresentation ? "생성 중..." : analysisData ? "리포트" : "리포트 생성"}
                 </Button>
               </>
+            ) : (
+              <div className="flex items-center gap-2">
+                <div className="text-sm text-gray-600 mr-2">
+                  보유 크레딧: <span className="font-bold text-blue-600">{userCredits}</span>
+                </div>
+                <Button
+                  onClick={handleGeneratePresentation}
+                  disabled={generatingPresentation || userCredits < presentationCost}
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+                  title={userCredits < presentationCost ? `크레딧 부족 (필요: ${presentationCost})` : `${presentationCost} 크레딧 사용`}
+                >
+                  {generatingPresentation ? "생성 중..." : analysisData ? `고급 프레젠테이션 보기` : `고급 프레젠테이션 제작 (${presentationCost} 크레딧)`}
+                </Button>
+              </div>
             )}
             <Button
               variant="outline"
