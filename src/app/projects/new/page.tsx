@@ -226,9 +226,19 @@ export default function NewProjectPage() {
                 <div className="text-sm text-red-600">{error}</div>
               )}
 
-              <Button onClick={handleNext} className="w-full">
-                다음
-              </Button>
+              <div className="flex gap-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.push("/dashboard")}
+                  className="flex-1"
+                >
+                  뒤로
+                </Button>
+                <Button onClick={handleNext} className="flex-1">
+                  다음
+                </Button>
+              </div>
             </CardContent>
           </Card>
         )}
