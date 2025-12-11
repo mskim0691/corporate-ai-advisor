@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { auth } from "@/lib/auth"
+import { PricingSection } from "@/components/pricing-section"
 
 export default async function Home() {
   const session = await auth()
@@ -75,67 +76,7 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="py-16">
-          <div className="container mx-auto px-4">
-            <h3 className="text-3xl font-bold text-center mb-12">가격 플랜</h3>
-            <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-              <div className="p-8 border-2 rounded-lg bg-white">
-                <h4 className="text-2xl font-bold mb-2">Free</h4>
-                <p className="text-3xl font-bold mb-4">₩0<span className="text-base font-normal">/월</span></p>
-                <ul className="space-y-3 mb-6">
-                  <li className="flex items-start">
-                    <span className="text-blue-600 mr-2">✓</span>
-                    <span>월 <strong>4회</strong> 분석</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-blue-600 mr-2">✓</span>
-                    <span>PDF 다운로드</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-blue-600 mr-2">✓</span>
-                    <span>기본 지원</span>
-                  </li>
-                </ul>
-                <Link href="/auth/register">
-                  <Button variant="outline" className="w-full">무료로 시작하기</Button>
-                </Link>
-              </div>
-              <div className="p-8 border-2 border-blue-600 rounded-lg bg-blue-50 relative">
-                <div className="absolute top-0 right-0 bg-red-500 text-white px-4 py-1 text-sm font-bold rounded-bl-lg rounded-tr-lg">
-                  50% 할인 이벤트
-                </div>
-                <h4 className="text-2xl font-bold mb-2">Standard</h4>
-                <div className="mb-4">
-                  <p className="text-gray-500 line-through text-lg">₩30,000/월</p>
-                  <p className="text-3xl font-bold text-blue-600">
-                    ₩15,000<span className="text-base font-normal text-gray-700">/월</span>
-                  </p>
-                </div>
-                <ul className="space-y-3 mb-6">
-                  <li className="flex items-start">
-                    <span className="text-blue-600 mr-2">✓</span>
-                    <span>월 <strong>30회</strong> 분석</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-blue-600 mr-2">✓</span>
-                    <span>PDF 다운로드</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-blue-600 mr-2">✓</span>
-                    <span>우선 지원</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-blue-600 mr-2">✓</span>
-                    <span>프리미엄 기능</span>
-                  </li>
-                </ul>
-                <Link href="/auth/register">
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700">지금 시작하기</Button>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
+        <PricingSection />
       </main>
 
       <footer className="bg-gray-800 text-white py-8">

@@ -148,3 +148,25 @@ model Announcement {
 
   @@map("announcements")
 }
+
+model PricingPlan {
+  id                String   @id @default(uuid())
+  name              String   @unique // 'free', 'standard', etc.
+  displayName       String   @map("display_name") // Display name (e.g., "Free", "Standard")
+  price             Float    // Monthly price
+  originalPrice     Float?   @map("original_price") // Original price (for showing discount)
+  currency          String   @default("KRW") // Currency
+  monthlyAnalysis   Int      @map("monthly_analysis") // Number of analyses per month
+  features          String   // JSON string of features array
+  isPopular         Boolean  @default(false) @map("is_popular") // Show "popular" badge
+  isActive          Boolean  @default(true) @map("is_active") // Whether the plan is visible
+  displayOrder      Int      @default(0) @map("display_order") // Display order on page
+  badgeText         String?  @map("badge_text") // Optional badge text (e.g., "50% 할인 이벤트")
+  badgeColor        String?  @map("badge_color") // Badge color (e.g., "red", "blue")
+  buttonText        String   @default("시작하기") @map("button_text") // CTA button text
+  buttonVariant     String   @default("default") @map("button_variant") // Button style variant
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@map("pricing_plans")
+}
