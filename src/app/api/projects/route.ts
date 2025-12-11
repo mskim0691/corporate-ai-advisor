@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth"
 import prisma from "@/lib/prisma"
 import { z } from "zod"
 import { getCurrentYearMonth } from "@/lib/utils"
+import { checkProjectCreationPolicy } from "@/lib/policy"
 
 const projectSchema = z.object({
   companyName: z.string().min(1),
@@ -29,27 +30,33 @@ export async function POST(req: Request) {
       )
     }
 
-    const subscription = await prisma.subscription.findUnique({
-      where: { userId: session.user.id },
+    // Get user info with subscription
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      include: {
+        subscription: true,
+      },
     })
 
-    if (subscription?.plan === "free") {
-      const yearMonth = getCurrentYearMonth()
-      const usageLog = await prisma.usageLog.findUnique({
-        where: {
-          userId_yearMonth: {
-            userId: session.user.id,
-            yearMonth,
-          },
-        },
-      })
+    if (!user) {
+      return NextResponse.json(
+        { error: "사용자를 찾을 수 없습니다" },
+        { status: 404 }
+      )
+    }
 
-      if (usageLog && usageLog.count >= 2) {
-        return NextResponse.json(
-          { error: "이번 달 무료 사용량을 초과했습니다" },
-          { status: 403 }
-        )
-      }
+    // Check project creation policy based on user's group
+    const policyCheck = await checkProjectCreationPolicy(
+      user.id,
+      user.role,
+      user.subscription?.plan
+    )
+
+    if (!policyCheck.allowed) {
+      return NextResponse.json(
+        { error: policyCheck.message || "프로젝트 생성 제한을 초과했습니다" },
+        { status: 403 }
+      )
     }
 
     const { companyName, businessNumber, representative, industry } = parsed.data

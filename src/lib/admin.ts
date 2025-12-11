@@ -21,9 +21,9 @@ export async function isAdmin(): Promise<boolean> {
 }
 
 /**
- * Get current admin user or throw error
+ * Get current admin user or return error response
  */
-export async function requireAdmin() {
+export async function requireAdmin(): Promise<NextResponse | null> {
   const session = await auth()
 
   if (!session?.user?.email) {
@@ -45,5 +45,5 @@ export async function requireAdmin() {
     )
   }
 
-  return { user }
+  return null
 }

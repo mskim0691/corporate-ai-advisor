@@ -18,6 +18,7 @@ model User {
   usageLogs     UsageLog[]
   projects      Project[]
   paymentLogs   PaymentLog[]
+  announcements Announcement[]
 
   @@map("users")
 }
@@ -119,4 +120,31 @@ model PaymentLog {
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("payment_logs")
+}
+
+model GroupPolicy {
+  id                      String   @id @default(uuid())
+  groupName               String   @unique @map("group_name") // 'admin', 'pro', 'free'
+  monthlyProjectLimit     Int      @map("monthly_project_limit") // Number of projects allowed per month
+  description             String?  // Description of the policy
+  updatedAt               DateTime @updatedAt @map("updated_at")
+  createdAt               DateTime @default(now()) @map("created_at")
+
+  @@map("group_policies")
+}
+
+model Announcement {
+  id          String   @id @default(uuid())
+  title       String   // Announcement title
+  content     String   // Announcement content (supports markdown)
+  priority    Int      @default(0) // Higher priority shows first
+  isActive    Boolean  @default(true) @map("is_active") // Whether the announcement is visible
+  startDate   DateTime? @map("start_date") // Optional start date for scheduled announcements
+  endDate     DateTime? @map("end_date") // Optional end date for automatic hiding
+  authorId    String   @map("author_id") // Admin who created the announcement
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("announcements")
 }

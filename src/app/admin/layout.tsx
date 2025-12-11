@@ -66,6 +66,18 @@ export default async function AdminLayout({
                 >
                   매출 통계
                 </Link>
+                <Link
+                  href="/admin/policies"
+                  className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                >
+                  그룹 정책
+                </Link>
+                <Link
+                  href="/admin/announcements"
+                  className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                >
+                  공지사항
+                </Link>
               </div>
             </div>
             <div className="flex items-center">
