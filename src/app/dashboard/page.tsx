@@ -99,16 +99,19 @@ export default async function DashboardPage() {
         <AnnouncementsBanner />
 
         <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>보유 크레딧</CardTitle>
-              <CardDescription>사용 가능한 크레딧</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{user?.credits || 0}</div>
-              <p className="text-xs text-gray-500 mt-1">기본 분석: 10 크레딧</p>
-            </CardContent>
-          </Card>
+          <Link href="/credit-history">
+            <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle>보유 크레딧</CardTitle>
+                <CardDescription>사용 가능한 크레딧</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-blue-600">{user?.credits || 0}</div>
+                <p className="text-xs text-gray-500 mt-1">기본 분석: 10 크레딧</p>
+                <p className="text-xs text-blue-600 mt-2 hover:underline">내역 보기 →</p>
+              </CardContent>
+            </Card>
+          </Link>
 
           <Card>
             <CardHeader>
