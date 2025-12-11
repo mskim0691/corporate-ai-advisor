@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { LogoutButton } from "@/components/logout-button"
 import { DeleteProjectButton } from "@/components/delete-project-button"
+import { AnnouncementsBanner } from "@/components/announcements-banner"
 
 async function getUserDashboardData(userId: string) {
   const [subscription, usageLog, projects, totalProjectCount] = await Promise.all([
@@ -88,6 +89,8 @@ export default async function DashboardPage() {
           <h2 className="text-3xl font-bold mb-2">대시보드</h2>
           <p className="text-gray-600">AI 기반 법인 컨설팅 분석을 시작하세요</p>
         </div>
+
+        <AnnouncementsBanner />
 
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           <Card>
