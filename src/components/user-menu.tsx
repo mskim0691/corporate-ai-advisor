@@ -14,7 +14,8 @@ export function UserMenu() {
   const router = useRouter()
 
   const handleLogout = async () => {
-    await signOut({ callbackUrl: "/" })
+    await signOut({ redirect: false })
+    router.push("/")
   }
 
   return (
