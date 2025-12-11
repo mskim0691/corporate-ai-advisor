@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -19,6 +19,27 @@ export default function NewProjectPage() {
 
   const [files, setFiles] = useState<File[]>([])
   const [isDragging, setIsDragging] = useState(false)
+  const [basicAnalysisCost, setBasicAnalysisCost] = useState(10)
+
+  useEffect(() => {
+    fetchCreditPrices()
+  }, [])
+
+  const fetchCreditPrices = async () => {
+    try {
+      const response = await fetch('/api/admin/credit-prices')
+      if (response.ok) {
+        const priceData = await response.json()
+        const basicPrice = priceData.find((p: any) => p.type === 'basic_analysis')
+        if (basicPrice) {
+          setBasicAnalysisCost(basicPrice.credits)
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch credit prices:', err)
+      // Keep default value of 10 if fetch fails
+    }
+  }
 
   const handleNext = () => {
     if (!companyName || !representative) {
@@ -316,7 +337,7 @@ export default function NewProjectPage() {
                   disabled={isLoading || files.length === 0}
                   className="flex-1"
                 >
-                  {isLoading ? "분석 시작 중..." : "분석 시작"}
+                  {isLoading ? "분석 시작 중..." : `분석 시작 (-${basicAnalysisCost} 크레딧 차감)`}
                 </Button>
               </div>
             </CardContent>
