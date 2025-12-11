@@ -44,6 +44,24 @@ async function getUserDashboardData(userId: string) {
   return { user, subscription, usageLog, projects, totalProjectCount }
 }
 
+async function getCreditPrices() {
+  const prices = await prisma.creditPrice.findMany({
+    where: {
+      type: {
+        in: ['basic_analysis', 'premium_presentation']
+      }
+    }
+  })
+
+  const basicPrice = prices.find(p => p.type === 'basic_analysis')
+  const premiumPrice = prices.find(p => p.type === 'premium_presentation')
+
+  return {
+    basic: basicPrice?.credits || 10,
+    premium: premiumPrice?.credits || 50
+  }
+}
+
 export default async function DashboardPage() {
   const session = await auth()
 
@@ -51,7 +69,10 @@ export default async function DashboardPage() {
     redirect("/auth/login")
   }
 
-  const { user, subscription, usageLog, projects, totalProjectCount } = await getUserDashboardData(session.user.id)
+  const [{ user, subscription, usageLog, projects, totalProjectCount }, creditPrices] = await Promise.all([
+    getUserDashboardData(session.user.id),
+    getCreditPrices()
+  ])
 
   // Get user role
   const fullUser = await prisma.user.findUnique({
@@ -107,7 +128,10 @@ export default async function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-blue-600">{user?.credits || 0}</div>
-                <p className="text-xs text-gray-500 mt-1">기본 분석: 10 크레딧</p>
+                <div className="text-xs text-gray-500 mt-2 space-y-0.5">
+                  <p>기본 분석: {creditPrices.basic} 크레딧</p>
+                  <p>고급 프레젠테이션: {creditPrices.premium} 크레딧</p>
+                </div>
                 <p className="text-xs text-blue-600 mt-2 hover:underline">내역 보기 →</p>
               </CardContent>
             </Card>
