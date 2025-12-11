@@ -150,7 +150,7 @@ export default async function DashboardPage() {
           <CardContent>
             {projects.length === 0 ? (
               <div className="text-center py-12 text-gray-500">
-                <p className="mb-4">아직 프로젝트가 없습니다</p>
+                <p className="mb-4">아직 기업분석 내용이 없습니다</p>
                 <Link href="/projects/new">
                   <Button disabled={!canCreateProject}>첫 분석 시작하기</Button>
                 </Link>
