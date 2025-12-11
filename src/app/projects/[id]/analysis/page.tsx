@@ -21,8 +21,7 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
   const [generatingPresentation, setGeneratingPresentation] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
   const [showMarkdown, setShowMarkdown] = useState(false)
-  const [userCredits, setUserCredits] = useState(0)
-  const [presentationCost, setPresentationCost] = useState(50)
+  const [hasPdfReport, setHasPdfReport] = useState(false)
 
   useEffect(() => {
     params.then(({ id }) => {
@@ -45,6 +44,7 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
         setTextAnalysis(data.report?.textAnalysis)
         setAnalysisData(data.report?.analysisData)
         setCompanyName(data.companyName)
+        setHasPdfReport(!!data.report?.pdfUrl)
       } catch (err: unknown) {
         setError(err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다")
       } finally {
@@ -57,57 +57,24 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
         const response = await fetch('/api/user/subscription')
         const data = await response.json()
         setIsAdmin(data.role === 'admin')
-        setUserCredits(data.credits || 0)
       } catch (err) {
         console.error('Failed to fetch user role:', err)
       }
     }
 
-    const fetchPresentationCost = async () => {
-      try {
-        const response = await fetch('/api/admin/credit-prices')
-        const data = await response.json()
-        const premiumPrice = data.find((p: any) => p.type === 'premium_presentation')
-        if (premiumPrice) {
-          setPresentationCost(premiumPrice.credits)
-        }
-      } catch (err) {
-        console.error('Failed to fetch presentation cost:', err)
-      }
-    }
-
     fetchAnalysis()
     fetchUserRole()
-    fetchPresentationCost()
   }, [projectId])
 
-  const handleGeneratePresentation = async () => {
+  const handlePresentationClick = () => {
     if (!projectId) return
 
-    // 이미 프레젠테이션이 만들어져 있으면 바로 이동
-    if (analysisData) {
-      router.push(`/projects/${projectId}/report`)
-      return
-    }
-
-    // 프레젠테이션이 없으면 새로 생성
-    setGeneratingPresentation(true)
-    try {
-      const response = await fetch(`/api/projects/${projectId}/generate-slides`, {
-        method: "POST",
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || "프레젠테이션 생성에 실패했습니다")
-      }
-
-      router.push(`/projects/${projectId}/report`)
-    } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : "프레젠테이션 생성 중 오류가 발생했습니다")
-    } finally {
-      setGeneratingPresentation(false)
+    // PDF 리포트가 생성되어 있으면 라이브러리로 이동
+    if (hasPdfReport) {
+      router.push(`/projects/${projectId}/library`)
+    } else {
+      // PDF 리포트가 없으면 order-report 페이지로 이동
+      router.push(`/projects/${projectId}/order-report`)
     }
   }
 
@@ -175,38 +142,21 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
             >
               컨설팅제안서
             </Button>
-{isAdmin ? (
-              <>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowMarkdown(!showMarkdown)}
-                  className={showMarkdown ? "bg-green-100 text-green-800 border-green-300" : ""}
-                >
-                  {showMarkdown ? "렌더링 보기" : "마크다운 보기"}
-                </Button>
-                <Button
-                  onClick={handleGeneratePresentation}
-                  disabled={generatingPresentation}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  {generatingPresentation ? "생성 중..." : analysisData ? "리포트" : "리포트 생성"}
-                </Button>
-              </>
-            ) : (
-              <div className="flex items-center gap-2">
-                <div className="text-sm text-gray-600 mr-2">
-                  보유 크레딧: <span className="font-bold text-blue-600">{userCredits}</span>
-                </div>
-                <Button
-                  onClick={handleGeneratePresentation}
-                  disabled={generatingPresentation || userCredits < presentationCost}
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
-                  title={userCredits < presentationCost ? `크레딧 부족 (필요: ${presentationCost})` : `${presentationCost} 크레딧 사용`}
-                >
-                  {generatingPresentation ? "생성 중..." : analysisData ? `고급 프레젠테이션 보기` : `고급 프레젠테이션 제작 (${presentationCost} 크레딧)`}
-                </Button>
-              </div>
+{isAdmin && (
+              <Button
+                variant="outline"
+                onClick={() => setShowMarkdown(!showMarkdown)}
+                className={showMarkdown ? "bg-green-100 text-green-800 border-green-300" : ""}
+              >
+                {showMarkdown ? "렌더링 보기" : "마크다운 보기"}
+              </Button>
             )}
+            <Button
+              onClick={handlePresentationClick}
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+            >
+              {hasPdfReport ? "고급 프레젠테이션 보기" : "고급 프레젠테이션 생성"}
+            </Button>
             <Button
               variant="outline"
               onClick={() => router.push("/dashboard")}
