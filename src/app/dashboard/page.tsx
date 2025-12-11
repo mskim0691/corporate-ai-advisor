@@ -87,7 +87,9 @@ export default async function DashboardPage() {
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h2 className="text-3xl font-bold mb-2">대시보드</h2>
-          <p className="text-gray-600">AI 기반 법인 컨설팅 분석을 시작하세요</p>
+          <p className="text-gray-700 text-lg">
+            <span className="text-xl font-bold text-blue-600">크레탑</span> 분석보고서, <span className="text-xl font-bold text-blue-600">재무제표</span> 파일을 <span className="text-xl font-bold text-blue-600">업로드</span> 하면 기업 컨설팅 <span className="text-xl font-bold text-blue-600">AI 분석</span>을 해드립니다.
+          </p>
         </div>
 
         <AnnouncementsBanner />
