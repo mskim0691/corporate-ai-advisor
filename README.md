@@ -1,6 +1,8 @@
-# CorporateAI Advisor
+# AI-GFC (AI Global Finance Consultant)
 
-AI 기반 법인 컨설팅 비서 서비스 MVP
+AI 기반 기업 재무 컨설팅 서비스
+
+**Production URL**: https://ai-gfc.kr
 
 ## 🚀 주요 기능
 
@@ -46,12 +48,14 @@ DATABASE_URL="file:./dev.db"
 # NextAuth
 NEXTAUTH_SECRET="your-super-secret-key-change-this-in-production"
 NEXTAUTH_URL="http://localhost:3000"
+# Production: NEXTAUTH_URL="https://ai-gfc.kr"
 
 # Google Gemini API (필수!)
 GOOGLE_GEMINI_API_KEY="여기에-실제-Gemini-API-키-입력"
 
 # App URL
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
+# Production: NEXT_PUBLIC_APP_URL="https://ai-gfc.kr"
 ```
 
 **중요**: Google Gemini API 키를 반드시 설정해야 분석 기능이 작동합니다.
