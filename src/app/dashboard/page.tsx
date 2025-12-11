@@ -5,9 +5,9 @@ import { getCurrentYearMonth } from "@/lib/utils"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { LogoutButton } from "@/components/logout-button"
 import { DeleteProjectButton } from "@/components/delete-project-button"
 import { AnnouncementsBanner } from "@/components/announcements-banner"
+import { UserMenu } from "@/components/user-menu"
 
 async function getUserDashboardData(userId: string) {
   const [user, subscription, usageLog, projects, totalProjectCount] = await Promise.all([
@@ -94,17 +94,12 @@ export default async function DashboardPage() {
             <h1 className="text-2xl font-bold cursor-pointer hover:text-blue-600 transition-colors">AI-GFC</h1>
           </Link>
           <div className="flex items-center gap-4">
-            <Link href="/myinfo">
-              <div className="text-sm text-gray-600 cursor-pointer hover:text-blue-600 transition-colors">
-                {session.user.email}
-              </div>
-            </Link>
             {isAdmin && (
               <Link href="/admin">
                 <Button variant="outline">관리</Button>
               </Link>
             )}
-            <LogoutButton />
+            <UserMenu />
           </div>
         </div>
       </header>
