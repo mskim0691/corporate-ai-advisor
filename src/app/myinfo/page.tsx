@@ -11,6 +11,7 @@ interface UserInfo {
   name: string
   email: string
   plan: string
+  credits: number
 }
 
 export default function MyInfoPage() {
@@ -120,9 +121,6 @@ export default function MyInfoPage() {
             <Button variant="ghost" onClick={() => router.push("/dashboard")}>
               대시보드
             </Button>
-            <Button variant="ghost" onClick={() => router.push("/")}>
-              홈
-            </Button>
           </div>
         </div>
       </header>
@@ -188,6 +186,23 @@ export default function MyInfoPage() {
                 disabled
                 className="bg-gray-50"
               />
+            </div>
+
+            {/* Credits - Read only with recharge button */}
+            <div className="space-y-2">
+              <Label htmlFor="credits">보유 크레딧</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="credits"
+                  type="text"
+                  value={userInfo.credits || 0}
+                  disabled
+                  className="bg-gray-50"
+                />
+                <Button onClick={() => router.push("/credit-history")}>
+                  충전하기
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
