@@ -78,34 +78,36 @@ export default async function LibraryPage({ params }: { params: Promise<{ id: st
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">회사명</label>
-                    <p className="mt-1 text-gray-900">{project.companyName}</p>
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-base font-semibold text-gray-700">회사명</label>
+                    <p className="text-2xl font-bold text-blue-600">{project.companyName}</p>
                   </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">대표자</label>
-                    <p className="mt-1 text-gray-900">{project.representative}</p>
+                  <div className="space-y-2">
+                    <label className="text-base font-semibold text-gray-700">대표자</label>
+                    <p className="text-2xl font-bold text-gray-900">{project.representative}</p>
                   </div>
                   {project.businessNumber && (
-                    <div>
-                      <label className="text-sm font-medium text-gray-700">사업자번호</label>
-                      <p className="mt-1 text-gray-900">{project.businessNumber}</p>
+                    <div className="space-y-2">
+                      <label className="text-base font-semibold text-gray-700">사업자번호</label>
+                      <p className="text-lg text-gray-900">{project.businessNumber}</p>
                     </div>
                   )}
                   {project.industry && (
-                    <div>
-                      <label className="text-sm font-medium text-gray-700">업종</label>
-                      <p className="mt-1 text-gray-900">{project.industry}</p>
+                    <div className="space-y-2">
+                      <label className="text-base font-semibold text-gray-700">업종</label>
+                      <p className="text-lg text-gray-900">{project.industry}</p>
                     </div>
                   )}
                 </div>
 
                 {project.report?.additionalRequest && (
-                  <div className="pt-4 border-t">
-                    <label className="text-sm font-medium text-gray-700">추가 분석 요청</label>
-                    <p className="mt-2 text-gray-900 whitespace-pre-wrap">{project.report.additionalRequest}</p>
+                  <div className="pt-6 border-t">
+                    <label className="text-lg font-bold text-gray-900 block mb-3">추가 분석 요청</label>
+                    <div className="bg-blue-50 border-l-4 border-blue-600 p-4 rounded">
+                      <p className="text-base text-gray-900 whitespace-pre-wrap leading-relaxed">{project.report.additionalRequest}</p>
+                    </div>
                   </div>
                 )}
               </div>
