@@ -8,17 +8,19 @@ datasource db {
 }
 
 model User {
-  id            String         @id @default(uuid())
-  email         String         @unique
-  passwordHash  String         @map("password_hash")
-  name          String?
-  role          String         @default("user") // 'user' or 'admin'
-  createdAt     DateTime       @default(now()) @map("created_at")
-  subscription  Subscription?
-  usageLogs     UsageLog[]
-  projects      Project[]
-  paymentLogs   PaymentLog[]
-  announcements Announcement[]
+  id                String              @id @default(uuid())
+  email             String              @unique
+  passwordHash      String              @map("password_hash")
+  name              String?
+  role              String              @default("user") // 'user' or 'admin'
+  credits           Int                 @default(0) // User's credit balance
+  createdAt         DateTime            @default(now()) @map("created_at")
+  subscription      Subscription?
+  usageLogs         UsageLog[]
+  projects          Project[]
+  paymentLogs       PaymentLog[]
+  announcements     Announcement[]
+  creditTransactions CreditTransaction[]
 
   @@map("users")
 }
@@ -169,4 +171,33 @@ model PricingPlan {
   updatedAt         DateTime @updatedAt @map("updated_at")
 
   @@map("pricing_plans")
+}
+
+model CreditTransaction {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  amount      Int      // Positive for credit, negative for debit
+  type        String   // 'purchase', 'admin_grant', 'admin_deduct', 'analysis_cost', 'presentation_cost'
+  description String?  // Description of the transaction
+  relatedId   String?  @map("related_id") // Related project/payment ID
+  adminId     String?  @map("admin_id") // Admin who performed the transaction (if applicable)
+  balanceAfter Int     @map("balance_after") // User's credit balance after this transaction
+  createdAt   DateTime @default(now()) @map("created_at")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("credit_transactions")
+  @@index([userId, createdAt])
+}
+
+model CreditPrice {
+  id          String   @id @default(uuid())
+  type        String   @unique // 'basic_analysis', 'premium_presentation'
+  name        String   // Display name
+  credits     Int      // Credit cost
+  description String?  // Description
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("credit_prices")
 }
