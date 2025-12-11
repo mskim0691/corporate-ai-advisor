@@ -10,7 +10,11 @@ import { DeleteProjectButton } from "@/components/delete-project-button"
 import { AnnouncementsBanner } from "@/components/announcements-banner"
 
 async function getUserDashboardData(userId: string) {
-  const [subscription, usageLog, projects, totalProjectCount] = await Promise.all([
+  const [user, subscription, usageLog, projects, totalProjectCount] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { credits: true },
+    }),
     prisma.subscription.findUnique({
       where: { userId },
     }),
@@ -37,7 +41,7 @@ async function getUserDashboardData(userId: string) {
     }),
   ])
 
-  return { subscription, usageLog, projects, totalProjectCount }
+  return { user, subscription, usageLog, projects, totalProjectCount }
 }
 
 export default async function DashboardPage() {
@@ -47,14 +51,14 @@ export default async function DashboardPage() {
     redirect("/auth/login")
   }
 
-  const { subscription, usageLog, projects, totalProjectCount } = await getUserDashboardData(session.user.id)
+  const { user, subscription, usageLog, projects, totalProjectCount } = await getUserDashboardData(session.user.id)
 
   // Get user role
-  const user = await prisma.user.findUnique({
+  const fullUser = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: { role: true }
   })
-  const isAdmin = user?.role === "admin"
+  const isAdmin = fullUser?.role === "admin"
 
   const isFreePlan = subscription?.plan === "free"
   const usageCount = usageLog?.count || 0
@@ -94,7 +98,18 @@ export default async function DashboardPage() {
 
         <AnnouncementsBanner />
 
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="grid md:grid-cols-4 gap-6 mb-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>보유 크레딧</CardTitle>
+              <CardDescription>사용 가능한 크레딧</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-600">{user?.credits || 0}</div>
+              <p className="text-xs text-gray-500 mt-1">기본 분석: 10 크레딧</p>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle>구독 플랜</CardTitle>
