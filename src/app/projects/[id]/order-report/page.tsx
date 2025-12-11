@@ -11,7 +11,7 @@ export default function OrderReportPage({ params }: { params: Promise<{ id: stri
   const [projectId, setProjectId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [userCredits, setUserCredits] = useState(0)
-  const [presentationCost, setPresentationCost] = useState(50)
+  const [presentationCost, setPresentationCost] = useState<number | null>(null)
   const [ordering, setOrdering] = useState(false)
 
   useEffect(() => {
@@ -21,37 +21,39 @@ export default function OrderReportPage({ params }: { params: Promise<{ id: stri
   }, [params])
 
   useEffect(() => {
-    const fetchUserData = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('/api/user/subscription')
-        const data = await response.json()
-        setUserCredits(data.credits || 0)
-      } catch (err) {
-        console.error('Failed to fetch user data:', err)
-      }
-    }
+        // Fetch both user data and presentation cost in parallel
+        const [userResponse, priceResponse] = await Promise.all([
+          fetch('/api/user/subscription'),
+          fetch('/api/admin/credit-prices')
+        ])
 
-    const fetchPresentationCost = async () => {
-      try {
-        const response = await fetch('/api/admin/credit-prices')
-        const data = await response.json()
-        const premiumPrice = data.find((p: any) => p.type === 'premium_presentation')
+        const userData = await userResponse.json()
+        const priceData = await priceResponse.json()
+
+        setUserCredits(userData.credits || 0)
+
+        const premiumPrice = priceData.find((p: any) => p.type === 'premium_presentation')
         if (premiumPrice) {
           setPresentationCost(premiumPrice.credits)
+        } else {
+          console.error('Premium presentation price not found')
+          setPresentationCost(700) // fallback value
         }
       } catch (err) {
-        console.error('Failed to fetch presentation cost:', err)
+        console.error('Failed to fetch data:', err)
+        setPresentationCost(700) // fallback value
       } finally {
         setLoading(false)
       }
     }
 
-    fetchUserData()
-    fetchPresentationCost()
+    fetchData()
   }, [])
 
   const handleOrder = async () => {
-    if (!projectId) return
+    if (!projectId || !presentationCost) return
 
     // 크레딧 부족 확인
     if (userCredits < presentationCost) {
@@ -146,7 +148,7 @@ export default function OrderReportPage({ params }: { params: Promise<{ id: stri
                     <span className="text-blue-600 font-bold">4.</span>
                     <span>
                       제작 요청 시 보유하신 크레딧에서{" "}
-                      <span className="font-bold text-red-600">{presentationCost} 크레딧</span>
+                      <span className="font-bold text-red-600">{presentationCost ?? '...'} 크레딧</span>
                       만큼 차감됩니다.
                     </span>
                   </li>
@@ -161,12 +163,12 @@ export default function OrderReportPage({ params }: { params: Promise<{ id: stri
                 </div>
                 <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-300">
                   <span className="text-gray-700">차감 예정 크레딧</span>
-                  <span className="text-xl font-bold text-red-600">-{presentationCost}</span>
+                  <span className="text-xl font-bold text-red-600">-{presentationCost ?? '...'}</span>
                 </div>
                 <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-300">
                   <span className="font-semibold text-gray-900">제작 후 잔여 크레딧</span>
-                  <span className={`text-xl font-bold ${userCredits >= presentationCost ? 'text-green-600' : 'text-red-600'}`}>
-                    {userCredits - presentationCost}
+                  <span className={`text-xl font-bold ${presentationCost && userCredits >= presentationCost ? 'text-green-600' : 'text-red-600'}`}>
+                    {presentationCost ? userCredits - presentationCost : '...'}
                   </span>
                 </div>
               </div>
@@ -184,10 +186,10 @@ export default function OrderReportPage({ params }: { params: Promise<{ id: stri
               </Button>
               <Button
                 onClick={handleOrder}
-                disabled={ordering}
+                disabled={ordering || !presentationCost}
                 className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
               >
-                {ordering ? "신청 중..." : `신청하기 (-${presentationCost} 크레딧)`}
+                {ordering ? "신청 중..." : `신청하기 (-${presentationCost ?? '...'} 크레딧)`}
               </Button>
             </div>
           </CardContent>
