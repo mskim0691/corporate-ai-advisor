@@ -119,7 +119,7 @@ export default async function DashboardPage() {
 
         <AnnouncementsBanner />
 
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
           <Link href="/credit-history">
             <Card className="cursor-pointer hover:shadow-lg transition-shadow">
               <CardHeader>
@@ -151,18 +151,6 @@ export default async function DashboardPage() {
                   Pro로 업그레이드
                 </Link>
               )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>이번 달 사용량</CardTitle>
-              <CardDescription>분석 생성 횟수</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {usageCount} / {isFreePlan ? usageLimit : "무제한"}
-              </div>
             </CardContent>
           </Card>
 
