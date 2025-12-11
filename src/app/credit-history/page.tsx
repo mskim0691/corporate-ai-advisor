@@ -19,14 +19,22 @@ interface CreditHistoryData {
   transactions: CreditTransaction[]
 }
 
+interface CreditPrice {
+  type: string
+  name: string
+  credits: number
+}
+
 export default function CreditHistoryPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState<CreditHistoryData | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [prices, setPrices] = useState<{ basic: number; premium: number }>({ basic: 10, premium: 50 })
 
   useEffect(() => {
     fetchCreditHistory()
+    fetchCreditPrices()
   }, [])
 
   const fetchCreditHistory = async () => {
@@ -45,6 +53,25 @@ export default function CreditHistoryPage() {
       setError(err instanceof Error ? err.message : 'Unknown error')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchCreditPrices = async () => {
+    try {
+      const response = await fetch('/api/admin/credit-prices')
+      if (response.ok) {
+        const priceData: CreditPrice[] = await response.json()
+        const basicPrice = priceData.find((p) => p.type === 'basic_analysis')
+        const premiumPrice = priceData.find((p) => p.type === 'premium_presentation')
+
+        setPrices({
+          basic: basicPrice?.credits || 10,
+          premium: premiumPrice?.credits || 50
+        })
+      }
+    } catch (err) {
+      console.error('Failed to fetch credit prices:', err)
+      // Keep default values if fetch fails
     }
   }
 
@@ -110,7 +137,7 @@ export default function CreditHistoryPage() {
           <CardContent>
             <div className="text-5xl font-bold">{data?.currentBalance || 0}</div>
             <p className="text-sm text-blue-100 mt-2">
-              기본 분석: 10 크레딧 · 고급 프레젠테이션: 50 크레딧
+              기본 분석: {prices.basic} 크레딧 · 고급 프레젠테이션: {prices.premium} 크레딧
             </p>
           </CardContent>
         </Card>
@@ -185,8 +212,8 @@ export default function CreditHistoryPage() {
               <div>
                 <h3 className="text-sm font-medium text-blue-900 mb-1">크레딧 안내</h3>
                 <ul className="text-sm text-blue-800 space-y-1">
-                  <li>• 기본 분석 생성 시 10 크레딧이 차감됩니다</li>
-                  <li>• 고급 프레젠테이션 제작 시 50 크레딧이 차감됩니다</li>
+                  <li>• 기본 분석 생성 시 {prices.basic} 크레딧이 차감됩니다</li>
+                  <li>• 고급 프레젠테이션 제작 시 {prices.premium} 크레딧이 차감됩니다</li>
                   <li>• 관리자가 이벤트나 보상으로 크레딧을 충전할 수 있습니다</li>
                   <li>• 모든 거래 내역은 자동으로 기록됩니다</li>
                 </ul>
