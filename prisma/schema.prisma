@@ -13,14 +13,14 @@ model User {
   passwordHash      String              @map("password_hash")
   name              String?
   role              String              @default("user") // 'user' or 'admin'
-  credits           Int                 @default(0) // User's credit balance
+  credits           Int                 @default(0) // [DEPRECATED - 크레딧 기능 비활성화] User's credit balance
   createdAt         DateTime            @default(now()) @map("created_at")
   subscription      Subscription?
   usageLogs         UsageLog[]
   projects          Project[]
   paymentLogs       PaymentLog[]
   announcements     Announcement[]
-  creditTransactions CreditTransaction[]
+  creditTransactions CreditTransaction[] // [DEPRECATED - 크레딧 기능 비활성화]
 
   @@map("users")
 }
@@ -173,6 +173,7 @@ model PricingPlan {
   @@map("pricing_plans")
 }
 
+// [DEPRECATED - 크레딧 기능 비활성화] Credit transaction tracking model - no longer used in application
 model CreditTransaction {
   id          String   @id @default(uuid())
   userId      String   @map("user_id")
@@ -189,6 +190,7 @@ model CreditTransaction {
   @@index([userId, createdAt])
 }
 
+// [DEPRECATED - 크레딧 기능 비활성화] Credit pricing model - no longer used in application
 model CreditPrice {
   id          String   @id @default(uuid())
   type        String   @unique // 'basic_analysis', 'premium_presentation'
@@ -202,6 +204,7 @@ model CreditPrice {
   @@map("credit_prices")
 }
 
+// [DEPRECATED - 크레딧 기능 비활성화] Initial credit policy model - no longer used in application
 model InitialCreditPolicy {
   id          String   @id @default(uuid())
   credits     Int      // Initial credits to grant on registration
