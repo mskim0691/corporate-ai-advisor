@@ -11,10 +11,12 @@ interface GroupPolicy {
   updatedAt: string;
 }
 
+/* 크레딧 기능 비활성화
 interface InitialCreditPolicy {
   credits: number;
   description: string | null;
 }
+*/
 
 export default function PoliciesPage() {
   const [policies, setPolicies] = useState<GroupPolicy[]>([]);
@@ -22,15 +24,17 @@ export default function PoliciesPage() {
   const [saving, setSaving] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<{ [key: string]: number }>({});
 
+  /* 크레딧 기능 비활성화
   // Initial credit states
   const [initialCreditPolicy, setInitialCreditPolicy] = useState<InitialCreditPolicy>({ credits: 0, description: null });
   const [initialCredits, setInitialCredits] = useState("0");
   const [initialCreditDescription, setInitialCreditDescription] = useState("");
   const [savingInitialCredit, setSavingInitialCredit] = useState(false);
+  */
 
   useEffect(() => {
     fetchPolicies();
-    fetchInitialCreditPolicy();
+    // fetchInitialCreditPolicy(); // 크레딧 기능 비활성화
   }, []);
 
   const fetchPolicies = async () => {
@@ -53,6 +57,7 @@ export default function PoliciesPage() {
     }
   };
 
+  /* 크레딧 기능 비활성화
   const fetchInitialCreditPolicy = async () => {
     try {
       const response = await fetch("/api/admin/initial-credit");
@@ -67,6 +72,7 @@ export default function PoliciesPage() {
       console.error("Failed to fetch initial credit policy:", error);
     }
   };
+  */
 
   const handleSave = async (groupName: string) => {
     setSaving(groupName);
@@ -106,6 +112,7 @@ export default function PoliciesPage() {
     }));
   };
 
+  /* 크레딧 기능 비활성화
   const handleSaveInitialCredit = async () => {
     const creditValue = parseInt(initialCredits);
 
@@ -142,6 +149,7 @@ export default function PoliciesPage() {
       setSavingInitialCredit(false);
     }
   };
+  */
 
   const getGroupDescription = (groupName: string) => {
     switch (groupName) {
@@ -320,7 +328,8 @@ export default function PoliciesPage() {
         </div>
       </div>
 
-      {/* Initial Credit Policy Section */}
+      {/* 크레딧 기능 비활성화
+      {/* Initial Credit Policy Section *}
       <div className="mt-8 bg-white shadow overflow-hidden sm:rounded-lg">
         <div className="px-4 py-5 sm:p-6">
           <div className="mb-6">
@@ -408,6 +417,7 @@ export default function PoliciesPage() {
           </div>
         </div>
       </div>
+      */}
     </div>
   );
 }
