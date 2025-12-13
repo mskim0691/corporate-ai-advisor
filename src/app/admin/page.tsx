@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 export default async function AdminDashboard() {
-  // Admin Dashboard - Force rebuild 2025-01-13 v2
+  // Admin Dashboard - Updated with category sections
   // Fetch statistics
   const [
     totalUsers,
