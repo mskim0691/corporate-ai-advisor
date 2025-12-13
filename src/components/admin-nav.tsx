@@ -101,12 +101,12 @@ export function AdminNav() {
               >
                 가격 플랜
               </Link>
-              <Link
+              {/* <Link
                 href="/admin/credit-prices"
                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               >
                 크레딧 가격
-              </Link>
+              </Link> */}
             </div>
           </div>
         )}
