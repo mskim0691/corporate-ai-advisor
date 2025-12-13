@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import prisma from "@/lib/prisma"
+import { checkPresentationCreationPolicy } from "@/lib/policy"
 
 export async function POST(
   req: Request,
@@ -28,7 +29,7 @@ export async function POST(
             id: true,
             email: true,
             name: true,
-            credits: true,
+            role: true,
           },
         },
       },
@@ -46,50 +47,40 @@ export async function POST(
       )
     }
 
-    // 프레젠테이션 가격 가져오기
-    const presentationPrice = await prisma.creditPrice.findFirst({
-      where: { type: "premium_presentation" },
+    // Get user subscription
+    const subscription = await prisma.subscription.findUnique({
+      where: { userId: session.user.id },
     })
 
-    if (!presentationPrice) {
+    // Check PT report creation policy
+    const policyCheck = await checkPresentationCreationPolicy(
+      session.user.id,
+      project.user.role,
+      subscription?.plan
+    )
+
+    if (!policyCheck.allowed) {
       return NextResponse.json(
-        { error: "가격 정보를 찾을 수 없습니다" },
-        { status: 500 }
+        { error: policyCheck.message || "PT레포트 생성 제한을 초과했습니다" },
+        { status: 403 }
       )
     }
 
-    const cost = presentationPrice.credits
-
-    // 크레딧 확인
-    if (project.user.credits < cost) {
-      return NextResponse.json(
-        { error: "크레딧이 부족합니다" },
-        { status: 400 }
-      )
+    // Update report to mark as presentation type
+    if (project.report) {
+      await prisma.report.update({
+        where: { id: project.report.id },
+        data: { reportType: 'presentation' },
+      })
+    } else {
+      // Create a report if it doesn't exist (shouldn't happen, but just in case)
+      await prisma.report.create({
+        data: {
+          projectId: project.id,
+          reportType: 'presentation',
+        },
+      })
     }
-
-    // 크레딧 차감 및 트랜잭션 기록
-    await prisma.$transaction([
-      // 크레딧 차감
-      prisma.user.update({
-        where: { id: session.user.id },
-        data: {
-          credits: {
-            decrement: cost,
-          },
-        },
-      }),
-      // 트랜잭션 기록
-      prisma.creditTransaction.create({
-        data: {
-          userId: session.user.id,
-          amount: -cost,
-          type: "presentation_cost",
-          description: `고급 프레젠테이션 제작 요청: ${project.companyName}`,
-          balanceAfter: project.user.credits - cost,
-        },
-      }),
-    ])
 
     // TODO: 여기에서 admin/make-report 페이지로 데이터 전송하는 로직 추가
     // 실제로는 관리자가 확인할 수 있는 Queue나 Notification 시스템이 필요합니다

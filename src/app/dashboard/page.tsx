@@ -10,7 +10,11 @@ import { AnnouncementsBanner } from "@/components/announcements-banner"
 import { UserMenu } from "@/components/user-menu"
 
 async function getUserDashboardData(userId: string) {
-  const [subscription, usageLog, projects, totalProjectCount] = await Promise.all([
+  const yearMonth = getCurrentYearMonth()
+  const startOfMonth = new Date(`${yearMonth}-01`)
+  const endOfMonth = new Date(startOfMonth.getFullYear(), startOfMonth.getMonth() + 1, 0, 23, 59, 59)
+
+  const [subscription, usageLog, projects, totalProjectCount, totalPresentationCount, monthlyPresentationCount] = await Promise.all([
     prisma.subscription.findUnique({
       where: { userId },
     }),
@@ -18,7 +22,7 @@ async function getUserDashboardData(userId: string) {
       where: {
         userId_yearMonth: {
           userId,
-          yearMonth: getCurrentYearMonth(),
+          yearMonth,
         },
       },
     }),
@@ -35,9 +39,29 @@ async function getUserDashboardData(userId: string) {
     prisma.project.count({
       where: { userId },
     }),
+    prisma.report.count({
+      where: {
+        reportType: 'presentation',
+        project: {
+          userId,
+        },
+      },
+    }),
+    prisma.report.count({
+      where: {
+        reportType: 'presentation',
+        project: {
+          userId,
+        },
+        createdAt: {
+          gte: startOfMonth,
+          lte: endOfMonth,
+        },
+      },
+    }),
   ])
 
-  return { subscription, usageLog, projects, totalProjectCount }
+  return { subscription, usageLog, projects, totalProjectCount, totalPresentationCount, monthlyPresentationCount }
 }
 
 /* 크레딧 기능 비활성화
@@ -67,7 +91,7 @@ export default async function DashboardPage() {
     redirect("/auth/login")
   }
 
-  const { subscription, usageLog, projects, totalProjectCount } = await getUserDashboardData(session.user.id)
+  const { subscription, usageLog, projects, totalProjectCount, totalPresentationCount, monthlyPresentationCount } = await getUserDashboardData(session.user.id)
 
   // Get user role
   const fullUser = await prisma.user.findUnique({
@@ -76,10 +100,20 @@ export default async function DashboardPage() {
   })
   const isAdmin = fullUser?.role === "admin"
 
-  const isFreePlan = subscription?.plan === "free"
-  const usageCount = usageLog?.count || 0
-  const usageLimit = isFreePlan ? 2 : Infinity
-  const canCreateProject = !isFreePlan || usageCount < usageLimit
+  // Determine group and get policy
+  const groupName = isAdmin ? 'admin' : subscription?.plan === 'pro' ? 'pro' : 'free'
+  const policy = await prisma.groupPolicy.findUnique({
+    where: { groupName },
+  })
+
+  // Get limits from policy or use defaults
+  const solutionLimit = policy?.monthlyProjectLimit ?? (groupName === 'admin' ? 999999 : groupName === 'pro' ? 15 : 3)
+  const presentationLimit = policy?.monthlyPresentationLimit ?? (groupName === 'admin' ? 999999 : groupName === 'pro' ? 1 : 0)
+
+  const solutionUsage = usageLog?.count || 0
+  const presentationUsage = monthlyPresentationCount
+
+  const canCreateProject = solutionUsage < solutionLimit
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -109,26 +143,7 @@ export default async function DashboardPage() {
 
         <AnnouncementsBanner />
 
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          {/* 크레딧 기능 비활성화
-          <Link href="/credit-history">
-            <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <CardTitle>보유 크레딧</CardTitle>
-                <CardDescription>사용 가능한 크레딧</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-blue-600">{user?.credits || 0}</div>
-                <div className="text-xs text-gray-500 mt-2 space-y-0.5">
-                  <p>기본 분석: {creditPrices.basic} 크레딧</p>
-                  <p>고급 프레젠테이션: {creditPrices.premium} 크레딧</p>
-                </div>
-                <p className="text-xs text-blue-600 mt-2 hover:underline">내역 보기 →</p>
-              </CardContent>
-            </Card>
-          </Link>
-          */}
-
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader>
               <CardTitle>구독 플랜</CardTitle>
@@ -136,9 +151,9 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {subscription?.plan === "free" ? "Free" : "Pro"}
+                {subscription?.plan === "free" ? "Free" : subscription?.plan === "pro" ? "Pro" : "Free"}
               </div>
-              {isFreePlan && (
+              {groupName === 'free' && (
                 <Link href="/pricing" className="text-sm text-blue-600 hover:underline">
                   Pro로 업그레이드
                 </Link>
@@ -148,20 +163,20 @@ export default async function DashboardPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>이번 달 생성 권한</CardTitle>
-              <CardDescription>남은 프로젝트 생성 횟수</CardDescription>
+              <CardTitle>이번 달 솔루션 생성 권한</CardTitle>
+              <CardDescription>분석솔루션 생성 횟수</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {isFreePlan ? (
-                  <span className={usageCount >= usageLimit ? "text-red-600" : "text-green-600"}>
-                    {usageLimit - usageCount} / {usageLimit}
-                  </span>
-                ) : (
+                {solutionLimit === 999999 ? (
                   <span className="text-green-600">무제한</span>
+                ) : (
+                  <span className={solutionUsage >= solutionLimit ? "text-red-600" : "text-green-600"}>
+                    {solutionLimit - solutionUsage} / {solutionLimit}
+                  </span>
                 )}
               </div>
-              {isFreePlan && usageCount >= usageLimit && (
+              {groupName === 'free' && solutionUsage >= solutionLimit && (
                 <Link href="/pricing" className="text-sm text-blue-600 hover:underline">
                   Pro로 업그레이드
                 </Link>
@@ -171,11 +186,45 @@ export default async function DashboardPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>총 분석한 기업고객 수</CardTitle>
-              <CardDescription>생성한 분석 프로젝트</CardDescription>
+              <CardTitle>이번 달 PT레포트 생성 권한</CardTitle>
+              <CardDescription>PT레포트 생성 횟수</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{totalProjectCount}</div>
+              <div className="text-2xl font-bold">
+                {presentationLimit === 999999 ? (
+                  <span className="text-green-600">무제한</span>
+                ) : presentationLimit === 0 ? (
+                  <span className="text-gray-400">사용 불가</span>
+                ) : (
+                  <span className={presentationUsage >= presentationLimit ? "text-red-600" : "text-green-600"}>
+                    {presentationLimit - presentationUsage} / {presentationLimit}
+                  </span>
+                )}
+              </div>
+              {groupName === 'free' && (
+                <Link href="/pricing" className="text-sm text-blue-600 hover:underline">
+                  Pro로 업그레이드
+                </Link>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>총 분석 건수</CardTitle>
+              <CardDescription>누적 생성 수</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div>
+                  <p className="text-sm text-gray-600">분석솔루션</p>
+                  <div className="text-xl font-bold">{totalProjectCount}건</div>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">PT레포트</p>
+                  <div className="text-xl font-bold">{totalPresentationCount}건</div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
