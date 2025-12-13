@@ -270,7 +270,7 @@ export default async function AdminDashboard() {
               href="/admin/users"
               className="p-6 bg-white border border-gray-200 rounded-lg hover:border-purple-300 hover:shadow-md transition-all"
             >
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">회원 관리</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">회원 리스트</h3>
               <p className="text-sm text-gray-600">회원 정보와 구독 상태를 관리합니다</p>
               <p className="mt-4 text-2xl font-bold text-purple-600">{totalUsers}명</p>
             </Link>

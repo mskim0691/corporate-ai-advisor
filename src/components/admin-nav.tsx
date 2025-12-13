@@ -87,7 +87,7 @@ export function AdminNav() {
                 href="/admin/users"
                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               >
-                회원 관리
+                회원 리스트
               </Link>
               <Link
                 href="/admin/policies"
