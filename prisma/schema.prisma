@@ -82,6 +82,7 @@ model File {
 model Report {
   id                    String    @id @default(uuid())
   projectId             String    @unique @map("project_id")
+  reportType            String    @default("solution") @map("report_type") // 'solution' or 'presentation'
   initialRiskAnalysis   String?   @map("initial_risk_analysis") // Initial risk analysis (step 0)
   additionalRequest     String?   @map("additional_request") // User's additional analysis request
   textAnalysis          String?   @map("text_analysis") // Detailed analysis result (step 1)
