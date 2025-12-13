@@ -215,7 +215,7 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Quick Links */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Link
           href="/admin/prompts"
           className="p-6 bg-white border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-md transition-all"
@@ -250,15 +250,6 @@ export default async function AdminDashboard() {
           <h3 className="text-lg font-semibold text-gray-900 mb-2">프레젠테이션 제작</h3>
           <p className="text-sm text-gray-600">고급 프레젠테이션 제작 대기 목록</p>
           <p className="mt-4 text-2xl font-bold text-orange-600">관리</p>
-        </Link>
-
-        <Link
-          href="/admin/initial-credit"
-          className="p-6 bg-white border border-gray-200 rounded-lg hover:border-pink-300 hover:shadow-md transition-all"
-        >
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">초기 크레딧 설정</h3>
-          <p className="text-sm text-gray-600">신규 회원 가입시 지급할 크레딧을 설정합니다</p>
-          <p className="mt-4 text-2xl font-bold text-pink-600">설정</p>
         </Link>
       </div>
     </div>
