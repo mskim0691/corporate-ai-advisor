@@ -11,7 +11,7 @@ interface UserInfo {
   name: string
   email: string
   plan: string
-  credits: number
+  // credits: number // 크레딧 기능 비활성화
 }
 
 export default function MyInfoPage() {
@@ -188,7 +188,8 @@ export default function MyInfoPage() {
               />
             </div>
 
-            {/* Credits - Read only with recharge button */}
+            {/* 크레딧 기능 비활성화
+            {/* Credits - Read only with recharge button *}
             <div className="space-y-2">
               <Label htmlFor="credits">보유 크레딧</Label>
               <div className="flex gap-2">
@@ -204,6 +205,7 @@ export default function MyInfoPage() {
                 </Button>
               </div>
             </div>
+            */}
           </CardContent>
         </Card>
       </main>

@@ -1,3 +1,4 @@
+/* 크레딧 기능 비활성화
 import prisma from './prisma';
 
 export type CreditTransactionType =
@@ -148,3 +149,4 @@ export async function deductPresentationCredits(userId: string, projectId: strin
     projectId
   );
 }
+*/
