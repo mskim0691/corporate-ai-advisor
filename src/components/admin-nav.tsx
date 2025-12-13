@@ -8,7 +8,7 @@ export function AdminNav() {
   const [memberMenuOpen, setMemberMenuOpen] = useState(false)
 
   return (
-    <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+    <div className="hidden sm:ml-6 sm:flex sm:space-x-8 items-center">
       <Link
         href="/admin"
         className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
@@ -17,7 +17,7 @@ export function AdminNav() {
       </Link>
 
       {/* System Management Dropdown */}
-      <div className="relative">
+      <div className="relative flex items-center">
         <button
           onMouseEnter={() => setSystemMenuOpen(true)}
           onMouseLeave={() => setSystemMenuOpen(false)}
@@ -65,7 +65,7 @@ export function AdminNav() {
       </div>
 
       {/* Member Management Dropdown */}
-      <div className="relative">
+      <div className="relative flex items-center">
         <button
           onMouseEnter={() => setMemberMenuOpen(true)}
           onMouseLeave={() => setMemberMenuOpen(false)}
