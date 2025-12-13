@@ -36,11 +36,21 @@ export async function POST(req: Request) {
 
     const passwordHash = await hash(password, 10)
 
+    // Get initial credit policy
+    const initialCreditPolicy = await prisma.initialCreditPolicy.findFirst({
+      where: { isActive: true },
+      orderBy: { createdAt: 'desc' }
+    })
+
+    const initialCredits = initialCreditPolicy?.credits || 0
+
+    // Create user with initial credits
     const user = await prisma.user.create({
       data: {
         email,
         passwordHash,
         name,
+        credits: initialCredits,
         subscription: {
           create: {
             plan: "free",
@@ -52,8 +62,22 @@ export async function POST(req: Request) {
         id: true,
         email: true,
         name: true,
+        credits: true,
       },
     })
+
+    // Create credit transaction record if initial credits were granted
+    if (initialCredits > 0) {
+      await prisma.creditTransaction.create({
+        data: {
+          userId: user.id,
+          amount: initialCredits,
+          type: 'initial_grant',
+          description: '회원가입 축하 크레딧',
+          balanceAfter: initialCredits,
+        },
+      })
+    }
 
     return NextResponse.json(
       { user, message: "회원가입이 완료되었습니다." },
