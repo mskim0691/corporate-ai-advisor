@@ -127,7 +127,8 @@ model PaymentLog {
 model GroupPolicy {
   id                      String   @id @default(uuid())
   groupName               String   @unique @map("group_name") // 'admin', 'pro', 'free'
-  monthlyProjectLimit     Int      @map("monthly_project_limit") // Number of projects allowed per month
+  monthlyProjectLimit     Int      @map("monthly_project_limit") // Number of analysis solutions allowed per month
+  monthlyPresentationLimit Int     @default(0) @map("monthly_presentation_limit") // Number of PT reports allowed per month
   description             String?  // Description of the policy
   updatedAt               DateTime @updatedAt @map("updated_at")
   createdAt               DateTime @default(now()) @map("created_at")
