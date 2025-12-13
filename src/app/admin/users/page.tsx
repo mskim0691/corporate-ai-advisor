@@ -63,7 +63,7 @@ export default function UsersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">회원 관리</h1>
+          <h1 className="text-3xl font-bold text-gray-900">회원 리스트</h1>
           <p className="mt-2 text-sm text-gray-600">
             전체 {users.length}명의 회원
           </p>
