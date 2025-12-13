@@ -3,8 +3,10 @@ import { Card } from "@/components/ui/card"
 import Link from "next/link"
 
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export default async function AdminDashboard() {
+  // Admin Dashboard - Updated 2025-01-13
   // Fetch statistics
   const [
     totalUsers,
