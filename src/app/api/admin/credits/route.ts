@@ -1,4 +1,15 @@
+// 크레딧 기능 비활성화 - This API route is disabled
 import { NextResponse } from 'next/server';
+
+// This endpoint has been disabled as credit features are no longer in use
+export async function POST(request: Request) {
+  return NextResponse.json(
+    { error: '크레딧 기능이 비활성화되었습니다.' },
+    { status: 410 } // 410 Gone - resource no longer available
+  );
+}
+
+/*
 import { auth } from '@/lib/auth';
 import { requireAdmin } from '@/lib/admin';
 import { modifyUserCredits } from '@/lib/credits';
@@ -56,3 +67,4 @@ export async function POST(request: Request) {
     );
   }
 }
+*/
