@@ -15,7 +15,7 @@ export function UserMenu() {
 
   const handleLogout = async () => {
     await signOut({ redirect: false })
-    router.push("/")
+    window.location.href = "/"
   }
 
   return (
