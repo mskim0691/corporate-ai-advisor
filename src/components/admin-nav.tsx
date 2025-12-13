@@ -32,7 +32,7 @@ export function AdminNav() {
           <div
             onMouseEnter={() => setSystemMenuOpen(true)}
             onMouseLeave={() => setSystemMenuOpen(false)}
-            className="absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50"
+            className="absolute left-0 top-full mt-1 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50"
           >
             <div className="py-1">
               <Link
@@ -80,7 +80,7 @@ export function AdminNav() {
           <div
             onMouseEnter={() => setMemberMenuOpen(true)}
             onMouseLeave={() => setMemberMenuOpen(false)}
-            className="absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50"
+            className="absolute left-0 top-full mt-1 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50"
           >
             <div className="py-1">
               <Link
