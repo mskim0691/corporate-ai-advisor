@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth"
 import prisma from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import Link from "next/link"
+import { AdminNav } from "@/components/admin-nav"
 
 export default async function AdminLayout({
   children,
@@ -35,62 +36,7 @@ export default async function AdminLayout({
                   AI-GFC Admin
                 </Link>
               </div>
-              <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-                <Link
-                  href="/admin"
-                  className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                >
-                  어드민 대시보드
-                </Link>
-                <Link
-                  href="/admin/users"
-                  className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                >
-                  회원 관리
-                </Link>
-                <Link
-                  href="/admin/projects"
-                  className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                >
-                  프로젝트 관리
-                </Link>
-                <Link
-                  href="/admin/prompts"
-                  className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                >
-                  프롬프트 관리
-                </Link>
-                <Link
-                  href="/admin/revenue"
-                  className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                >
-                  매출 통계
-                </Link>
-                <Link
-                  href="/admin/policies"
-                  className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                >
-                  그룹 정책
-                </Link>
-                <Link
-                  href="/admin/announcements"
-                  className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                >
-                  공지사항
-                </Link>
-                <Link
-                  href="/admin/pricing-plans"
-                  className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                >
-                  가격 플랜
-                </Link>
-                <Link
-                  href="/admin/credit-prices"
-                  className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                >
-                  크레딧 가격
-                </Link>
-              </div>
+              <AdminNav />
             </div>
             <div className="flex items-center">
               <Link
