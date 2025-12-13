@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import prisma from "@/lib/prisma"
 import { generatePresentationSlides } from "@/lib/gemini"
-import { hasEnoughCredits, deductPresentationCredits, getCreditPrice } from "@/lib/credits"
+// import { hasEnoughCredits, deductPresentationCredits, getCreditPrice } from "@/lib/credits" // 크레딧 기능 비활성화
 
 export async function POST(
   req: Request,
@@ -49,6 +49,7 @@ export async function POST(
 
     const isAdmin = user?.role === "admin"
 
+    /* 크레딧 기능 비활성화
     // If not admin, check credits before generating presentation
     if (!isAdmin) {
       const creditCost = await getCreditPrice('premium_presentation')
@@ -61,6 +62,7 @@ export async function POST(
         )
       }
     }
+    */
 
     try {
       const presentationResult = await generatePresentationSlides(
@@ -75,6 +77,7 @@ export async function POST(
         },
       })
 
+      /* 크레딧 기능 비활성화
       // Deduct credits only for non-admin users after successful generation
       if (!isAdmin) {
         try {
@@ -85,6 +88,7 @@ export async function POST(
           // This is a business decision - the presentation is created but credits might not be deducted
         }
       }
+      */
 
       return NextResponse.json({ status: "success" })
     } catch (error) {

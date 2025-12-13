@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma"
 import { z } from "zod"
 import { getCurrentYearMonth } from "@/lib/utils"
 import { checkProjectCreationPolicy } from "@/lib/policy"
-import { hasEnoughCredits, deductAnalysisCredits, getCreditPrice } from "@/lib/credits"
+// import { hasEnoughCredits, deductAnalysisCredits, getCreditPrice } from "@/lib/credits" // 크레딧 기능 비활성화
 
 const projectSchema = z.object({
   companyName: z.string().min(1),
@@ -60,6 +60,7 @@ export async function POST(req: Request) {
       )
     }
 
+    /* 크레딧 기능 비활성화
     // Check if user has enough credits
     const creditCost = await getCreditPrice('basic_analysis')
     const enoughCredits = await hasEnoughCredits(user.id, creditCost)
@@ -70,6 +71,7 @@ export async function POST(req: Request) {
         { status: 403 }
       )
     }
+    */
 
     const { companyName, businessNumber, representative, industry } = parsed.data
 
@@ -84,6 +86,7 @@ export async function POST(req: Request) {
       },
     })
 
+    /* 크레딧 기능 비활성화
     // Deduct credits for the analysis
     try {
       await deductAnalysisCredits(user.id, project.id)
@@ -92,6 +95,7 @@ export async function POST(req: Request) {
       await prisma.project.delete({ where: { id: project.id } })
       throw error
     }
+    */
 
     return NextResponse.json({ projectId: project.id }, { status: 201 })
   } catch (error) {
