@@ -6,7 +6,6 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 export default async function AdminDashboard() {
-  // Admin Dashboard - Updated with category sections
   // Fetch statistics
   const [
     totalUsers,
@@ -218,7 +217,7 @@ export default async function AdminDashboard() {
         </Card>
       </div>
 
-      {/* Menu Sections - Updated */}
+      {/* Menu Sections */}
       <div className="space-y-8">
         {/* System Management Section */}
         <div>
