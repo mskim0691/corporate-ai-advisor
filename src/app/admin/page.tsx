@@ -218,7 +218,7 @@ export default async function AdminDashboard() {
         </Card>
       </div>
 
-      {/* Menu Sections */}
+      {/* Menu Sections - Updated */}
       <div className="space-y-8">
         {/* System Management Section */}
         <div>
