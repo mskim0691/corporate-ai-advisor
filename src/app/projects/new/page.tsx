@@ -19,6 +19,8 @@ export default function NewProjectPage() {
 
   const [files, setFiles] = useState<File[]>([])
   const [isDragging, setIsDragging] = useState(false)
+
+  /* 크레딧 기능 비활성화
   const [basicAnalysisCost, setBasicAnalysisCost] = useState(10)
 
   useEffect(() => {
@@ -40,6 +42,7 @@ export default function NewProjectPage() {
       // Keep default value of 10 if fetch fails
     }
   }
+  */
 
   const handleNext = () => {
     if (!companyName || !representative) {
@@ -347,7 +350,7 @@ export default function NewProjectPage() {
                   disabled={isLoading || files.length === 0}
                   className="flex-1"
                 >
-                  {isLoading ? "분석 시작 중..." : `분석 시작 (-${basicAnalysisCost} 크레딧 차감)`}
+                  {isLoading ? "분석 시작 중..." : "분석 시작"}
                 </Button>
               </div>
             </CardContent>

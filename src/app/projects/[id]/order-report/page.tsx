@@ -10,15 +10,18 @@ export default function OrderReportPage({ params }: { params: Promise<{ id: stri
   const router = useRouter()
   const [projectId, setProjectId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
-  const [userCredits, setUserCredits] = useState(0)
-  const [presentationCost, setPresentationCost] = useState<number | null>(null)
   const [ordering, setOrdering] = useState(false)
 
   useEffect(() => {
     params.then(({ id }) => {
       setProjectId(id)
+      setLoading(false)
     })
   }, [params])
+
+  /* 크레딧 기능 비활성화
+  const [userCredits, setUserCredits] = useState(0)
+  const [presentationCost, setPresentationCost] = useState<number | null>(null)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -51,10 +54,12 @@ export default function OrderReportPage({ params }: { params: Promise<{ id: stri
 
     fetchData()
   }, [])
+  */
 
   const handleOrder = async () => {
-    if (!projectId || !presentationCost) return
+    if (!projectId) return
 
+    /* 크레딧 기능 비활성화
     // 크레딧 부족 확인
     if (userCredits < presentationCost) {
       const confirmed = window.confirm(
@@ -65,11 +70,12 @@ export default function OrderReportPage({ params }: { params: Promise<{ id: stri
       }
       return
     }
+    */
 
     setOrdering(true)
 
     try {
-      // 크레딧 차감 및 리포트 주문 요청
+      // 리포트 주문 요청
       const response = await fetch(`/api/projects/${projectId}/order-report`, {
         method: "POST",
       })
@@ -144,6 +150,7 @@ export default function OrderReportPage({ params }: { params: Promise<{ id: stri
                       에서 확인할 수 있습니다.
                     </span>
                   </li>
+                  {/* 크레딧 기능 비활성화
                   <li className="flex items-start gap-2">
                     <span className="text-blue-600 font-bold">4.</span>
                     <span>
@@ -152,10 +159,11 @@ export default function OrderReportPage({ params }: { params: Promise<{ id: stri
                       만큼 차감됩니다.
                     </span>
                   </li>
+                  */}
                 </ul>
               </div>
 
-              {/* 현재 보유 크레딧 표시 */}
+              {/* 크레딧 기능 비활성화
               <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg">
                 <div className="flex items-center justify-between">
                   <span className="text-gray-700">현재 보유 크레딧</span>
@@ -172,6 +180,7 @@ export default function OrderReportPage({ params }: { params: Promise<{ id: stri
                   </span>
                 </div>
               </div>
+              */}
             </div>
 
             {/* 버튼 영역 */}
@@ -186,10 +195,10 @@ export default function OrderReportPage({ params }: { params: Promise<{ id: stri
               </Button>
               <Button
                 onClick={handleOrder}
-                disabled={ordering || !presentationCost}
+                disabled={ordering}
                 className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
               >
-                {ordering ? "신청 중..." : `신청하기 (-${presentationCost ?? '...'} 크레딧)`}
+                {ordering ? "신청 중..." : "신청하기"}
               </Button>
             </div>
           </CardContent>
