@@ -214,43 +214,91 @@ export default async function AdminDashboard() {
         </Card>
       </div>
 
-      {/* Quick Links */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Link
-          href="/admin/prompts"
-          className="p-6 bg-white border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-md transition-all"
-        >
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">프롬프트 관리</h3>
-          <p className="text-sm text-gray-600">AI 분석 프롬프트를 편집하고 관리합니다</p>
-          <p className="mt-4 text-2xl font-bold text-blue-600">{totalPrompts}개</p>
-        </Link>
+      {/* Menu Sections */}
+      <div className="space-y-8">
+        {/* System Management Section */}
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">시스템 관리</h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <Link
+              href="/admin/projects"
+              className="p-6 bg-white border border-gray-200 rounded-lg hover:border-green-300 hover:shadow-md transition-all"
+            >
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">프로젝트 관리</h3>
+              <p className="text-sm text-gray-600">전체 프로젝트 현황을 확인합니다</p>
+              <p className="mt-4 text-2xl font-bold text-green-600">{totalProjects}개</p>
+            </Link>
 
-        <Link
-          href="/admin/revenue"
-          className="p-6 bg-white border border-gray-200 rounded-lg hover:border-green-300 hover:shadow-md transition-all"
-        >
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">매출 분석</h3>
-          <p className="text-sm text-gray-600">상세 매출 통계와 결제 내역을 확인합니다</p>
-          <p className="mt-4 text-2xl font-bold text-green-600">{paymentStats._count}건</p>
-        </Link>
+            <Link
+              href="/admin/prompts"
+              className="p-6 bg-white border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-md transition-all"
+            >
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">프롬프트 관리</h3>
+              <p className="text-sm text-gray-600">AI 분석 프롬프트를 편집하고 관리합니다</p>
+              <p className="mt-4 text-2xl font-bold text-blue-600">{totalPrompts}개</p>
+            </Link>
 
-        <Link
-          href="/admin/users"
-          className="p-6 bg-white border border-gray-200 rounded-lg hover:border-purple-300 hover:shadow-md transition-all"
-        >
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">회원 관리</h3>
-          <p className="text-sm text-gray-600">회원 정보와 구독 상태를 관리합니다</p>
-          <p className="mt-4 text-2xl font-bold text-purple-600">{totalUsers}명</p>
-        </Link>
+            <Link
+              href="/admin/revenue"
+              className="p-6 bg-white border border-gray-200 rounded-lg hover:border-yellow-300 hover:shadow-md transition-all"
+            >
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">매출 통계</h3>
+              <p className="text-sm text-gray-600">상세 매출 통계와 결제 내역을 확인합니다</p>
+              <p className="mt-4 text-2xl font-bold text-yellow-600">{paymentStats._count}건</p>
+            </Link>
 
-        <Link
-          href="/admin/make-report"
-          className="p-6 bg-white border border-gray-200 rounded-lg hover:border-orange-300 hover:shadow-md transition-all"
-        >
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">프레젠테이션 제작</h3>
-          <p className="text-sm text-gray-600">고급 프레젠테이션 제작 대기 목록</p>
-          <p className="mt-4 text-2xl font-bold text-orange-600">관리</p>
-        </Link>
+            <Link
+              href="/admin/make-report"
+              className="p-6 bg-white border border-gray-200 rounded-lg hover:border-orange-300 hover:shadow-md transition-all"
+            >
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">프레젠테이션 제작</h3>
+              <p className="text-sm text-gray-600">고급 프레젠테이션 제작 대기 목록</p>
+              <p className="mt-4 text-2xl font-bold text-orange-600">관리</p>
+            </Link>
+          </div>
+        </div>
+
+        {/* Member Management Section */}
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">회원</h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <Link
+              href="/admin/users"
+              className="p-6 bg-white border border-gray-200 rounded-lg hover:border-purple-300 hover:shadow-md transition-all"
+            >
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">회원 관리</h3>
+              <p className="text-sm text-gray-600">회원 정보와 구독 상태를 관리합니다</p>
+              <p className="mt-4 text-2xl font-bold text-purple-600">{totalUsers}명</p>
+            </Link>
+
+            <Link
+              href="/admin/policies"
+              className="p-6 bg-white border border-gray-200 rounded-lg hover:border-indigo-300 hover:shadow-md transition-all"
+            >
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">그룹 정책</h3>
+              <p className="text-sm text-gray-600">사용자 그룹별 정책을 설정합니다</p>
+              <p className="mt-4 text-2xl font-bold text-indigo-600">설정</p>
+            </Link>
+
+            <Link
+              href="/admin/pricing-plans"
+              className="p-6 bg-white border border-gray-200 rounded-lg hover:border-pink-300 hover:shadow-md transition-all"
+            >
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">가격 플랜</h3>
+              <p className="text-sm text-gray-600">서비스 가격 플랜을 관리합니다</p>
+              <p className="mt-4 text-2xl font-bold text-pink-600">관리</p>
+            </Link>
+
+            <Link
+              href="/admin/credit-prices"
+              className="p-6 bg-white border border-gray-200 rounded-lg hover:border-cyan-300 hover:shadow-md transition-all"
+            >
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">크레딧 가격</h3>
+              <p className="text-sm text-gray-600">크레딧 소비 가격을 설정합니다</p>
+              <p className="mt-4 text-2xl font-bold text-cyan-600">설정</p>
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   )
