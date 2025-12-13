@@ -10,11 +10,7 @@ import { AnnouncementsBanner } from "@/components/announcements-banner"
 import { UserMenu } from "@/components/user-menu"
 
 async function getUserDashboardData(userId: string) {
-  const [user, subscription, usageLog, projects, totalProjectCount] = await Promise.all([
-    prisma.user.findUnique({
-      where: { id: userId },
-      select: { credits: true },
-    }),
+  const [subscription, usageLog, projects, totalProjectCount] = await Promise.all([
     prisma.subscription.findUnique({
       where: { userId },
     }),
@@ -41,9 +37,10 @@ async function getUserDashboardData(userId: string) {
     }),
   ])
 
-  return { user, subscription, usageLog, projects, totalProjectCount }
+  return { subscription, usageLog, projects, totalProjectCount }
 }
 
+/* 크레딧 기능 비활성화
 async function getCreditPrices() {
   const prices = await prisma.creditPrice.findMany({
     where: {
@@ -61,6 +58,7 @@ async function getCreditPrices() {
     premium: premiumPrice?.credits || 50
   }
 }
+*/
 
 export default async function DashboardPage() {
   const session = await auth()
@@ -69,10 +67,7 @@ export default async function DashboardPage() {
     redirect("/auth/login")
   }
 
-  const [{ user, subscription, usageLog, projects, totalProjectCount }, creditPrices] = await Promise.all([
-    getUserDashboardData(session.user.id),
-    getCreditPrices()
-  ])
+  const { subscription, usageLog, projects, totalProjectCount } = await getUserDashboardData(session.user.id)
 
   // Get user role
   const fullUser = await prisma.user.findUnique({
@@ -114,7 +109,8 @@ export default async function DashboardPage() {
 
         <AnnouncementsBanner />
 
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
+          {/* 크레딧 기능 비활성화
           <Link href="/credit-history">
             <Card className="cursor-pointer hover:shadow-lg transition-shadow">
               <CardHeader>
@@ -131,6 +127,7 @@ export default async function DashboardPage() {
               </CardContent>
             </Card>
           </Link>
+          */}
 
           <Card>
             <CardHeader>
