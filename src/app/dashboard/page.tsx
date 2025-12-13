@@ -109,7 +109,7 @@ export default async function DashboardPage() {
 
         <AnnouncementsBanner />
 
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
           {/* 크레딧 기능 비활성화
           <Link href="/credit-history">
             <Card className="cursor-pointer hover:shadow-lg transition-shadow">
@@ -139,6 +139,29 @@ export default async function DashboardPage() {
                 {subscription?.plan === "free" ? "Free" : "Pro"}
               </div>
               {isFreePlan && (
+                <Link href="/pricing" className="text-sm text-blue-600 hover:underline">
+                  Pro로 업그레이드
+                </Link>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>이번 달 생성 권한</CardTitle>
+              <CardDescription>남은 프로젝트 생성 횟수</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {isFreePlan ? (
+                  <span className={usageCount >= usageLimit ? "text-red-600" : "text-green-600"}>
+                    {usageLimit - usageCount} / {usageLimit}
+                  </span>
+                ) : (
+                  <span className="text-green-600">무제한</span>
+                )}
+              </div>
+              {isFreePlan && usageCount >= usageLimit && (
                 <Link href="/pricing" className="text-sm text-blue-600 hover:underline">
                   Pro로 업그레이드
                 </Link>
