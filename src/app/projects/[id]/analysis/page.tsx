@@ -140,7 +140,7 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
               className="bg-gray-100"
               disabled
             >
-              컨설팅제안서
+              분석제안서
             </Button>
 {isAdmin && (
               <Button
