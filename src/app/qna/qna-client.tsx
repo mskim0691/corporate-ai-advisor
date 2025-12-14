@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
-import { useToast } from "@/hooks/use-toast"
 
 interface Inquiry {
   id: string
@@ -31,17 +30,12 @@ export default function QnaClient({ inquiries: initialInquiries }: QnaClientProp
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showNewForm, setShowNewForm] = useState(false)
   const router = useRouter()
-  const { toast } = useToast()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!title.trim() || !content.trim()) {
-      toast({
-        title: "입력 오류",
-        description: "제목과 내용을 모두 입력해주세요.",
-        variant: "destructive",
-      })
+      alert("제목과 내용을 모두 입력해주세요.")
       return
     }
 
@@ -62,10 +56,7 @@ export default function QnaClient({ inquiries: initialInquiries }: QnaClientProp
 
       const data = await response.json()
 
-      toast({
-        title: "문의 등록 완료",
-        description: "문의가 성공적으로 등록되었습니다.",
-      })
+      alert("문의가 성공적으로 등록되었습니다.")
 
       setTitle("")
       setContent("")
@@ -73,11 +64,7 @@ export default function QnaClient({ inquiries: initialInquiries }: QnaClientProp
       router.refresh()
     } catch (error) {
       console.error("Submit error:", error)
-      toast({
-        title: "오류",
-        description: "문의 등록 중 오류가 발생했습니다.",
-        variant: "destructive",
-      })
+      alert("문의 등록 중 오류가 발생했습니다.")
     } finally {
       setIsSubmitting(false)
     }
