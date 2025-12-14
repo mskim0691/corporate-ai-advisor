@@ -57,7 +57,7 @@ export function AdminNav() {
                 href="/admin/make-report"
                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               >
-                프레젠테이션 제작
+                비주얼 레포트 제작
               </Link>
               <Link
                 href="/admin/sample-reports"
