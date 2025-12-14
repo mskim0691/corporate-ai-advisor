@@ -205,9 +205,9 @@ export default function OrderReportPage({ params }: { params: Promise<{ id: stri
             {sampleImages.length > 0 && (
               <div className="space-y-4">
                 <h3 className="font-semibold text-lg text-gray-900">비주얼 레포트 샘플</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {sampleImages.map((imageUrl, index) => (
-                    <div key={index} className="relative aspect-[3/4] rounded-lg overflow-hidden border border-gray-200 hover:border-blue-500 transition-colors">
+                    <div key={index} className="relative aspect-[16/9] rounded-lg overflow-hidden border border-gray-200 hover:border-blue-500 transition-colors">
                       <img
                         src={imageUrl}
                         alt={`샘플 ${index + 1}`}
