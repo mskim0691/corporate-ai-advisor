@@ -84,3 +84,30 @@ Telegram 봇이 정상적으로 연동되었습니다!
 
   return await sendTelegramNotification(message);
 }
+
+/**
+ * Format and send customer inquiry notification
+ */
+export async function notifyCustomerInquiry(data: {
+  userName: string;
+  userEmail: string;
+  title: string;
+  content: string;
+  inquiryId: string;
+}) {
+  const message = `
+💬 <b>고객센터 문의 알림</b>
+
+👤 <b>사용자:</b> ${data.userName} (${data.userEmail})
+📝 <b>제목:</b> ${data.title}
+💭 <b>내용:</b>
+${data.content}
+
+📋 <b>문의 ID:</b> <code>${data.inquiryId}</code>
+⏰ <b>문의 시간:</b> ${new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}
+
+👉 관리자 패널에서 답변하세요!
+  `.trim();
+
+  return await sendTelegramNotification(message);
+}
