@@ -182,7 +182,7 @@ export default async function AdminDashboard() {
         {/* Recent Projects */}
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">최근 프로젝트</h2>
+            <h2 className="text-lg font-semibold text-gray-900">최근 분석제안서</h2>
             <Link href="/admin/projects" className="text-sm text-blue-600 hover:text-blue-700">
               전체 보기 →
             </Link>
