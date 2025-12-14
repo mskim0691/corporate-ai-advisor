@@ -88,7 +88,7 @@ export default async function DashboardPage() {
   const session = await auth()
 
   if (!session?.user) {
-    redirect("/auth/login")
+    redirect("/")
   }
 
   const { subscription, usageLog, projects, totalProjectCount, totalPresentationCount, monthlyPresentationCount } = await getUserDashboardData(session.user.id)

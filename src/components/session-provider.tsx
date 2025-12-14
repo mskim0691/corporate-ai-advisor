@@ -26,7 +26,7 @@ function SessionChecker({ children }: { children: React.ReactNode }) {
 
       // Only redirect if on a protected route
       if (isProtectedRoute) {
-        router.push("/auth/login")
+        router.push("/")
       }
     }
   }, [status, router, pathname])
