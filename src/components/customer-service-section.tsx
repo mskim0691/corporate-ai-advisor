@@ -46,9 +46,6 @@ export function CustomerServiceSection() {
     >
       <CardHeader>
         <CardTitle>1:1 고객센터</CardTitle>
-        <CardDescription>
-          궁금하신 사항을 문의해주세요
-        </CardDescription>
       </CardHeader>
       <CardContent>
         {loading ? (
@@ -59,11 +56,6 @@ export function CustomerServiceSection() {
           </div>
         ) : (
           <div className="space-y-2">
-            <div className="mb-3">
-              <p className="text-sm text-gray-600">
-                총 {inquiries.length}건의 문의 (답변 대기: {pendingCount}건)
-              </p>
-            </div>
             {inquiries.slice(0, 5).map((inquiry) => (
               <div
                 key={inquiry.id}
