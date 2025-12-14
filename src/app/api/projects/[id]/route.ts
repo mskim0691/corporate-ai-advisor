@@ -17,8 +17,15 @@ export async function GET(
 
     const { id } = await params
 
+    // Check if user is admin
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true },
+    })
+
+    // Admin can view any project, regular users can only view their own
     const project = await prisma.project.findFirst({
-      where: {
+      where: user?.role === 'admin' ? { id } : {
         id,
         userId: session.user.id,
       },
@@ -47,6 +54,7 @@ export async function GET(
         additionalRequest: project.report.additionalRequest,
         textAnalysis: project.report.textAnalysis,
         analysisData: project.report.analysisData,
+        pdfUrl: project.report.pdfUrl,
       } : null,
     })
   } catch (error) {
