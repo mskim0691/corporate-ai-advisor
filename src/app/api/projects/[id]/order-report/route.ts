@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import prisma from "@/lib/prisma"
 import { checkPresentationCreationPolicy } from "@/lib/policy"
+import { notifyVisualReportOrder } from "@/lib/telegram"
 
 export async function POST(
   req: Request,
@@ -82,9 +83,19 @@ export async function POST(
       })
     }
 
-    // TODO: 여기에서 admin/make-report 페이지로 데이터 전송하는 로직 추가
-    // 실제로는 관리자가 확인할 수 있는 Queue나 Notification 시스템이 필요합니다
-    // 현재는 프로젝트 정보만 반환합니다
+    // Send Telegram notification to admin
+    try {
+      await notifyVisualReportOrder({
+        userName: project.user.name || '이름 없음',
+        userEmail: project.user.email,
+        projectId: project.id,
+        companyName: project.companyName,
+        industry: project.industry || undefined,
+      });
+    } catch (telegramError) {
+      // Log but don't fail the request if Telegram notification fails
+      console.error('Telegram notification failed:', telegramError);
+    }
 
     return NextResponse.json({
       success: true,
