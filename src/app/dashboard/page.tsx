@@ -186,8 +186,8 @@ export default async function DashboardPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>이번 달 PT레포트 생성 권한</CardTitle>
-              <CardDescription>PT레포트 생성 횟수</CardDescription>
+              <CardTitle>이번 달 비주얼 레포트 생성 권한</CardTitle>
+              <CardDescription>비주얼 레포트 생성 횟수</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
@@ -221,7 +221,7 @@ export default async function DashboardPage() {
                   <div className="text-xl font-bold">{totalProjectCount}건</div>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">PT레포트</p>
+                  <p className="text-sm text-gray-600">비주얼 레포트</p>
                   <div className="text-xl font-bold">{totalPresentationCount}건</div>
                 </div>
               </div>
