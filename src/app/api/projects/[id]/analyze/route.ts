@@ -104,28 +104,8 @@ export async function POST(
         data: { status: "completed" },
       })
 
-      // 사용량 카운트는 최초 분석 시에만 증가
-      if (!project.report) {
-        const yearMonth = getCurrentYearMonth()
-        await prisma.usageLog.upsert({
-          where: {
-            userId_yearMonth: {
-              userId: session.user.id,
-              yearMonth,
-            },
-          },
-          update: {
-            count: {
-              increment: 1,
-            },
-          },
-          create: {
-            userId: session.user.id,
-            yearMonth,
-            count: 1,
-          },
-        })
-      }
+      // Usage log is now incremented at project creation, not here
+      // This prevents double counting
 
       return NextResponse.json({ status: "completed" })
     } catch (error) {
