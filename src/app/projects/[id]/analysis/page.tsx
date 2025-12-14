@@ -23,6 +23,7 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
   const [showMarkdown, setShowMarkdown] = useState(false)
   const [hasPdfReport, setHasPdfReport] = useState(false)
   const [canCreatePresentation, setCanCreatePresentation] = useState(true)
+  const [copySuccess, setCopySuccess] = useState(false)
 
   useEffect(() => {
     params.then(({ id }) => {
@@ -93,6 +94,19 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
     }
   }
 
+  const handleCopyToClipboard = async () => {
+    if (!textAnalysis) return
+
+    try {
+      await navigator.clipboard.writeText(textAnalysis)
+      setCopySuccess(true)
+      setTimeout(() => setCopySuccess(false), 2000)
+    } catch (err) {
+      console.error('Failed to copy text:', err)
+      alert('클립보드 복사에 실패했습니다')
+    }
+  }
+
   // Process markdown text - ensure ** patterns work correctly
   const processedText = React.useMemo(() => {
     if (!textAnalysis) return ""
@@ -157,14 +171,23 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
             >
               분석제안서
             </Button>
-{isAdmin && (
-              <Button
-                variant="outline"
-                onClick={() => setShowMarkdown(!showMarkdown)}
-                className={showMarkdown ? "bg-green-100 text-green-800 border-green-300" : ""}
-              >
-                {showMarkdown ? "렌더링 보기" : "마크다운 보기"}
-              </Button>
+            {isAdmin && (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowMarkdown(!showMarkdown)}
+                  className={showMarkdown ? "bg-green-100 text-green-800 border-green-300" : ""}
+                >
+                  {showMarkdown ? "렌더링 보기" : "마크다운 보기"}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleCopyToClipboard}
+                  className={copySuccess ? "bg-blue-100 text-blue-800 border-blue-300" : ""}
+                >
+                  {copySuccess ? "✓ 복사완료" : "📋 클립보드 복사"}
+                </Button>
+              </>
             )}
             <Button
               onClick={handlePresentationClick}
