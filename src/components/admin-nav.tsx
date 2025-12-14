@@ -16,6 +16,13 @@ export function AdminNav() {
         어드민 대시보드
       </Link>
 
+      <Link
+        href="/admin/make-report"
+        className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+      >
+        비주얼 레포트 제작
+      </Link>
+
       {/* System Management Dropdown */}
       <div className="relative flex items-center">
         <button
@@ -52,12 +59,6 @@ export function AdminNav() {
                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               >
                 매출 통계
-              </Link>
-              <Link
-                href="/admin/make-report"
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-              >
-                비주얼 레포트 제작
               </Link>
               <Link
                 href="/admin/sample-reports"
