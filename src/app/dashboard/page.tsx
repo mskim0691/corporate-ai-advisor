@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { DeleteProjectButton } from "@/components/delete-project-button"
 import { AnnouncementsBanner } from "@/components/announcements-banner"
+import { CustomerServiceSection } from "@/components/customer-service-section"
 import { UserMenu } from "@/components/user-menu"
 
 async function getUserDashboardData(userId: string) {
@@ -141,7 +142,10 @@ export default async function DashboardPage() {
           </p>
         </div>
 
-        <AnnouncementsBanner />
+        <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <AnnouncementsBanner />
+          <CustomerServiceSection />
+        </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card>

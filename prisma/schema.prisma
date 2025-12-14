@@ -21,6 +21,7 @@ model User {
   paymentLogs       PaymentLog[]
   announcements     Announcement[]
   creditTransactions CreditTransaction[] // [DEPRECATED - 크레딧 기능 비활성화]
+  inquiries         Inquiry[]
 
   @@map("users")
 }
@@ -227,4 +228,21 @@ model InitialCreditPolicy {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("initial_credit_policies")
+}
+
+model Inquiry {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  title       String   // Inquiry title
+  content     String   // Inquiry content
+  reply       String?  // Admin reply
+  repliedAt   DateTime? @map("replied_at") // When admin replied
+  status      String   @default("pending") // 'pending' or 'answered'
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("inquiries")
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
 }
