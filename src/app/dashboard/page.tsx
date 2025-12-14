@@ -163,8 +163,8 @@ export default async function DashboardPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>이번 달 솔루션 생성 권한</CardTitle>
-              <CardDescription>분석솔루션 생성 횟수</CardDescription>
+              <CardTitle>이번 달 분석제안서 생성 권한</CardTitle>
+              <CardDescription>분석제안서 생성 횟수</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
@@ -217,7 +217,7 @@ export default async function DashboardPage() {
             <CardContent>
               <div className="space-y-2">
                 <div>
-                  <p className="text-sm text-gray-600">분석솔루션</p>
+                  <p className="text-sm text-gray-600">분석제안서</p>
                   <div className="text-xl font-bold">{totalProjectCount}건</div>
                 </div>
                 <div>
@@ -295,7 +295,7 @@ export default async function DashboardPage() {
                           </Link>
                           <Link href={`/projects/${project.id}/analysis`}>
                             <Button variant="outline" size="sm">
-                              컨설팅제안서
+                              분석제안서
                             </Button>
                           </Link>
                         </>
