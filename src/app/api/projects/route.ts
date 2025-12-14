@@ -97,6 +97,27 @@ export async function POST(req: Request) {
     }
     */
 
+    // Increment usage log for monthly quota tracking
+    const yearMonth = getCurrentYearMonth()
+    await prisma.usageLog.upsert({
+      where: {
+        userId_yearMonth: {
+          userId: session.user.id,
+          yearMonth,
+        },
+      },
+      update: {
+        count: {
+          increment: 1,
+        },
+      },
+      create: {
+        userId: session.user.id,
+        yearMonth,
+        count: 1,
+      },
+    })
+
     return NextResponse.json({ projectId: project.id }, { status: 201 })
   } catch (error) {
     console.error("Project creation error:", error)
