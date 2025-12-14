@@ -55,9 +55,9 @@ export async function ProjectHeader({
             asChild={currentPage !== "analysis"}
           >
             {currentPage === "analysis" ? (
-              <span>컨설팅제안서</span>
+              <span>분석제안서</span>
             ) : (
-              <Link href={`/projects/${projectId}/analysis`}>컨설팅제안서</Link>
+              <Link href={`/projects/${projectId}/analysis`}>분석제안서</Link>
             )}
           </Button>
           {isAdmin && (
