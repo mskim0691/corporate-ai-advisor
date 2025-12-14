@@ -18,6 +18,7 @@ export default function SampleReportsPage() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [newImageUrl, setNewImageUrl] = useState('');
+  const [uploadMethod, setUploadMethod] = useState<'url' | 'file'>('file');
 
   useEffect(() => {
     fetchSampleReports();
@@ -65,6 +66,49 @@ export default function SampleReportsPage() {
     } catch (error) {
       console.error('Failed to add image:', error);
       alert('이미지 추가 중 오류가 발생했습니다');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('이미지 파일만 업로드할 수 있습니다');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('파일 크기는 5MB 이하여야 합니다');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/admin/sample-reports/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        await fetchSampleReports();
+        alert('샘플 이미지가 업로드되었습니다');
+        // Reset file input
+        event.target.value = '';
+      } else {
+        const data = await response.json();
+        alert(data.error || '이미지 업로드에 실패했습니다');
+      }
+    } catch (error) {
+      console.error('Failed to upload image:', error);
+      alert('이미지 업로드 중 오류가 발생했습니다');
     } finally {
       setUploading(false);
     }
@@ -138,25 +182,67 @@ export default function SampleReportsPage() {
         <CardHeader>
           <CardTitle>새 샘플 이미지 추가</CardTitle>
           <CardDescription>
-            이미지 URL을 입력하여 샘플 이미지를 추가하세요
+            파일을 직접 업로드하거나 이미지 URL을 입력하세요
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4">
-            <Input
-              type="text"
-              placeholder="이미지 URL (예: /uploads/sample1.jpg)"
-              value={newImageUrl}
-              onChange={(e) => setNewImageUrl(e.target.value)}
-              className="flex-1"
-            />
-            <Button onClick={handleAddImage} disabled={uploading}>
-              {uploading ? '추가 중...' : '추가'}
+          {/* 업로드 방식 선택 탭 */}
+          <div className="flex gap-2 mb-4">
+            <Button
+              variant={uploadMethod === 'file' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setUploadMethod('file')}
+            >
+              파일 업로드
+            </Button>
+            <Button
+              variant={uploadMethod === 'url' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setUploadMethod('url')}
+            >
+              URL 입력
             </Button>
           </div>
-          <p className="text-sm text-gray-500 mt-2">
-            Tip: Supabase Storage나 public 폴더에 이미지를 업로드하고 URL을 입력하세요
-          </p>
+
+          {/* 파일 업로드 */}
+          {uploadMethod === 'file' && (
+            <div>
+              <div className="flex items-center gap-4">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  disabled={uploading}
+                  className="flex-1"
+                />
+                {uploading && <span className="text-sm text-gray-500">업로드 중...</span>}
+              </div>
+              <p className="text-sm text-gray-500 mt-2">
+                JPG, PNG, GIF 등의 이미지 파일을 업로드할 수 있습니다 (최대 5MB)
+              </p>
+            </div>
+          )}
+
+          {/* URL 입력 */}
+          {uploadMethod === 'url' && (
+            <div>
+              <div className="flex gap-4">
+                <Input
+                  type="text"
+                  placeholder="이미지 URL (예: https://example.com/image.jpg)"
+                  value={newImageUrl}
+                  onChange={(e) => setNewImageUrl(e.target.value)}
+                  className="flex-1"
+                />
+                <Button onClick={handleAddImage} disabled={uploading}>
+                  {uploading ? '추가 중...' : '추가'}
+                </Button>
+              </div>
+              <p className="text-sm text-gray-500 mt-2">
+                외부 이미지 URL을 입력하여 추가할 수 있습니다
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
