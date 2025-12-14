@@ -22,6 +22,7 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
   const [isAdmin, setIsAdmin] = useState(false)
   const [showMarkdown, setShowMarkdown] = useState(false)
   const [hasPdfReport, setHasPdfReport] = useState(false)
+  const [canCreatePresentation, setCanCreatePresentation] = useState(true)
 
   useEffect(() => {
     params.then(({ id }) => {
@@ -62,8 +63,22 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
       }
     }
 
+    const fetchPolicyInfo = async () => {
+      try {
+        const response = await fetch('/api/user/policy')
+        const data = await response.json()
+        // Check if user has remaining presentation quota
+        // Admin always can create, or if remaining presentation count > 0
+        const canCreate = data.groupName === 'admin' || data.remainingPresentation > 0
+        setCanCreatePresentation(canCreate)
+      } catch (err) {
+        console.error('Failed to fetch policy info:', err)
+      }
+    }
+
     fetchAnalysis()
     fetchUserRole()
+    fetchPolicyInfo()
   }, [projectId])
 
   const handlePresentationClick = () => {
@@ -154,8 +169,9 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
             <Button
               onClick={handlePresentationClick}
               className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+              disabled={!hasPdfReport && !canCreatePresentation}
             >
-              {hasPdfReport ? "고급 프레젠테이션 보기" : "고급 프레젠테이션 생성"}
+              {hasPdfReport ? "비주얼 레포트 보기" : "비주얼 레포트 생성"}
             </Button>
             <Button
               variant="outline"
