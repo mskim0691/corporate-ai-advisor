@@ -90,7 +90,7 @@ export default function PoliciesPage() {
   const getGroupDescription = (groupName: string) => {
     switch (groupName) {
       case 'admin':
-        return '관리자 그룹 - 무제한 솔루션 및 PT레포트 생성';
+        return '관리자 그룹 - 무제한 솔루션 및 비주얼 레포트 생성';
       case 'pro':
         return 'Pro 그룹 - 유료 구독 사용자';
       case 'free':
@@ -156,7 +156,7 @@ export default function PoliciesPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">그룹 정책 관리</h1>
         <p className="mt-2 text-sm text-gray-600">
-          사용자 그룹별 월간 분석솔루션 및 PT레포트 생성 제한을 설정합니다.
+          사용자 그룹별 월간 분석솔루션 및 비주얼 레포트 생성 제한을 설정합니다.
         </p>
       </div>
 
@@ -201,7 +201,7 @@ export default function PoliciesPage() {
                       htmlFor={`presentation-${policy.groupName}`}
                       className="text-sm font-medium text-gray-700 min-w-[140px]"
                     >
-                      월간 PT레포트 제한:
+                      월간 비주얼 레포트 제한:
                     </label>
                     <input
                       id={`presentation-${policy.groupName}`}
@@ -248,7 +248,7 @@ export default function PoliciesPage() {
                       생성 가능
                     </li>
                     <li>
-                      • PT레포트: 월{' '}
+                      • 비주얼 레포트: 월{' '}
                       {policy.monthlyPresentationLimit === 999999
                         ? '무제한'
                         : `${policy.monthlyPresentationLimit}개`}{' '}
@@ -293,7 +293,7 @@ export default function PoliciesPage() {
                     </li>
                     <li>월간 제한은 매달 1일에 초기화됩니다.</li>
                     <li>분석솔루션: 기업 분석 프로젝트 생성 횟수를 제한합니다.</li>
-                    <li>PT레포트: 고급 프레젠테이션 제작 횟수를 제한합니다.</li>
+                    <li>비주얼 레포트: 고급 프레젠테이션 제작 횟수를 제한합니다.</li>
                   </ul>
                 </div>
               </div>
