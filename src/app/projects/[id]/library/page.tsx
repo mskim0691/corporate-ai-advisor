@@ -5,9 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { ProjectHeader } from "@/components/project-header"
 
-async function getProjectFiles(projectId: string, userId: string) {
+async function getProjectFiles(projectId: string, userId: string, isAdmin: boolean = false) {
   const project = await prisma.project.findFirst({
-    where: {
+    where: isAdmin ? { id: projectId } : {
       id: projectId,
       userId: userId,
     },
@@ -51,8 +51,16 @@ export default async function LibraryPage({ params }: { params: Promise<{ id: st
     redirect("/auth/login")
   }
 
+  // Check if user is admin
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  })
+
+  const isAdmin = user?.role === 'admin'
+
   const { id } = await params
-  const project = await getProjectFiles(id, session.user.id)
+  const project = await getProjectFiles(id, session.user.id, isAdmin)
 
   if (!project) {
     redirect("/dashboard")

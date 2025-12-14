@@ -152,21 +152,24 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold">{companyName} 경영컨설팅 분석 제안서</h1>
-            <p className="text-sm text-gray-600">첨부된 파일을 바탕으로 맞춤형 솔루션을 제안합니다.</p>
+        <div className="container mx-auto px-4 py-4">
+          <div className="mb-4">
+            <h1 className="text-xl md:text-2xl font-bold break-words">{companyName} 경영컨설팅 분석 제안서</h1>
+            <p className="text-xs md:text-sm text-gray-600 mt-1">첨부된 파일을 바탕으로 맞춤형 솔루션을 제안합니다.</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-2">
             <Button
               variant="outline"
+              size="sm"
               onClick={() => router.push(`/projects/${projectId}/library`)}
+              className="text-xs md:text-sm"
             >
               라이브러리
             </Button>
             <Button
               variant="outline"
-              className="bg-gray-100"
+              size="sm"
+              className="bg-gray-100 text-xs md:text-sm"
               disabled
             >
               분석제안서
@@ -175,30 +178,35 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
               <>
                 <Button
                   variant="outline"
+                  size="sm"
                   onClick={() => setShowMarkdown(!showMarkdown)}
-                  className={showMarkdown ? "bg-green-100 text-green-800 border-green-300" : ""}
+                  className={`text-xs md:text-sm ${showMarkdown ? "bg-green-100 text-green-800 border-green-300" : ""}`}
                 >
                   {showMarkdown ? "렌더링 보기" : "마크다운 보기"}
                 </Button>
                 <Button
                   variant="outline"
+                  size="sm"
                   onClick={handleCopyToClipboard}
-                  className={copySuccess ? "bg-blue-100 text-blue-800 border-blue-300" : ""}
+                  className={`text-xs md:text-sm ${copySuccess ? "bg-blue-100 text-blue-800 border-blue-300" : ""}`}
                 >
                   {copySuccess ? "✓ 복사완료" : "📋 클립보드 복사"}
                 </Button>
               </>
             )}
             <Button
+              size="sm"
               onClick={handlePresentationClick}
-              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-xs md:text-sm"
               disabled={!hasPdfReport && !canCreatePresentation}
             >
               {hasPdfReport ? "비주얼 레포트 보기" : "비주얼 레포트 생성"}
             </Button>
             <Button
               variant="outline"
+              size="sm"
               onClick={() => router.push("/dashboard")}
+              className="text-xs md:text-sm"
             >
               대시보드
             </Button>
@@ -206,20 +214,20 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
         </div>
       </header>
 
-      <main className="mx-auto px-4 py-8" style={{ width: '80%' }}>
+      <main className="mx-auto px-2 md:px-4 py-4 md:py-8 w-full md:w-11/12 lg:w-4/5 xl:w-3/4">
 
         <Card className="shadow-xl">
           <CardContent className="p-0 flex justify-center">
             {showMarkdown ? (
-              <div className="bg-white rounded-lg w-full p-8">
-                <pre className="whitespace-pre-wrap font-mono text-sm bg-gray-50 p-6 rounded-lg overflow-auto max-h-screen border border-gray-200">
+              <div className="bg-white rounded-lg w-full p-4 md:p-8">
+                <pre className="whitespace-pre-wrap font-mono text-xs md:text-sm bg-gray-50 p-4 md:p-6 rounded-lg overflow-auto max-h-screen border border-gray-200">
                   {processedText}
                 </pre>
               </div>
             ) : (
-              <div className="bg-white rounded-lg" style={{ width: '95%' }}>
+              <div className="bg-white rounded-lg w-full">
                 <div
-                  className="prose prose-lg max-w-none p-8 md:p-12"
+                  className="prose prose-sm md:prose-lg max-w-none p-4 md:p-8 lg:p-12"
                   style={{
                     fontFamily: "'Noto Sans KR', sans-serif"
                   }}
