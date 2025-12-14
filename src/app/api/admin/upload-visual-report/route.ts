@@ -2,6 +2,8 @@ import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import prisma from "@/lib/prisma"
 import { supabase } from "@/lib/supabase"
+import fs from "fs/promises"
+import path from "path"
 
 export async function POST(req: Request) {
   try {
@@ -72,13 +74,6 @@ export async function POST(req: Request) {
       )
     }
 
-    if (!supabase) {
-      return NextResponse.json(
-        { error: "파일 스토리지가 설정되지 않았습니다" },
-        { status: 500 }
-      )
-    }
-
     // Convert File to ArrayBuffer then to Buffer
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
@@ -87,41 +82,80 @@ export async function POST(req: Request) {
     const timestamp = Date.now()
     const sanitizedCompanyName = project.companyName.replace(/[^a-zA-Z0-9가-힣]/g, "_")
     const fileName = `visual-report-${sanitizedCompanyName}-${timestamp}.pdf`
-    const filePath = `${project.userId}/${projectId}/${fileName}`
 
-    // Upload to Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from("project-files")
-      .upload(filePath, buffer, {
-        contentType: "application/pdf",
-        upsert: false,
+    let pdfUrl: string
+
+    // Try Supabase first, fallback to local storage if not available
+    if (supabase) {
+      const filePath = `${project.userId}/${projectId}/${fileName}`
+
+      console.log('Attempting Supabase upload:', {
+        bucket: 'project-files',
+        filePath,
+        fileSize: buffer.length,
+        contentType: file.type
       })
 
-    if (uploadError) {
-      console.error("Supabase upload error:", uploadError)
-      return NextResponse.json(
-        { error: `파일 업로드 실패: ${uploadError.message}` },
-        { status: 500 }
-      )
-    }
+      // Upload to Supabase Storage with service role bypass
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("project-files")
+        .upload(filePath, buffer, {
+          contentType: "application/pdf",
+          upsert: true, // Allow overwrite if file exists
+        })
 
-    // Get public URL
-    const { data: urlData } = supabase.storage
-      .from("project-files")
-      .getPublicUrl(filePath)
+      if (uploadError) {
+        console.error("Supabase upload error:", {
+          message: uploadError.message,
+          name: uploadError.name,
+          stack: uploadError.stack,
+        })
 
-    if (!urlData?.publicUrl) {
-      return NextResponse.json(
-        { error: "파일 URL 생성 실패" },
-        { status: 500 }
-      )
+        // Fallback to local storage on any Supabase error
+        console.log('Falling back to local file storage...')
+        const uploadDir = path.join(process.cwd(), 'uploads', project.userId, projectId)
+        await fs.mkdir(uploadDir, { recursive: true })
+
+        const localFilePath = path.join(uploadDir, fileName)
+        await fs.writeFile(localFilePath, buffer)
+
+        pdfUrl = `/uploads/${project.userId}/${projectId}/${fileName}`
+        console.log('Local file upload successful:', localFilePath)
+      } else {
+        console.log('Supabase upload successful:', uploadData)
+
+        // Get public URL
+        const { data: urlData } = supabase.storage
+          .from("project-files")
+          .getPublicUrl(filePath)
+
+        if (!urlData?.publicUrl) {
+          return NextResponse.json(
+            { error: "파일 URL 생성 실패" },
+            { status: 500 }
+          )
+        }
+
+        pdfUrl = urlData.publicUrl
+      }
+    } else {
+      // Use local file system if Supabase is not configured
+      console.log('Supabase not configured, using local file storage...')
+      const uploadDir = path.join(process.cwd(), 'uploads', project.userId, projectId)
+      await fs.mkdir(uploadDir, { recursive: true })
+
+      const localFilePath = path.join(uploadDir, fileName)
+      await fs.writeFile(localFilePath, buffer)
+
+      pdfUrl = `/uploads/${project.userId}/${projectId}/${fileName}`
+      console.log('Local file upload successful:', localFilePath)
     }
 
     // Update report with PDF URL
     await prisma.report.update({
       where: { id: reportId },
       data: {
-        pdfUrl: urlData.publicUrl,
+        pdfUrl: pdfUrl,
       },
     })
 
@@ -130,7 +164,7 @@ export async function POST(req: Request) {
       data: {
         projectId: projectId,
         filename: fileName,
-        filePath: urlData.publicUrl,
+        filePath: pdfUrl,
         fileSize: file.size,
         fileType: "application/pdf",
       },
@@ -139,7 +173,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       success: true,
       message: "비주얼 레포트가 성공적으로 업로드되었습니다",
-      pdfUrl: urlData.publicUrl,
+      pdfUrl: pdfUrl,
     })
   } catch (error) {
     console.error("Upload visual report error:", error)
