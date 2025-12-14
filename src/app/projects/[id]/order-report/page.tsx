@@ -11,6 +11,7 @@ export default function OrderReportPage({ params }: { params: Promise<{ id: stri
   const [projectId, setProjectId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [ordering, setOrdering] = useState(false)
+  const [sampleImages, setSampleImages] = useState<string[]>([])
 
   useEffect(() => {
     params.then(({ id }) => {
@@ -18,6 +19,23 @@ export default function OrderReportPage({ params }: { params: Promise<{ id: stri
       setLoading(false)
     })
   }, [params])
+
+  useEffect(() => {
+    // Fetch sample images
+    const fetchSampleImages = async () => {
+      try {
+        const response = await fetch('/api/sample-reports')
+        const data = await response.json()
+        if (response.ok) {
+          setSampleImages(data.images || [])
+        }
+      } catch (err) {
+        console.error('Failed to fetch sample images:', err)
+      }
+    }
+
+    fetchSampleImages()
+  }, [])
 
   /* 크레딧 기능 비활성화
   const [userCredits, setUserCredits] = useState(0)
@@ -109,16 +127,16 @@ export default function OrderReportPage({ params }: { params: Promise<{ id: stri
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b">
         <div className="container mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold">고급 프레젠테이션 제작 신청</h1>
+          <h1 className="text-2xl font-bold">비주얼 레포트 생성 요청</h1>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-3xl">
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl">고급 프레젠테이션 제작 서비스</CardTitle>
+            <CardTitle className="text-2xl">비주얼 레포트 제작 서비스</CardTitle>
             <CardDescription>
-              AI 엔진이 분석 결과를 전문적인 프레젠테이션으로 변환해드립니다
+              AI 엔진이 분석솔루션 결과를 비주얼 레포트로 변환해드립니다.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -129,7 +147,7 @@ export default function OrderReportPage({ params }: { params: Promise<{ id: stri
                 <ul className="space-y-2 text-gray-700">
                   <li className="flex items-start gap-2">
                     <span className="text-blue-600 font-bold">1.</span>
-                    <span>생성된 솔루션을 최고의 AI 엔진이 고급 프레젠테이션으로 변환해드립니다.</span>
+                    <span>생성된 분석솔루션을 최고의 AI 엔진이 고급 비주얼 레포트로 변환해드립니다.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-blue-600 font-bold">2.</span>
@@ -138,7 +156,7 @@ export default function OrderReportPage({ params }: { params: Promise<{ id: stri
                   <li className="flex items-start gap-2">
                     <span className="text-blue-600 font-bold">3.</span>
                     <span>
-                      완성된 프레젠테이션 파일(PDF)는{" "}
+                      완성된 비주얼 레포트 파일(PDF)은{" "}
                       {projectId && (
                         <Link
                           href={`/projects/${projectId}/library`}
@@ -182,6 +200,25 @@ export default function OrderReportPage({ params }: { params: Promise<{ id: stri
               </div>
               */}
             </div>
+
+            {/* 샘플 이미지 섹션 */}
+            {sampleImages.length > 0 && (
+              <div className="space-y-4">
+                <h3 className="font-semibold text-lg text-gray-900">비주얼 레포트 샘플</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {sampleImages.map((imageUrl, index) => (
+                    <div key={index} className="relative aspect-[3/4] rounded-lg overflow-hidden border border-gray-200 hover:border-blue-500 transition-colors">
+                      <img
+                        src={imageUrl}
+                        alt={`샘플 ${index + 1}`}
+                        className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform"
+                        onClick={() => window.open(imageUrl, '_blank')}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* 버튼 영역 */}
             <div className="flex gap-4 pt-4">
