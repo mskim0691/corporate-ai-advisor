@@ -235,7 +235,7 @@ export default function OrderReportPage({ params }: { params: Promise<{ id: stri
                 disabled={ordering}
                 className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
               >
-                {ordering ? "신청 중..." : "신청하기"}
+                {ordering ? "신청 중..." : "신청하기 (이용권 -1 차감)"}
               </Button>
             </div>
           </CardContent>
