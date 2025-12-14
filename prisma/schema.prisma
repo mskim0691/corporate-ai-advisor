@@ -206,6 +206,17 @@ model CreditPrice {
   @@map("credit_prices")
 }
 
+model SampleReport {
+  id        String   @id @default(uuid())
+  imageUrl  String   @map("image_url") // URL of the sample image
+  order     Int      @default(0) // Display order
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("sample_reports")
+  @@index([order])
+}
+
 // [DEPRECATED - 크레딧 기능 비활성화] Initial credit policy model - no longer used in application
 model InitialCreditPolicy {
   id          String   @id @default(uuid())
