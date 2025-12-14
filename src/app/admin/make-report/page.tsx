@@ -47,7 +47,6 @@ export default async function MakeReportPage() {
           reportType: true,
           additionalRequest: true,
           createdAt: true,
-          updatedAt: true,
         },
       },
       _count: {
@@ -57,7 +56,7 @@ export default async function MakeReportPage() {
       },
     },
     orderBy: {
-      updatedAt: "desc", // Sort by most recently updated (order time)
+      createdAt: "desc", // Sort by most recently created
     },
   })
 
@@ -121,9 +120,9 @@ export default async function MakeReportPage() {
                     <div className="text-sm text-gray-600 mb-1">
                       프로젝트 생성: {new Date(project.createdAt).toLocaleDateString("ko-KR")}
                     </div>
-                    {project.report?.updatedAt && (
+                    {project.report?.createdAt && (
                       <div className="text-sm font-semibold text-purple-600 mb-2">
-                        신청 시간: {new Date(project.report.updatedAt).toLocaleString("ko-KR")}
+                        신청 시간: {new Date(project.report.createdAt).toLocaleString("ko-KR")}
                       </div>
                     )}
                     <Link
