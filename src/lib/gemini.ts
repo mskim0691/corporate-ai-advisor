@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { GoogleAIFileManager, FileState } from "@google/generative-ai/server"
+import { GoogleGenAI } from "@google/genai"
 import { Blob } from "buffer"
 import prisma from "./prisma"
 
@@ -14,6 +15,7 @@ if (USE_SUPABASE) {
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY || "")
 const fileManager = new GoogleAIFileManager(process.env.GOOGLE_GEMINI_API_KEY || "")
+const genAIImage = new GoogleGenAI({ apiKey: process.env.GOOGLE_GEMINI_API_KEY || "" })
 
 // 캐시된 모델 이름 (서버 재시작 시까지 유지)
 let cachedModelName: string | null = null
@@ -409,4 +411,107 @@ export async function generatePresentationSlides(
     console.error("Gemini API error (presentation generation):", error)
     throw new Error("프레젠테이션 생성 중 오류가 발생했습니다")
   }
+}
+
+/**
+ * Gemini Nano Banana Pro를 사용하여 슬라이드 이미지를 생성합니다.
+ * @param slideContent 슬라이드 내용 (제목, 본문)
+ * @param slideNumber 슬라이드 번호
+ * @param companyName 회사명
+ * @returns Base64 인코딩된 이미지 데이터
+ */
+export async function generateSlideImage(
+  slideContent: { title: string; content: string },
+  slideNumber: number,
+  companyName: string
+): Promise<string> {
+  try {
+    // 슬라이드 내용을 이미지 생성 프롬프트로 변환
+    const prompt = `Create a professional business presentation slide image with the following specifications:
+
+SLIDE ${slideNumber} for ${companyName}
+
+TITLE: ${slideContent.title}
+
+CONTENT:
+${slideContent.content}
+
+DESIGN REQUIREMENTS:
+- Professional, modern corporate presentation style
+- Clean, minimalist design with clear visual hierarchy
+- Use blue and white color scheme as primary colors
+- Title should be prominently displayed at the top
+- Content should be organized with clear bullet points or sections
+- Include subtle business-related visual elements or icons if appropriate
+- Text should be clearly readable in Korean
+- Professional font styling suitable for business presentations
+- 16:9 aspect ratio presentation slide format
+- High contrast for readability
+
+Generate a polished, professional presentation slide that would be suitable for a business consulting report.`
+
+    console.log(`🎨 Generating image for slide ${slideNumber}...`)
+
+    const response = await genAIImage.models.generateContent({
+      model: "gemini-2.5-flash-preview-image-generation",
+      contents: prompt,
+      config: {
+        responseModalities: ["TEXT", "IMAGE"],
+        temperature: 1,
+      } as any,
+    })
+
+    // 응답에서 이미지 데이터 추출
+    const parts = response.candidates?.[0]?.content?.parts || []
+
+    for (const part of parts) {
+      if ((part as any).inlineData) {
+        const imageData = (part as any).inlineData.data
+        console.log(`✓ Image generated for slide ${slideNumber}`)
+        return imageData
+      }
+    }
+
+    throw new Error("No image data in response")
+  } catch (error) {
+    console.error(`Error generating image for slide ${slideNumber}:`, error)
+    throw new Error(`슬라이드 ${slideNumber} 이미지 생성 중 오류가 발생했습니다`)
+  }
+}
+
+/**
+ * 여러 슬라이드의 이미지를 병렬로 생성합니다.
+ * @param slides 슬라이드 배열
+ * @param companyName 회사명
+ * @returns Base64 인코딩된 이미지 데이터 배열
+ */
+export async function generateAllSlideImages(
+  slides: Array<{ slideNumber: number; title: string; content: string }>,
+  companyName: string
+): Promise<string[]> {
+  console.log(`🎨 Starting image generation for ${slides.length} slides...`)
+
+  // 순차적으로 이미지 생성 (API rate limit 고려)
+  const images: string[] = []
+
+  for (const slide of slides) {
+    try {
+      const imageData = await generateSlideImage(
+        { title: slide.title, content: slide.content },
+        slide.slideNumber,
+        companyName
+      )
+      images.push(imageData)
+
+      // API rate limit을 위한 딜레이 (1초)
+      await new Promise(resolve => setTimeout(resolve, 1000))
+    } catch (error) {
+      console.error(`Failed to generate image for slide ${slide.slideNumber}:`, error)
+      // 실패한 슬라이드는 빈 문자열로 처리
+      images.push("")
+    }
+  }
+
+  console.log(`✓ Generated ${images.filter(img => img).length}/${slides.length} slide images`)
+  return images
 }
