@@ -122,19 +122,63 @@ interface RawSlideData {
   type?: string
 }
 
+// 기본 프롬프트 템플릿
+const DEFAULT_PROMPTS: Record<string, string> = {
+  'step3-presentation-generation': `당신은 전문 경영 컨설턴트입니다. 아래 분석 내용을 바탕으로 프레젠테이션 슬라이드를 생성해주세요.
+
+회사명: {{companyName}}
+
+분석 내용:
+{{textAnalysis}}
+
+다음 JSON 형식으로 슬라이드를 생성해주세요:
+{
+  "slides": [
+    {
+      "slideNumber": 1,
+      "title": "슬라이드 제목",
+      "content": "슬라이드 내용 (마크다운 형식 지원)",
+      "speaker_notes": "발표자 노트"
+    }
+  ]
+}
+
+슬라이드 구성:
+1. 표지 (회사명, 컨설팅 제목)
+2. 목차
+3. 현황 분석 요약
+4. 주요 리스크 분석
+5. 솔루션 제안 (여러 슬라이드)
+6. 기대 효과
+7. 실행 계획
+8. 결론 및 다음 단계
+
+각 슬라이드는 간결하고 명확하게 작성하며, 핵심 포인트를 불릿 포인트로 정리해주세요.
+총 10-15개의 슬라이드로 구성해주세요.`
+}
+
 /**
  * 데이터베이스에서 프롬프트를 가져오고 변수를 치환합니다.
+ * 프롬프트가 없으면 기본 프롬프트를 사용합니다.
  */
 async function getPrompt(name: string, variables: Record<string, string>): Promise<string> {
   const promptRecord = await prisma.prompt.findUnique({
     where: { name }
   })
 
-  if (!promptRecord) {
-    throw new Error(`Prompt not found: ${name}`)
-  }
+  let prompt: string
 
-  let prompt = promptRecord.content
+  if (!promptRecord) {
+    // 기본 프롬프트 사용
+    if (DEFAULT_PROMPTS[name]) {
+      console.log(`⚠️ Prompt "${name}" not found in database, using default prompt`)
+      prompt = DEFAULT_PROMPTS[name]
+    } else {
+      throw new Error(`Prompt not found: ${name}`)
+    }
+  } else {
+    prompt = promptRecord.content
+  }
 
   // 변수 치환
   for (const [key, value] of Object.entries(variables)) {
