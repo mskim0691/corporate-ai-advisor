@@ -89,8 +89,8 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
     if (hasPdfReport) {
       router.push(`/projects/${projectId}/library`)
     } else {
-      // PDF 리포트가 없으면 order-report 페이지로 이동
-      router.push(`/projects/${projectId}/order-report`)
+      // PDF 리포트가 없으면 report 페이지로 이동하여 생성
+      router.push(`/projects/${projectId}/report`)
     }
   }
 

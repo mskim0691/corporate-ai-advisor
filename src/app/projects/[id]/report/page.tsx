@@ -25,6 +25,8 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
+  const [generatingVisualReport, setGeneratingVisualReport] = useState(false)
+  const [generationProgress, setGenerationProgress] = useState<string>("")
 
   useEffect(() => {
     params.then(({ id }) => setProjectId(id))
@@ -39,11 +41,30 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
         const data = await response.json()
 
         if (!response.ok || data.status !== "completed") {
+          // 분석이 완료되지 않았으면 비주얼 리포트 생성 시작
+          if (data.report?.textAnalysis && !data.report?.pdfUrl) {
+            setLoading(false)
+            await generateVisualReport()
+            return
+          }
           router.push(`/projects/${projectId}/processing`)
           return
         }
 
         const analysisData = JSON.parse(data.report?.analysisData || '{"slides":[]}')
+
+        // 슬라이드가 없고 PDF도 없으면 비주얼 리포트 생성
+        if ((!analysisData.slides || analysisData.slides.length === 0) && !data.report?.pdfUrl) {
+          setProject({
+            companyName: data.companyName,
+            businessNumber: data.businessNumber,
+            slides: []
+          })
+          setLoading(false)
+          await generateVisualReport()
+          return
+        }
+
         setProject({
           companyName: data.companyName,
           businessNumber: data.businessNumber,
@@ -60,6 +81,36 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
 
     fetchProject()
   }, [projectId, router])
+
+  const generateVisualReport = async () => {
+    if (!projectId || generatingVisualReport) return
+
+    setGeneratingVisualReport(true)
+    setGenerationProgress("프레젠테이션 슬라이드 생성 중...")
+
+    try {
+      const response = await fetch(`/api/projects/${projectId}/generate-visual-report`, {
+        method: "POST",
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "비주얼 리포트 생성 실패")
+      }
+
+      const result = await response.json()
+      setGenerationProgress("비주얼 리포트 생성 완료!")
+      setPdfUrl(result.pdfUrl)
+
+      // 페이지 새로고침하여 최신 데이터 로드
+      window.location.reload()
+    } catch (error) {
+      console.error("Visual report generation error:", error)
+      setGenerationProgress("생성 중 오류가 발생했습니다. 다시 시도해주세요.")
+    } finally {
+      setGeneratingVisualReport(false)
+    }
+  }
 
   const generatePDF = async () => {
     if (!project || !projectId) return
@@ -153,10 +204,22 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
     }
   }
 
-  if (loading) {
+  if (loading || generatingVisualReport) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          {generatingVisualReport && (
+            <div className="space-y-2">
+              <p className="text-lg font-semibold text-gray-700">비주얼 리포트 생성 중...</p>
+              <p className="text-sm text-gray-500">{generationProgress}</p>
+              <p className="text-xs text-gray-400 mt-4">
+                AI가 각 슬라이드를 이미지로 생성하고 있습니다.<br />
+                이 작업은 몇 분 정도 소요될 수 있습니다.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     )
   }
