@@ -3,8 +3,12 @@ import { auth } from "@/lib/auth"
 import prisma from "@/lib/prisma"
 import { generatePresentationSlides, generateAllSlideImages } from "@/lib/gemini"
 import { PDFDocument } from "pdf-lib"
-import * as fs from "fs/promises"
-import * as path from "path"
+import { createClient } from "@supabase/supabase-js"
+
+// Supabase 클라이언트 초기화
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY
+const USE_SUPABASE = !!(supabaseUrl && supabaseServiceKey)
 
 export const maxDuration = 300 // 5 minutes timeout for image generation
 
@@ -128,29 +132,58 @@ export async function POST(
       // Save PDF
       const pdfBytes = await pdfDoc.save()
 
-      // Create directory if it doesn't exist
-      const uploadDir = process.env.UPLOAD_DIR || "./uploads"
-      const userDir = path.join(process.cwd(), uploadDir, session.user.id, project.id)
-      await fs.mkdir(userDir, { recursive: true })
-
       // Generate filename with timestamp
       const timestamp = new Date().toISOString().replace(/[:.]/g, "-")
       const filename = `${timestamp}_visual_report.pdf`
-      const filePath = path.join(userDir, filename)
+      let relativePdfUrl: string
 
-      // Write PDF file
-      await fs.writeFile(filePath, pdfBytes)
+      if (USE_SUPABASE && supabaseUrl && supabaseServiceKey) {
+        // Supabase Storage에 업로드
+        const supabase = createClient(supabaseUrl, supabaseServiceKey)
+        const storagePath = `${session.user.id}/${project.id}/${filename}`
+
+        const { error: uploadError } = await supabase.storage
+          .from("uploads")
+          .upload(storagePath, pdfBytes, {
+            contentType: "application/pdf",
+            upsert: true,
+          })
+
+        if (uploadError) {
+          console.error("Supabase upload error:", uploadError)
+          throw new Error("PDF 업로드 실패")
+        }
+
+        // Public URL 생성
+        const { data: urlData } = supabase.storage
+          .from("uploads")
+          .getPublicUrl(storagePath)
+
+        relativePdfUrl = urlData.publicUrl
+        console.log(`✓ Visual report PDF uploaded to Supabase: ${relativePdfUrl}`)
+      } else {
+        // 로컬 파일 시스템에 저장 (개발 환경용)
+        const fs = await import("fs/promises")
+        const path = await import("path")
+
+        const uploadDir = process.env.UPLOAD_DIR || "./uploads"
+        const userDir = path.join(process.cwd(), uploadDir, session.user.id, project.id)
+        await fs.mkdir(userDir, { recursive: true })
+
+        const filePath = path.join(userDir, filename)
+        await fs.writeFile(filePath, pdfBytes)
+
+        relativePdfUrl = `uploads/${session.user.id}/${project.id}/${filename}`
+        console.log(`✓ Visual report PDF saved locally: ${relativePdfUrl}`)
+      }
 
       // Save PDF URL to database
-      const relativePdfUrl = `uploads/${session.user.id}/${project.id}/${filename}`
       await prisma.report.update({
         where: { id: project.report.id },
         data: {
           pdfUrl: relativePdfUrl,
         },
       })
-
-      console.log(`✓ Visual report PDF saved: ${relativePdfUrl}`)
 
       return NextResponse.json({
         status: "success",
@@ -160,8 +193,11 @@ export async function POST(
       })
     } catch (error) {
       console.error("Visual report generation error:", error)
+      const errorMessage = error instanceof Error ? error.message : "알 수 없는 오류"
+      const errorStack = error instanceof Error ? error.stack : ""
+      console.error("Error details:", { message: errorMessage, stack: errorStack })
       return NextResponse.json(
-        { error: "비주얼 리포트 생성 중 오류가 발생했습니다" },
+        { error: `비주얼 리포트 생성 중 오류가 발생했습니다: ${errorMessage}` },
         { status: 500 }
       )
     }
