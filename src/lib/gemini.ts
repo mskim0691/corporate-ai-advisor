@@ -495,23 +495,25 @@ Generate a polished, professional presentation slide that would be suitable for 
 
     console.log(`🎨 Generating image for slide ${slideNumber}...`)
 
-    // Imagen 3 모델 사용
-    const response = await genAIImage.models.generateImages({
-      model: "imagen-3.0-generate-002",
-      prompt: prompt,
+    // Gemini 3 Pro Image Preview 모델 사용
+    const response = await genAIImage.models.generateContent({
+      model: "gemini-3-pro-image-preview",
+      contents: prompt,
       config: {
-        numberOfImages: 1,
-        aspectRatio: "16:9",
-        outputMimeType: "image/png",
-      },
+        responseModalities: ["TEXT", "IMAGE"],
+        temperature: 1,
+      } as any,
     })
 
     // 응답에서 이미지 데이터 추출
-    const images = response.generatedImages || []
+    const parts = response.candidates?.[0]?.content?.parts || []
 
-    if (images.length > 0 && images[0].image?.imageBytes) {
-      console.log(`✓ Image generated for slide ${slideNumber}`)
-      return images[0].image.imageBytes
+    for (const part of parts) {
+      if ((part as any).inlineData) {
+        const imageData = (part as any).inlineData.data
+        console.log(`✓ Image generated for slide ${slideNumber}`)
+        return imageData
+      }
     }
 
     throw new Error("No image data in response")
