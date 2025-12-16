@@ -458,7 +458,7 @@ export async function generatePresentationSlides(
 }
 
 /**
- * Gemini Nano Banana Pro를 사용하여 슬라이드 이미지를 생성합니다.
+ * Gemini Imagen 3을 사용하여 슬라이드 이미지를 생성합니다.
  * @param slideContent 슬라이드 내용 (제목, 본문)
  * @param slideNumber 슬라이드 번호
  * @param companyName 회사명
@@ -487,7 +487,6 @@ DESIGN REQUIREMENTS:
 - Title should be prominently displayed at the top
 - Content should be organized with clear bullet points or sections
 - Include subtle business-related visual elements or icons if appropriate
-- Text should be clearly readable in Korean
 - Professional font styling suitable for business presentations
 - 16:9 aspect ratio presentation slide format
 - High contrast for readability
@@ -496,24 +495,23 @@ Generate a polished, professional presentation slide that would be suitable for 
 
     console.log(`🎨 Generating image for slide ${slideNumber}...`)
 
-    const response = await genAIImage.models.generateContent({
-      model: "gemini-2.5-flash-preview-image-generation",
-      contents: prompt,
+    // Imagen 3 모델 사용
+    const response = await genAIImage.models.generateImages({
+      model: "imagen-3.0-generate-002",
+      prompt: prompt,
       config: {
-        responseModalities: ["TEXT", "IMAGE"],
-        temperature: 1,
-      } as any,
+        numberOfImages: 1,
+        aspectRatio: "16:9",
+        outputMimeType: "image/png",
+      },
     })
 
     // 응답에서 이미지 데이터 추출
-    const parts = response.candidates?.[0]?.content?.parts || []
+    const images = response.generatedImages || []
 
-    for (const part of parts) {
-      if ((part as any).inlineData) {
-        const imageData = (part as any).inlineData.data
-        console.log(`✓ Image generated for slide ${slideNumber}`)
-        return imageData
-      }
+    if (images.length > 0 && images[0].image?.imageBytes) {
+      console.log(`✓ Image generated for slide ${slideNumber}`)
+      return images[0].image.imageBytes
     }
 
     throw new Error("No image data in response")
