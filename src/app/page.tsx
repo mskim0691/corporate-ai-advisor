@@ -2,6 +2,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { auth } from "@/lib/auth"
 import { PricingSection } from "@/components/pricing-section"
+import { RotatingBanner } from "@/components/rotating-banner"
 
 export default async function Home() {
   const session = await auth()
@@ -36,19 +37,7 @@ export default async function Home() {
       </header>
 
       <main>
-        <section className="container mx-auto px-4 py-20 text-center">
-          <h2 className="text-5xl font-bold mb-6">
-            AI 기반 법인 컨설팅 비서
-          </h2>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            기업정보를 업로드하면 AI 분석 리포트를 생성합니다.
-          </p>
-          <Link href="/auth/register">
-            <Button size="lg" className="text-lg px-8 py-6">
-              지금 시작하기
-            </Button>
-          </Link>
-        </section>
+        <RotatingBanner />
 
         <section className="bg-white py-16">
           <div className="container mx-auto px-4">

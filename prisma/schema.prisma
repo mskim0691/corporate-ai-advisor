@@ -246,3 +246,22 @@ model Inquiry {
   @@index([userId, createdAt])
   @@index([status, createdAt])
 }
+
+model Banner {
+  id          String   @id @default(uuid())
+  title       String   // Banner title
+  subtitle    String?  // Banner subtitle
+  description String?  // Banner description
+  buttonText  String?  @map("button_text") // CTA button text
+  buttonLink  String?  @map("button_link") // CTA button link
+  imageUrl    String?  @map("image_url") // Background image URL
+  bgColor     String?  @map("bg_color") // Background color (e.g., 'bg-blue-600')
+  textColor   String?  @map("text_color") // Text color (e.g., 'text-white')
+  order       Int      @default(0) // Display order (lower = first)
+  isActive    Boolean  @default(true) @map("is_active") // Whether the banner is visible
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("banners")
+  @@index([order])
+}

@@ -259,6 +259,15 @@ export default async function AdminDashboard() {
               <p className="text-sm text-gray-600">고급 프레젠테이션 제작 대기 목록</p>
               <p className="mt-4 text-2xl font-bold text-orange-600">관리</p>
             </Link>
+
+            <Link
+              href="/admin/banners"
+              className="p-6 bg-white border border-gray-200 rounded-lg hover:border-teal-300 hover:shadow-md transition-all"
+            >
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">배너 관리</h3>
+              <p className="text-sm text-gray-600">메인페이지 로테이션 배너를 관리합니다</p>
+              <p className="mt-4 text-2xl font-bold text-teal-600">관리</p>
+            </Link>
           </div>
         </div>
 
