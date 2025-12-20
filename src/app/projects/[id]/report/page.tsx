@@ -4,29 +4,16 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { SlideViewer } from "@/components/slide-viewer"
-import html2canvas from "html2canvas"
-import jsPDF from "jspdf"
-
-interface Slide {
-  slideNumber: number
-  title: string
-  content: string
-}
 
 export default function ReportPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
   const [projectId, setProjectId] = useState<string | null>(null)
-  const [project, setProject] = useState<{
-    companyName: string
-    businessNumber: string
-    slides: Slide[]
-  } | null>(null)
+  const [companyName, setCompanyName] = useState<string>("")
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
-  const [generating, setGenerating] = useState(false)
   const [generatingVisualReport, setGeneratingVisualReport] = useState(false)
   const [generationProgress, setGenerationProgress] = useState<string>("")
+  const [downloading, setDownloading] = useState(false)
 
   useEffect(() => {
     params.then(({ id }) => setProjectId(id))
@@ -43,6 +30,7 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
         if (!response.ok || data.status !== "completed") {
           // 분석이 완료되지 않았으면 비주얼 리포트 생성 시작
           if (data.report?.textAnalysis && !data.report?.pdfUrl) {
+            setCompanyName(data.companyName)
             setLoading(false)
             await generateVisualReport()
             return
@@ -51,31 +39,21 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
           return
         }
 
-        const analysisData = JSON.parse(data.report?.analysisData || '{"slides":[]}')
+        setCompanyName(data.companyName)
 
-        // 슬라이드가 없고 PDF도 없으면 비주얼 리포트 생성
-        if ((!analysisData.slides || analysisData.slides.length === 0) && !data.report?.pdfUrl) {
-          setProject({
-            companyName: data.companyName,
-            businessNumber: data.businessNumber,
-            slides: []
-          })
+        // PDF가 있으면 바로 보여주기
+        if (data.report?.pdfUrl) {
+          setPdfUrl(data.report.pdfUrl)
           setLoading(false)
-          await generateVisualReport()
           return
         }
 
-        setProject({
-          companyName: data.companyName,
-          businessNumber: data.businessNumber,
-          slides: analysisData.slides || []
-        })
-        setPdfUrl(data.report?.pdfUrl || null)
+        // PDF가 없으면 생성 시작
+        setLoading(false)
+        await generateVisualReport()
       } catch (error) {
         console.error("Failed to fetch project:", error)
         router.push("/dashboard")
-      } finally {
-        setLoading(false)
       }
     }
 
@@ -101,9 +79,6 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
       const result = await response.json()
       setGenerationProgress("비주얼 리포트 생성 완료!")
       setPdfUrl(result.pdfUrl)
-
-      // 페이지 새로고침하여 최신 데이터 로드
-      window.location.reload()
     } catch (error) {
       console.error("Visual report generation error:", error)
       setGenerationProgress("생성 중 오류가 발생했습니다. 다시 시도해주세요.")
@@ -112,95 +87,26 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
     }
   }
 
-  const generatePDF = async () => {
-    if (!project || !projectId) return
+  const handleDownload = async () => {
+    if (!pdfUrl) return
 
-    setGenerating(true)
+    setDownloading(true)
     try {
-      // If PDF already exists, download it from server
-      if (pdfUrl) {
-        const response = await fetch(`/${pdfUrl}`)
-        const blob = await response.blob()
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `${project.companyName}_프레젠테이션.pdf`
-        document.body.appendChild(a)
-        a.click()
-        window.URL.revokeObjectURL(url)
-        document.body.removeChild(a)
-        return
-      }
-
-      // Generate PDF from slides using html2canvas
-      const A4_WIDTH = 841.89
-      const A4_HEIGHT = 595.28
-
-      const pdf = new jsPDF({
-        orientation: 'landscape',
-        unit: 'pt',
-        format: 'a4'
-      })
-
-      const slideElements = document.querySelectorAll('[data-slide-index]')
-
-      for (let i = 0; i < slideElements.length; i++) {
-        const slideElement = slideElements[i] as HTMLElement
-
-        const canvas = await html2canvas(slideElement, {
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          backgroundColor: '#ffffff'
-        })
-
-        const imgData = canvas.toDataURL('image/png')
-        const imgAspectRatio = canvas.height / canvas.width
-
-        let imgWidth = A4_WIDTH
-        let imgHeight = A4_WIDTH * imgAspectRatio
-
-        if (imgHeight > A4_HEIGHT) {
-          imgHeight = A4_HEIGHT
-          imgWidth = A4_HEIGHT / imgAspectRatio
-        }
-
-        const xOffset = (A4_WIDTH - imgWidth) / 2
-        const yOffset = 0
-
-        if (i > 0) {
-          pdf.addPage('a4', 'landscape')
-        }
-
-        pdf.addImage(imgData, 'PNG', xOffset, yOffset, imgWidth, imgHeight)
-      }
-
-      // Convert PDF to blob
-      const pdfBlob = pdf.output('blob')
-
-      // Upload PDF to server
-      const formData = new FormData()
-      formData.append('pdf', pdfBlob, 'report.pdf')
-
-      const uploadResponse = await fetch(`/api/projects/${projectId}/pdf/upload`, {
-        method: 'POST',
-        body: formData,
-      })
-
-      if (!uploadResponse.ok) {
-        throw new Error('PDF 업로드 실패')
-      }
-
-      const { pdfUrl: newPdfUrl } = await uploadResponse.json()
-      setPdfUrl(newPdfUrl)
-
-      // Download the generated PDF
-      pdf.save(`${project.companyName}_프레젠테이션.pdf`)
+      const response = await fetch(pdfUrl)
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `${companyName}_비주얼리포트.pdf`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
     } catch (error) {
-      console.error('PDF 생성 오류:', error)
-      alert('PDF 생성 중 오류가 발생했습니다.')
+      console.error("Download error:", error)
+      alert("다운로드 중 오류가 발생했습니다.")
     } finally {
-      setGenerating(false)
+      setDownloading(false)
     }
   }
 
@@ -224,19 +130,21 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
     )
   }
 
-  if (!project) {
-    return null
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold">{project.companyName} 컨설팅 리포트</h1>
-            <Button onClick={generatePDF} disabled={generating} className="bg-blue-600 hover:bg-blue-700 text-white">
-              {generating ? '생성 중...' : 'PDF 다운로드'}
-            </Button>
+            <h1 className="text-2xl font-bold">{companyName} 비주얼 리포트</h1>
+            {pdfUrl && (
+              <Button
+                onClick={handleDownload}
+                disabled={downloading}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {downloading ? "다운로드 중..." : "PDF 다운로드"}
+              </Button>
+            )}
           </div>
           <div className="flex gap-3">
             <Button variant="outline" asChild>
@@ -259,7 +167,23 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <SlideViewer slides={project.slides} />
+        {pdfUrl ? (
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+            <iframe
+              src={pdfUrl}
+              className="w-full"
+              style={{ height: "calc(100vh - 200px)", minHeight: "600px" }}
+              title="비주얼 리포트 PDF"
+            />
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-gray-500 mb-4">비주얼 리포트가 아직 생성되지 않았습니다.</p>
+            <Button onClick={generateVisualReport} disabled={generatingVisualReport}>
+              비주얼 리포트 생성하기
+            </Button>
+          </div>
+        )}
       </main>
     </div>
   )
