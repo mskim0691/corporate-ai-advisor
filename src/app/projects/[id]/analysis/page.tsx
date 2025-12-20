@@ -568,7 +568,11 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {regenerationCount >= 1 ? (
+            {hasPdfReport ? (
+              <div className="bg-blue-50 rounded-lg p-4 text-center border border-blue-200">
+                <p className="text-blue-700">비주얼레포트가 생성된 이후에는 솔루션 재생성이 중지됩니다.</p>
+              </div>
+            ) : regenerationCount >= 1 ? (
               <div className="bg-gray-100 rounded-lg p-4 text-center">
                 <p className="text-gray-600">이미 솔루션 재생성을 사용하셨습니다. (1회 제한)</p>
                 {supplementaryInfo && (
