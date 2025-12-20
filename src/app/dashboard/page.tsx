@@ -6,6 +6,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { DeleteProjectButton } from "@/components/delete-project-button"
+import { VisualReportButton } from "@/components/visual-report-button"
 import { AnnouncementsBanner } from "@/components/announcements-banner"
 import { CustomerServiceSection } from "@/components/customer-service-section"
 import { UserMenu } from "@/components/user-menu"
@@ -34,6 +35,11 @@ async function getUserDashboardData(userId: string) {
       include: {
         _count: {
           select: { files: true },
+        },
+        report: {
+          select: {
+            pdfUrl: true,
+          },
         },
       },
     }),
@@ -115,6 +121,7 @@ export default async function DashboardPage() {
   const presentationUsage = monthlyPresentationCount
 
   const canCreateProject = solutionUsage < solutionLimit
+  const remainingPresentationCredits = presentationLimit === 999999 ? 999999 : Math.max(0, presentationLimit - presentationUsage)
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -302,6 +309,11 @@ export default async function DashboardPage() {
                               분석제안서
                             </Button>
                           </Link>
+                          <VisualReportButton
+                            projectId={project.id}
+                            hasReport={!!project.report?.pdfUrl}
+                            remainingCredits={remainingPresentationCredits}
+                          />
                         </>
                       )}
                       <DeleteProjectButton
