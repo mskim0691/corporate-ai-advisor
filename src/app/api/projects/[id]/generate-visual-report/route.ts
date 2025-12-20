@@ -132,9 +132,13 @@ export async function POST(
       // Save PDF
       const pdfBytes = await pdfDoc.save()
 
-      // Generate filename with timestamp
-      const timestamp = new Date().toISOString().replace(/[:.]/g, "-")
-      const filename = `${timestamp}_visual_report.pdf`
+      // Generate filename with timestamp and company info
+      // Format: YYYYMMDD_HHMMSS-companyName-representative-report.pdf
+      const now = new Date()
+      const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`
+      const safeCompanyName = project.companyName.replace(/[^a-zA-Z0-9가-힣]/g, '_')
+      const safeRepresentative = project.representative.replace(/[^a-zA-Z0-9가-힣]/g, '_')
+      const filename = `${timestamp}-${safeCompanyName}-${safeRepresentative}-report.pdf`
       let relativePdfUrl: string
 
       if (USE_SUPABASE && supabaseUrl && supabaseServiceKey) {
