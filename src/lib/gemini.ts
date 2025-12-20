@@ -578,3 +578,81 @@ export async function generateAllSlideImages(
   console.log(`✓ Generated ${images.filter(img => img).length}/${slides.length} slide images`)
   return images
 }
+
+/**
+ * 프레젠테이션 표지 이미지를 생성합니다.
+ * @param title 프레젠테이션 제목
+ * @param companyName 회사명
+ * @param representative 대표자명
+ * @returns Base64 인코딩된 이미지 데이터
+ */
+export async function generateCoverImage(
+  title: string,
+  companyName: string,
+  representative: string
+): Promise<string | null> {
+  try {
+    const today = new Date().toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+
+    const prompt = `Create a professional business presentation COVER PAGE image with the following specifications:
+
+COMPANY NAME: ${companyName}
+TITLE: ${title}
+REPRESENTATIVE: ${representative}
+DATE: ${today}
+
+DESIGN REQUIREMENTS:
+- This is a COVER PAGE, not a content slide
+- Professional, elegant, modern corporate presentation cover style
+- Clean, minimalist design with premium look and feel
+- Use blue and white color scheme as primary colors
+- Company name should be displayed prominently at the top
+- Title should be large and centered in the middle of the page
+- Representative name and date should be at the bottom
+- Include subtle business-related decorative elements or patterns
+- Korean text must be clearly readable
+- 16:9 aspect ratio presentation slide format
+- High contrast for readability
+- Make it look like a professional consulting report cover
+
+Generate a polished, professional cover page image that would be suitable as the first page of a business consulting report presentation.`
+
+    console.log(`🎨 Generating cover image...`)
+
+    const response = await genAIImage.models.generateContent({
+      model: "gemini-3-pro-image-preview",
+      contents: prompt,
+      config: {
+        responseModalities: ["TEXT", "IMAGE"],
+        imageConfig: {
+          aspectRatio: "16:9",
+          imageSize: "1K",
+        },
+      } as any,
+    })
+
+    if (!response.candidates || response.candidates.length === 0) {
+      console.error(`❌ No candidates in response for cover image`)
+      return null
+    }
+
+    const parts = response.candidates[0].content?.parts || []
+
+    for (const part of parts) {
+      if (part.inlineData && part.inlineData.data) {
+        console.log(`✓ Cover image generated`)
+        return part.inlineData.data
+      }
+    }
+
+    console.error(`❌ No image data found in cover response`)
+    return null
+  } catch (error) {
+    console.error(`Error generating cover image:`, error)
+    return null
+  }
+}

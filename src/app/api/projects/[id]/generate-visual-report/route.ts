@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import prisma from "@/lib/prisma"
-import { generatePresentationSlides, generateAllSlideImages } from "@/lib/gemini"
+import { generatePresentationSlides, generateAllSlideImages, generateCoverImage } from "@/lib/gemini"
 import { PDFDocument } from "pdf-lib"
 import { createClient } from "@supabase/supabase-js"
 
@@ -72,6 +72,15 @@ export async function POST(
         project.companyName
       )
 
+      // Step 2.5: Generate cover image
+      const coverTitle = presentationResult.slides[0]?.title || `${project.companyName} 컨설팅 리포트`
+      console.log(`🎨 Step 2.5: Generating cover image...`)
+      const coverImageData = await generateCoverImage(
+        coverTitle,
+        project.companyName,
+        project.representative
+      )
+
       // Step 3: Create PDF from images
       console.log(`📄 Step 3: Creating PDF from images...`)
       const pdfDoc = await PDFDocument.create()
@@ -80,6 +89,39 @@ export async function POST(
       const pageWidth = 1024
       const pageHeight = 576
 
+      // Step 3-1: Add cover page
+      if (coverImageData) {
+        try {
+          const coverBuffer = Buffer.from(coverImageData, "base64")
+          let coverImage
+          try {
+            coverImage = await pdfDoc.embedPng(coverBuffer)
+          } catch {
+            coverImage = await pdfDoc.embedJpg(coverBuffer)
+          }
+
+          const coverPage = pdfDoc.addPage([pageWidth, pageHeight])
+          const imgWidth = coverImage.width
+          const imgHeight = coverImage.height
+          const scale = Math.min(pageWidth / imgWidth, pageHeight / imgHeight)
+          const scaledWidth = imgWidth * scale
+          const scaledHeight = imgHeight * scale
+          const x = (pageWidth - scaledWidth) / 2
+          const y = (pageHeight - scaledHeight) / 2
+
+          coverPage.drawImage(coverImage, {
+            x,
+            y,
+            width: scaledWidth,
+            height: scaledHeight,
+          })
+          console.log(`✓ Cover page added`)
+        } catch (error) {
+          console.error(`Failed to add cover page:`, error)
+        }
+      }
+
+      // Step 3-2: Add slide images
       for (let i = 0; i < slideImages.length; i++) {
         const imageData = slideImages[i]
 
