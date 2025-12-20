@@ -45,9 +45,9 @@ export async function POST(request: Request) {
     }
 
     // Validate groupName
-    if (!['admin', 'pro', 'free'].includes(groupName)) {
+    if (!['admin', 'expert', 'pro', 'free'].includes(groupName)) {
       return NextResponse.json(
-        { error: '그룹명은 admin, pro, free 중 하나여야 합니다.' },
+        { error: '그룹명은 admin, expert, pro, free 중 하나여야 합니다.' },
         { status: 400 }
       );
     }
