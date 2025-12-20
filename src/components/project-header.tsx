@@ -8,13 +8,15 @@ interface ProjectHeaderProps {
   companyName: string
   currentPage: "library" | "initial-risk" | "analysis" | "report"
   subtitle?: string
+  hasPdfReport?: boolean
 }
 
 export async function ProjectHeader({
   projectId,
   companyName,
   currentPage,
-  subtitle
+  subtitle,
+  hasPdfReport = false
 }: ProjectHeaderProps) {
   const session = await auth()
 
@@ -60,20 +62,20 @@ export async function ProjectHeader({
               <Link href={`/projects/${projectId}/analysis`}>분석제안서</Link>
             )}
           </Button>
-          {isAdmin && (
-            <Button
-              variant="outline"
-              className={currentPage === "report" ? "bg-gray-100" : ""}
-              disabled={currentPage === "report"}
-              asChild={currentPage !== "report"}
-            >
-              {currentPage === "report" ? (
-                <span>리포트</span>
-              ) : (
-                <Link href={`/projects/${projectId}/report`}>리포트</Link>
-              )}
-            </Button>
-          )}
+          <Button
+            variant="outline"
+            className={currentPage === "report" ? "bg-gray-100" : ""}
+            disabled={currentPage === "report"}
+            asChild={currentPage !== "report"}
+          >
+            {currentPage === "report" ? (
+              <span>{hasPdfReport ? "비주얼 레포트 보기" : "비주얼 레포트 생성"}</span>
+            ) : (
+              <Link href={`/projects/${projectId}/report`}>
+                {hasPdfReport ? "비주얼 레포트 보기" : "비주얼 레포트 생성"}
+              </Link>
+            )}
+          </Button>
           <Button variant="outline" asChild>
             <Link href="/dashboard">대시보드</Link>
           </Button>

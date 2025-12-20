@@ -73,6 +73,7 @@ export default async function LibraryPage({ params }: { params: Promise<{ id: st
         companyName={project.companyName}
         currentPage="library"
         subtitle="올려주신 기업분석 기초자료 파일을 확인할 수 있는 곳입니다."
+        hasPdfReport={!!project.report?.pdfUrl}
       />
 
       <main className="container mx-auto px-4 py-8">
