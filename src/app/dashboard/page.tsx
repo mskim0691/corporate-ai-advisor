@@ -162,11 +162,11 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {subscription?.plan === "free" ? "Free" : subscription?.plan === "pro" ? "Pro" : "Free"}
+                {subscription?.plan === "expert" ? "Expert" : subscription?.plan === "pro" ? "Pro" : "Free"}
               </div>
               {groupName === 'free' && (
                 <Link href="/pricing" className="text-sm text-blue-600 hover:underline">
-                  Pro로 업그레이드
+                  업그레이드
                 </Link>
               )}
             </CardContent>
