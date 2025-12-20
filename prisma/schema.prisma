@@ -86,9 +86,11 @@ model Report {
   reportType            String    @default("solution") @map("report_type") // 'solution' or 'presentation'
   initialRiskAnalysis   String?   @map("initial_risk_analysis") // Initial risk analysis (step 0)
   additionalRequest     String?   @map("additional_request") // User's additional analysis request
+  supplementaryInfo     String?   @map("supplementary_info") // User's supplementary information for regeneration
   textAnalysis          String?   @map("text_analysis") // Detailed analysis result (step 1)
   analysisData          String?   @map("analysis_data") // JSON string for slides (step 2)
   pdfUrl                String?   @map("pdf_url")
+  regenerationCount     Int       @default(0) @map("regeneration_count") // Number of times solution was regenerated (max 1)
   shareToken            String?   @unique @map("share_token")
   sharePassword         String?   @map("share_password")
   shareExpiresAt        DateTime? @map("share_expires_at")

@@ -24,6 +24,9 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
   const [hasPdfReport, setHasPdfReport] = useState(false)
   const [canCreatePresentation, setCanCreatePresentation] = useState(true)
   const [copySuccess, setCopySuccess] = useState(false)
+  const [supplementaryInfo, setSupplementaryInfo] = useState("")
+  const [regenerationCount, setRegenerationCount] = useState(0)
+  const [isRegenerating, setIsRegenerating] = useState(false)
 
   useEffect(() => {
     params.then(({ id }) => {
@@ -47,6 +50,10 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
         setAnalysisData(data.report?.analysisData)
         setCompanyName(data.companyName)
         setHasPdfReport(!!data.report?.pdfUrl)
+        setRegenerationCount(data.report?.regenerationCount || 0)
+        if (data.report?.supplementaryInfo) {
+          setSupplementaryInfo(data.report.supplementaryInfo)
+        }
       } catch (err: unknown) {
         setError(err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다")
       } finally {
@@ -99,6 +106,35 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
     } catch (err) {
       console.error('Failed to copy text:', err)
       alert('클립보드 복사에 실패했습니다')
+    }
+  }
+
+  const handleRegenerateSolution = async () => {
+    if (!projectId || !supplementaryInfo.trim() || isRegenerating) return
+
+    setIsRegenerating(true)
+    try {
+      const response = await fetch(`/api/projects/${projectId}/regenerate-solution`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ supplementaryInfo: supplementaryInfo.trim() }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || "솔루션 재생성 실패")
+      }
+
+      setTextAnalysis(data.textAnalysis)
+      setRegenerationCount(prev => prev + 1)
+      setHasPdfReport(false) // PDF가 초기화됨
+      alert("솔루션이 재생성되었습니다.")
+    } catch (err) {
+      console.error("Regeneration error:", err)
+      alert(err instanceof Error ? err.message : "솔루션 재생성 중 오류가 발생했습니다.")
+    } finally {
+      setIsRegenerating(false)
     }
   }
 
@@ -521,22 +557,66 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
           </CardContent>
         </Card>
 
+        {/* 솔루션 내용 보완 섹션 */}
         <Card className="mt-6">
           <CardHeader>
-            <CardTitle>프린터 출력</CardTitle>
+            <CardTitle>솔루션 내용 보완</CardTitle>
             <CardDescription>
-              컨설팅 제안서를 프린터로 출력할 수 있습니다
+              위 솔루션 내용은 올려주신 파일에 근거해서 생성되었습니다.<br />
+              위 내용 중 보완이 필요한 정보가 있다면 아래에 자유롭게 입력해주세요.<br />
+              입력한 내용을 반영해 한번 더 솔루션을 생성합니다. (1회 한정)
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button
-              onClick={() => window.print()}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              🖨️ 프린터 출력
-            </Button>
+            {regenerationCount >= 1 ? (
+              <div className="bg-gray-100 rounded-lg p-4 text-center">
+                <p className="text-gray-600">이미 솔루션 재생성을 사용하셨습니다. (1회 제한)</p>
+                {supplementaryInfo && (
+                  <div className="mt-3 text-left bg-white rounded p-3 border">
+                    <p className="text-sm font-semibold text-gray-700 mb-1">입력하신 보완 정보:</p>
+                    <p className="text-sm text-gray-600 whitespace-pre-wrap">{supplementaryInfo}</p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <textarea
+                  value={supplementaryInfo}
+                  onChange={(e) => setSupplementaryInfo(e.target.value)}
+                  placeholder="보완이 필요한 정보를 입력해주세요. 예: 추가 재무 정보, 특이사항, 원하는 방향성 등"
+                  className="w-full min-h-[120px] p-3 border rounded-lg resize-y focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  disabled={isRegenerating}
+                />
+                <Button
+                  onClick={handleRegenerateSolution}
+                  disabled={!supplementaryInfo.trim() || isRegenerating}
+                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
+                >
+                  {isRegenerating ? (
+                    <>
+                      <span className="animate-spin mr-2">⏳</span>
+                      솔루션 재생성 중... (몇 분 소요될 수 있습니다)
+                    </>
+                  ) : (
+                    "솔루션 재생성하기 (1회 한정)"
+                  )}
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
+
+        {/* 프린터 출력 - 최소화 */}
+        <div className="mt-4 flex justify-end">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.print()}
+            className="text-gray-600 hover:text-gray-800"
+          >
+            🖨️ 프린터 출력
+          </Button>
+        </div>
       </main>
     </div>
   )
