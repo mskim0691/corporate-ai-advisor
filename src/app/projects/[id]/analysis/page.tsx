@@ -85,13 +85,8 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
   const handlePresentationClick = () => {
     if (!projectId) return
 
-    // PDF 리포트가 생성되어 있으면 라이브러리로 이동
-    if (hasPdfReport) {
-      router.push(`/projects/${projectId}/library`)
-    } else {
-      // PDF 리포트가 없으면 report 페이지로 이동하여 생성
-      router.push(`/projects/${projectId}/report`)
-    }
+    // PDF 리포트가 있든 없든 report 페이지로 이동
+    router.push(`/projects/${projectId}/report`)
   }
 
   const handleCopyToClipboard = async () => {
