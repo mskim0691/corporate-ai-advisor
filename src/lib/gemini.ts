@@ -503,32 +503,37 @@ Generate a polished, professional presentation slide that would be suitable for 
         responseModalities: ["TEXT", "IMAGE"],
         imageConfig: {
           aspectRatio: "16:9",
+          imageSize: "1K",
         },
       } as any,
     })
 
     // 응답에서 이미지 데이터 추출
-    const parts = response.candidates?.[0]?.content?.parts || []
+    if (!response.candidates || response.candidates.length === 0) {
+      console.error(`❌ No candidates in response for slide ${slideNumber}`)
+      console.error(`Full response:`, JSON.stringify(response, null, 2).substring(0, 2000))
+      throw new Error("No candidates in response")
+    }
 
+    const parts = response.candidates[0].content?.parts || []
     console.log(`📦 Response parts count: ${parts.length}`)
 
     for (const part of parts) {
-      // inlineData 체크
-      if ((part as any).inlineData) {
-        const imageData = (part as any).inlineData.data
-        console.log(`✓ Image generated for slide ${slideNumber} (inlineData)`)
-        return imageData
+      // 텍스트 파트 로깅
+      if (part.text) {
+        console.log(`📝 Text response for slide ${slideNumber}: ${part.text.substring(0, 100)}...`)
       }
-      // image 객체 체크 (Vertex AI 형식)
-      if ((part as any).image?.imageBytes) {
-        console.log(`✓ Image generated for slide ${slideNumber} (image.imageBytes)`)
-        return (part as any).image.imageBytes
+      // inlineData 체크 (공식 문서 방식)
+      if (part.inlineData && part.inlineData.data) {
+        const imageData = part.inlineData.data
+        console.log(`✓ Image generated for slide ${slideNumber} (inlineData, ${imageData.length} bytes)`)
+        return imageData
       }
     }
 
     // 디버그용 로그
     console.error(`❌ No image data found in response for slide ${slideNumber}`)
-    console.error(`Response structure:`, JSON.stringify(response, null, 2).substring(0, 1000))
+    console.error(`Parts structure:`, JSON.stringify(parts, null, 2).substring(0, 2000))
 
     throw new Error("No image data in response")
   } catch (error) {
