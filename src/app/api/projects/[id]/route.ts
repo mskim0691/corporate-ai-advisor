@@ -52,9 +52,11 @@ export async function GET(
       report: project.report ? {
         initialRiskAnalysis: project.report.initialRiskAnalysis,
         additionalRequest: project.report.additionalRequest,
+        supplementaryInfo: project.report.supplementaryInfo,
         textAnalysis: project.report.textAnalysis,
         analysisData: project.report.analysisData,
         pdfUrl: project.report.pdfUrl,
+        regenerationCount: project.report.regenerationCount,
       } : null,
     })
   } catch (error) {
