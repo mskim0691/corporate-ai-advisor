@@ -43,7 +43,12 @@ export function VisualReportButton({
 
   return (
     <>
-      <Button variant="outline" size="sm" onClick={handleClick}>
+      <Button
+        variant={hasReport ? "default" : "outline"}
+        size="sm"
+        onClick={handleClick}
+        className={hasReport ? "bg-blue-600 hover:bg-blue-700 text-white" : ""}
+      >
         비주얼레포트
       </Button>
 

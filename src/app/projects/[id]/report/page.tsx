@@ -13,7 +13,6 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
   const [loading, setLoading] = useState(true)
   const [generatingVisualReport, setGeneratingVisualReport] = useState(false)
   const [generationProgress, setGenerationProgress] = useState<string>("")
-  const [downloading, setDownloading] = useState(false)
 
   useEffect(() => {
     params.then(({ id }) => setProjectId(id))
@@ -87,29 +86,6 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
     }
   }
 
-  const handleDownload = async () => {
-    if (!pdfUrl) return
-
-    setDownloading(true)
-    try {
-      const response = await fetch(pdfUrl)
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement("a")
-      a.href = url
-      a.download = `${companyName}_비주얼리포트.pdf`
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
-    } catch (error) {
-      console.error("Download error:", error)
-      alert("다운로드 중 오류가 발생했습니다.")
-    } finally {
-      setDownloading(false)
-    }
-  }
-
   if (loading || generatingVisualReport) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -136,15 +112,6 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-4">
             <h1 className="text-2xl font-bold">{companyName} 비주얼 리포트</h1>
-            {pdfUrl && (
-              <Button
-                onClick={handleDownload}
-                disabled={downloading}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                {downloading ? "다운로드 중..." : "PDF 다운로드"}
-              </Button>
-            )}
           </div>
           <div className="flex gap-3">
             <Button variant="outline" asChild>
