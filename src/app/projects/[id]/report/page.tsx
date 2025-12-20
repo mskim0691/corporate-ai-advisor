@@ -4,6 +4,14 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 export default function ReportPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
@@ -13,10 +21,29 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
   const [loading, setLoading] = useState(true)
   const [generatingVisualReport, setGeneratingVisualReport] = useState(false)
   const [generationProgress, setGenerationProgress] = useState<string>("")
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
   useEffect(() => {
     params.then(({ id }) => setProjectId(id))
   }, [params])
+
+  // Check if user is admin
+  useEffect(() => {
+    const checkAdmin = async () => {
+      try {
+        const response = await fetch("/api/auth/me")
+        if (response.ok) {
+          const data = await response.json()
+          setIsAdmin(data.role === "admin")
+        }
+      } catch (error) {
+        console.error("Failed to check admin status:", error)
+      }
+    }
+    checkAdmin()
+  }, [])
 
   useEffect(() => {
     if (!projectId) return
@@ -86,6 +113,30 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
     }
   }
 
+  const handleDeleteVisualReport = async () => {
+    if (!projectId || deleting) return
+
+    setDeleting(true)
+    try {
+      const response = await fetch(`/api/projects/${projectId}/delete-visual-report`, {
+        method: "DELETE",
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "비주얼 리포트 삭제 실패")
+      }
+
+      setPdfUrl(null)
+      setShowDeleteDialog(false)
+    } catch (error) {
+      console.error("Visual report deletion error:", error)
+      alert("비주얼 리포트 삭제 중 오류가 발생했습니다.")
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   if (loading || generatingVisualReport) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -112,6 +163,16 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-4">
             <h1 className="text-2xl font-bold">{companyName} 비주얼 리포트</h1>
+            {isAdmin && pdfUrl && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setShowDeleteDialog(true)}
+                disabled={deleting}
+              >
+                {deleting ? "삭제 중..." : "PDF 삭제"}
+              </Button>
+            )}
           </div>
           <div className="flex gap-3">
             <Button variant="outline" asChild>
@@ -152,6 +213,34 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
           </div>
         )}
       </main>
+
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>비주얼 리포트 삭제</DialogTitle>
+            <DialogDescription>
+              정말로 이 비주얼 리포트를 삭제하시겠습니까?<br />
+              삭제된 PDF 파일은 복구할 수 없습니다.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteDialog(false)}
+              disabled={deleting}
+            >
+              취소
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteVisualReport}
+              disabled={deleting}
+            >
+              {deleting ? "삭제 중..." : "삭제"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
