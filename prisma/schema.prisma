@@ -163,7 +163,8 @@ model PricingPlan {
   price             Float    // Monthly price
   originalPrice     Float?   @map("original_price") // Original price (for showing discount)
   currency          String   @default("KRW") // Currency
-  monthlyAnalysis   Int      @map("monthly_analysis") // Number of analyses per month
+  monthlyAnalysis   Int      @map("monthly_analysis") // Number of analysis solutions per month
+  monthlyPresentation Int    @default(0) @map("monthly_presentation") // Number of visual reports per month
   features          String   // JSON string of features array
   isPopular         Boolean  @default(false) @map("is_popular") // Show "popular" badge
   isActive          Boolean  @default(true) @map("is_active") // Whether the plan is visible

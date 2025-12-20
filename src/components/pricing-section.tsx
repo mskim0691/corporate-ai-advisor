@@ -12,6 +12,7 @@ interface PricingPlan {
   originalPrice: number | null;
   currency: string;
   monthlyAnalysis: number;
+  monthlyPresentation: number;
   features: string[];
   isPopular: boolean;
   isActive: boolean;
@@ -63,7 +64,7 @@ export function PricingSection() {
     <section className="py-16">
       <div className="container mx-auto px-4">
         <h3 className="text-3xl font-bold text-center mb-12">가격 플랜</h3>
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
           {plans.map((plan) => {
             const isHighlighted = plan.isPopular || plan.badgeText;
             const badgeColorClass =
@@ -71,6 +72,8 @@ export function PricingSection() {
                 ? 'bg-blue-500'
                 : plan.badgeColor === 'green'
                 ? 'bg-green-500'
+                : plan.badgeColor === 'orange'
+                ? 'bg-orange-500'
                 : 'bg-red-500';
 
             return (

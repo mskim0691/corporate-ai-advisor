@@ -260,14 +260,17 @@ export default function UserDetailPage() {
                   >
                     <option value="free">Free</option>
                     <option value="pro">Pro</option>
+                    <option value="expert">Expert</option>
                   </select>
                 ) : (
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    user.subscription?.plan === 'pro'
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-gray-100 text-gray-800'
+                    user.subscription?.plan === 'expert'
+                      ? 'bg-orange-100 text-orange-800'
+                      : user.subscription?.plan === 'pro'
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-gray-100 text-gray-800'
                   }`}>
-                    {user.subscription?.plan === 'pro' ? 'Pro' : 'Free'}
+                    {user.subscription?.plan === 'expert' ? 'Expert' : user.subscription?.plan === 'pro' ? 'Pro' : 'Free'}
                   </span>
                 )}
               </dd>

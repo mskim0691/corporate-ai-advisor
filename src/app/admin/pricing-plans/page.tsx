@@ -10,6 +10,7 @@ interface PricingPlan {
   originalPrice: number | null;
   currency: string;
   monthlyAnalysis: number;
+  monthlyPresentation: number;
   features: string;
   isPopular: boolean;
   isActive: boolean;
@@ -34,6 +35,7 @@ export default function PricingPlansPage() {
     originalPrice: '',
     currency: 'KRW',
     monthlyAnalysis: 0,
+    monthlyPresentation: 0,
     features: '',
     isPopular: false,
     isActive: true,
@@ -88,6 +90,7 @@ export default function PricingPlansPage() {
           badgeText: formData.badgeText || null,
           badgeColor: formData.badgeColor || null,
           features: featuresArray,
+          monthlyPresentation: formData.monthlyPresentation,
         }),
       });
 
@@ -124,6 +127,7 @@ export default function PricingPlansPage() {
       originalPrice: plan.originalPrice?.toString() || '',
       currency: plan.currency,
       monthlyAnalysis: plan.monthlyAnalysis,
+      monthlyPresentation: plan.monthlyPresentation || 0,
       features: featuresText,
       isPopular: plan.isPopular,
       isActive: plan.isActive,
@@ -166,6 +170,7 @@ export default function PricingPlansPage() {
       originalPrice: '',
       currency: 'KRW',
       monthlyAnalysis: 0,
+      monthlyPresentation: 0,
       features: '',
       isPopular: false,
       isActive: true,
@@ -268,7 +273,7 @@ export default function PricingPlansPage() {
 
               <div>
                 <label htmlFor="monthlyAnalysis" className="block text-sm font-medium text-gray-700">
-                  월간 분석 횟수 *
+                  월간 분석솔루션 *
                 </label>
                 <input
                   type="number"
@@ -276,6 +281,20 @@ export default function PricingPlansPage() {
                   required
                   value={formData.monthlyAnalysis}
                   onChange={(e) => setFormData({ ...formData, monthlyAnalysis: parseInt(e.target.value) || 0 })}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="monthlyPresentation" className="block text-sm font-medium text-gray-700">
+                  월간 비주얼레포트 *
+                </label>
+                <input
+                  type="number"
+                  id="monthlyPresentation"
+                  required
+                  value={formData.monthlyPresentation}
+                  onChange={(e) => setFormData({ ...formData, monthlyPresentation: parseInt(e.target.value) || 0 })}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -458,7 +477,10 @@ export default function PricingPlansPage() {
                           )}
                         </p>
                         <p className="text-sm text-gray-600">
-                          <strong>월간 분석:</strong> {plan.monthlyAnalysis}회
+                          <strong>월간 분석솔루션:</strong> {plan.monthlyAnalysis}회
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          <strong>월간 비주얼레포트:</strong> {plan.monthlyPresentation}회
                         </p>
                         <p className="text-sm text-gray-600">
                           <strong>표시 순서:</strong> {plan.displayOrder}

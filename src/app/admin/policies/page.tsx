@@ -91,6 +91,8 @@ export default function PoliciesPage() {
     switch (groupName) {
       case 'admin':
         return '관리자 그룹 - 무제한 솔루션 및 비주얼 레포트 생성';
+      case 'expert':
+        return 'Expert 그룹 - 전문가/기업 사용자';
       case 'pro':
         return 'Pro 그룹 - 유료 구독 사용자';
       case 'free':
@@ -104,6 +106,8 @@ export default function PoliciesPage() {
     switch (groupName) {
       case 'admin':
         return '관리자';
+      case 'expert':
+        return 'Expert';
       case 'pro':
         return 'Pro';
       case 'free':
@@ -114,17 +118,24 @@ export default function PoliciesPage() {
   };
 
   const ensureAllGroups = () => {
-    const groups = ['admin', 'pro', 'free'];
+    const groups = ['admin', 'expert', 'pro', 'free'];
     const existingGroups = policies.map((p) => p.groupName);
     const allPolicies = [...policies];
+
+    const defaultLimits: { [key: string]: { project: number; presentation: number } } = {
+      admin: { project: 999999, presentation: 999999 },
+      expert: { project: 30, presentation: 10 },
+      pro: { project: 15, presentation: 1 },
+      free: { project: 3, presentation: 0 },
+    };
 
     groups.forEach((group) => {
       if (!existingGroups.includes(group)) {
         allPolicies.push({
           id: '',
           groupName: group,
-          monthlyProjectLimit: group === 'admin' ? 999999 : group === 'pro' ? 15 : 3,
-          monthlyPresentationLimit: group === 'admin' ? 999999 : group === 'pro' ? 1 : 0,
+          monthlyProjectLimit: defaultLimits[group].project,
+          monthlyPresentationLimit: defaultLimits[group].presentation,
           description: getGroupDescription(group),
           createdAt: '',
           updatedAt: '',
@@ -133,11 +144,8 @@ export default function PoliciesPage() {
     });
 
     return allPolicies.sort((a, b) => {
-      const order = { admin: 0, pro: 1, free: 2 };
-      return (
-        order[a.groupName as keyof typeof order] -
-        order[b.groupName as keyof typeof order]
-      );
+      const order: { [key: string]: number } = { admin: 0, expert: 1, pro: 2, free: 3 };
+      return (order[a.groupName] ?? 99) - (order[b.groupName] ?? 99);
     });
   };
 

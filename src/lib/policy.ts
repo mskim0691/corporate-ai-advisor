@@ -24,6 +24,8 @@ export async function checkProjectCreationPolicy(
   let groupName = 'free'; // default
   if (userRole === 'admin') {
     groupName = 'admin';
+  } else if (subscriptionPlan === 'expert') {
+    groupName = 'expert';
   } else if (subscriptionPlan === 'pro') {
     groupName = 'pro';
   }
@@ -34,7 +36,7 @@ export async function checkProjectCreationPolicy(
   });
 
   // If no policy exists, use default limits
-  const monthlyLimit = policy?.monthlyProjectLimit ?? (groupName === 'admin' ? 999999 : groupName === 'pro' ? 10 : 3);
+  const monthlyLimit = policy?.monthlyProjectLimit ?? (groupName === 'admin' ? 999999 : groupName === 'expert' ? 30 : groupName === 'pro' ? 10 : 3);
 
   // Get current month's usage
   const yearMonth = getCurrentYearMonth();
@@ -82,6 +84,8 @@ export async function checkPresentationCreationPolicy(
   let groupName = 'free'; // default
   if (userRole === 'admin') {
     groupName = 'admin';
+  } else if (subscriptionPlan === 'expert') {
+    groupName = 'expert';
   } else if (subscriptionPlan === 'pro') {
     groupName = 'pro';
   }
@@ -92,7 +96,7 @@ export async function checkPresentationCreationPolicy(
   });
 
   // If no policy exists, use default limits
-  const monthlyLimit = policy?.monthlyPresentationLimit ?? (groupName === 'admin' ? 999999 : groupName === 'pro' ? 1 : 0);
+  const monthlyLimit = policy?.monthlyPresentationLimit ?? (groupName === 'admin' ? 999999 : groupName === 'expert' ? 10 : groupName === 'pro' ? 1 : 0);
 
   // Get current month's presentation report count
   const yearMonth = getCurrentYearMonth();
@@ -146,14 +150,20 @@ export async function getUserPolicyInfo(userId: string) {
     return null;
   }
 
-  const groupName = user.role === 'admin' ? 'admin' : user.subscription?.plan === 'pro' ? 'pro' : 'free';
+  const groupName = user.role === 'admin'
+    ? 'admin'
+    : user.subscription?.plan === 'expert'
+      ? 'expert'
+      : user.subscription?.plan === 'pro'
+        ? 'pro'
+        : 'free';
 
   const policy = await prisma.groupPolicy.findUnique({
     where: { groupName },
   });
 
-  const monthlyLimit = policy?.monthlyProjectLimit ?? (groupName === 'admin' ? 999999 : groupName === 'pro' ? 10 : 3);
-  const monthlyPresentationLimit = policy?.monthlyPresentationLimit ?? (groupName === 'admin' ? 999999 : groupName === 'pro' ? 1 : 0);
+  const monthlyLimit = policy?.monthlyProjectLimit ?? (groupName === 'admin' ? 999999 : groupName === 'expert' ? 30 : groupName === 'pro' ? 10 : 3);
+  const monthlyPresentationLimit = policy?.monthlyPresentationLimit ?? (groupName === 'admin' ? 999999 : groupName === 'expert' ? 10 : groupName === 'pro' ? 1 : 0);
 
   const yearMonth = getCurrentYearMonth();
   const usageLog = await prisma.usageLog.findUnique({
