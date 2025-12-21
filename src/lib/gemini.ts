@@ -496,11 +496,11 @@ Generate a polished, professional presentation slide that would be suitable for 
     console.log(`🎨 Generating image for slide ${slideNumber}...`)
 
     // Gemini 3 Pro Image Preview 모델 사용
+    // Note: temperature is not applicable for image generation - model handles variation internally
     const response = await genAIImage.models.generateContent({
       model: "gemini-3-pro-image-preview",
       contents: prompt,
       config: {
-        temperature: 1.0,
         responseModalities: ["TEXT", "IMAGE"],
         imageConfig: {
           aspectRatio: "16:9",
@@ -624,11 +624,11 @@ Generate a polished, professional cover page image that would be suitable as the
 
     console.log(`🎨 Generating cover image...`)
 
+    // Note: temperature is not applicable for image generation - model handles variation internally
     const response = await genAIImage.models.generateContent({
       model: "gemini-3-pro-image-preview",
       contents: prompt,
       config: {
-        temperature: 1.0,
         responseModalities: ["TEXT", "IMAGE"],
         imageConfig: {
           aspectRatio: "16:9",
