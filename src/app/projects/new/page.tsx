@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -122,18 +122,20 @@ export default function NewProjectPage() {
 
       const { projectId } = await projectResponse.json()
 
-      const formData = new FormData()
-      files.forEach((file) => {
+      // Upload files one by one to avoid Vercel's 4.5MB body size limit
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        const formData = new FormData()
         formData.append("files", file)
-      })
 
-      const uploadResponse = await fetch(`/api/projects/${projectId}/upload`, {
-        method: "POST",
-        body: formData,
-      })
+        const uploadResponse = await fetch(`/api/projects/${projectId}/upload`, {
+          method: "POST",
+          body: formData,
+        })
 
-      if (!uploadResponse.ok) {
-        throw new Error("파일 업로드에 실패했습니다")
+        if (!uploadResponse.ok) {
+          throw new Error(`파일 업로드에 실패했습니다: ${file.name}`)
+        }
       }
 
       // additionalRequest 저장
