@@ -242,6 +242,15 @@ export async function POST(
       const errorMessage = error instanceof Error ? error.message : "알 수 없는 오류"
       const errorStack = error instanceof Error ? error.stack : ""
       console.error("Error details:", { message: errorMessage, stack: errorStack })
+
+      // 서버 과부하 에러 처리
+      if (errorMessage === "SERVER_OVERLOADED") {
+        return NextResponse.json(
+          { error: "현재 서버 과부하입니다. 나중에 다시 요청해주세요." },
+          { status: 503 }
+        )
+      }
+
       return NextResponse.json(
         { error: `비주얼 리포트 생성 중 오류가 발생했습니다: ${errorMessage}` },
         { status: 500 }
