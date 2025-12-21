@@ -459,8 +459,8 @@ export async function generatePresentationSlides(
 
 // 이미지 생성 모델 목록 (우선순위 순)
 const IMAGE_MODELS = [
-  "gemini-3-pro-image-preview",
-  "gemini-2.5-flash-preview-image-generation",
+  "gemini-2.5-flash-image-preview",  // Nano Banana - stable fallback
+  "gemini-2.5-flash-image",          // Stable version
 ]
 
 // 재시도 설정
