@@ -460,55 +460,73 @@ export async function generatePresentationSlides(
 // 이미지 생성에 사용할 모델
 const IMAGE_MODEL = "gemini-3-pro-image-preview"
 
+// 재시도 설정
+const MAX_RETRIES = 3
+const RETRY_DELAY_MS = 2000
+
 /**
- * 이미지를 생성합니다. 서버 과부하 시 명확한 에러를 반환합니다.
+ * 이미지를 생성합니다. 실패 시 재시도하며, 서버 과부하 시 명확한 에러를 반환합니다.
  */
 async function generateImage(prompt: string): Promise<string> {
-  try {
-    console.log(`🎨 Generating image with ${IMAGE_MODEL}...`)
+  let lastError: Error | null = null
 
-    const response = await genAIImage.models.generateContent({
-      model: IMAGE_MODEL,
-      contents: prompt,
-      config: {
-        responseModalities: ["TEXT", "IMAGE"],
-        imageConfig: {
-          aspectRatio: "16:9",
-          imageSize: "1K",
-        },
-      } as any,
-    })
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      console.log(`🎨 Generating image with ${IMAGE_MODEL}... (attempt ${attempt}/${MAX_RETRIES})`)
 
-    // 응답에서 이미지 데이터 추출
-    if (!response.candidates || response.candidates.length === 0) {
-      throw new Error("No candidates in response")
-    }
+      const response = await genAIImage.models.generateContent({
+        model: IMAGE_MODEL,
+        contents: prompt,
+        config: {
+          responseModalities: ["TEXT", "IMAGE"],
+          imageConfig: {
+            aspectRatio: "16:9",
+            imageSize: "1K",
+          },
+        } as any,
+      })
 
-    const parts = response.candidates[0].content?.parts || []
+      // 응답에서 이미지 데이터 추출
+      if (!response.candidates || response.candidates.length === 0) {
+        throw new Error("No candidates in response")
+      }
 
-    for (const part of parts) {
-      if (part.inlineData && part.inlineData.data) {
-        console.log(`✓ Image generated with ${IMAGE_MODEL}`)
-        return part.inlineData.data
+      const parts = response.candidates[0].content?.parts || []
+
+      for (const part of parts) {
+        if (part.inlineData && part.inlineData.data) {
+          console.log(`✓ Image generated with ${IMAGE_MODEL}`)
+          return part.inlineData.data
+        }
+      }
+
+      throw new Error("No image data in response")
+    } catch (error: any) {
+      const errorMessage = error?.message || String(error)
+      const isOverloaded = errorMessage.includes("503") ||
+                           errorMessage.includes("overloaded") ||
+                           errorMessage.includes("UNAVAILABLE") ||
+                           errorMessage.includes("Resource has been exhausted")
+
+      console.error(`❌ Error with ${IMAGE_MODEL} (attempt ${attempt}/${MAX_RETRIES}): ${errorMessage}`)
+
+      // 서버 과부하는 재시도 없이 즉시 에러 반환
+      if (isOverloaded) {
+        throw new Error("SERVER_OVERLOADED")
+      }
+
+      lastError = new Error(`이미지 생성 실패: ${errorMessage}`)
+
+      // 마지막 시도가 아니면 대기 후 재시도
+      if (attempt < MAX_RETRIES) {
+        console.log(`⏳ Retrying in ${RETRY_DELAY_MS / 1000} seconds...`)
+        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS))
       }
     }
-
-    throw new Error("No image data in response")
-  } catch (error: any) {
-    const errorMessage = error?.message || String(error)
-    const isOverloaded = errorMessage.includes("503") ||
-                         errorMessage.includes("overloaded") ||
-                         errorMessage.includes("UNAVAILABLE") ||
-                         errorMessage.includes("Resource has been exhausted")
-
-    console.error(`❌ Error with ${IMAGE_MODEL}: ${errorMessage}`)
-
-    if (isOverloaded) {
-      throw new Error("SERVER_OVERLOADED")
-    }
-
-    throw new Error(`이미지 생성 실패: ${errorMessage}`)
   }
+
+  // 모든 재시도 실패
+  throw lastError || new Error("이미지 생성 실패: 알 수 없는 오류")
 }
 
 /**
@@ -578,25 +596,15 @@ export async function generateAllSlideImages(
   const images: string[] = []
 
   for (const slide of slides) {
-    try {
-      const imageData = await generateSlideImage(
-        { title: slide.title, content: slide.content },
-        slide.slideNumber,
-        companyName
-      )
-      images.push(imageData)
+    const imageData = await generateSlideImage(
+      { title: slide.title, content: slide.content },
+      slide.slideNumber,
+      companyName
+    )
+    images.push(imageData)
 
-      // API rate limit을 위한 딜레이 (1초)
-      await new Promise(resolve => setTimeout(resolve, 1000))
-    } catch (error: any) {
-      // SERVER_OVERLOADED 에러는 그대로 전파 (사용자에게 명확한 메시지 표시)
-      if (error?.message === "SERVER_OVERLOADED") {
-        throw error
-      }
-      console.error(`Failed to generate image for slide ${slide.slideNumber}:`, error)
-      // 다른 에러는 빈 문자열로 처리
-      images.push("")
-    }
+    // API rate limit을 위한 딜레이 (1초)
+    await new Promise(resolve => setTimeout(resolve, 1000))
   }
 
   console.log(`✓ Generated ${images.filter(img => img).length}/${slides.length} slide images`)
