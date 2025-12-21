@@ -69,11 +69,15 @@ export async function POST(
       const bytes = await file.arrayBuffer()
       const buffer = Buffer.from(bytes)
 
-      // Sanitize filename: remove Korean characters and special chars
-      // Use UUID for storage, but keep original filename in database
-      const fileExtension = path.extname(file.name)
+      // Sanitize filename: use UUID for storage to avoid any special character issues
+      // Keep original filename in database for display
+      // Also sanitize file extension to remove any problematic characters
+      const rawExtension = path.extname(file.name)
+      const fileExtension = rawExtension.toLowerCase().replace(/[^a-z0-9.]/g, '')
       const sanitizedFilename = `${Date.now()}_${crypto.randomUUID()}${fileExtension}`
       const filePath = `${userId}/${id}/${sanitizedFilename}`
+
+      console.log(`📁 Uploading file: original="${file.name}", sanitized="${sanitizedFilename}", path="${filePath}"`)
 
       if (USE_SUPABASE) {
         // Upload to Supabase Storage
