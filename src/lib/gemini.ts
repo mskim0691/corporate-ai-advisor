@@ -457,31 +457,18 @@ export async function generatePresentationSlides(
   }
 }
 
-// 이미지 생성 모델 목록 (우선순위 순)
-const IMAGE_MODELS = [
-  "gemini-2.5-flash-image-preview",  // Nano Banana - stable fallback
-  "gemini-2.5-flash-image",          // Stable version
-]
-
-// 재시도 설정
-const MAX_RETRIES = 3
-const RETRY_DELAY_MS = 2000
+// 이미지 생성에 사용할 모델
+const IMAGE_MODEL = "gemini-3-pro-image-preview"
 
 /**
- * 지수 백오프로 재시도하며 이미지를 생성합니다.
+ * 이미지를 생성합니다. 서버 과부하 시 명확한 에러를 반환합니다.
  */
-async function generateImageWithRetry(
-  prompt: string,
-  modelIndex: number = 0,
-  retryCount: number = 0
-): Promise<string> {
-  const model = IMAGE_MODELS[modelIndex]
-
+async function generateImage(prompt: string): Promise<string> {
   try {
-    console.log(`🎨 Trying model: ${model} (attempt ${retryCount + 1}/${MAX_RETRIES})`)
+    console.log(`🎨 Generating image with ${IMAGE_MODEL}...`)
 
     const response = await genAIImage.models.generateContent({
-      model,
+      model: IMAGE_MODEL,
       contents: prompt,
       config: {
         responseModalities: ["TEXT", "IMAGE"],
@@ -501,7 +488,7 @@ async function generateImageWithRetry(
 
     for (const part of parts) {
       if (part.inlineData && part.inlineData.data) {
-        console.log(`✓ Image generated with ${model}`)
+        console.log(`✓ Image generated with ${IMAGE_MODEL}`)
         return part.inlineData.data
       }
     }
@@ -511,25 +498,16 @@ async function generateImageWithRetry(
     const errorMessage = error?.message || String(error)
     const isOverloaded = errorMessage.includes("503") ||
                          errorMessage.includes("overloaded") ||
-                         errorMessage.includes("UNAVAILABLE")
+                         errorMessage.includes("UNAVAILABLE") ||
+                         errorMessage.includes("Resource has been exhausted")
 
-    console.error(`❌ Error with ${model}: ${errorMessage}`)
+    console.error(`❌ Error with ${IMAGE_MODEL}: ${errorMessage}`)
 
-    // 재시도 가능한 경우
-    if (retryCount < MAX_RETRIES - 1) {
-      const delay = RETRY_DELAY_MS * Math.pow(2, retryCount) // 지수 백오프
-      console.log(`⏳ Retrying in ${delay}ms...`)
-      await new Promise(resolve => setTimeout(resolve, delay))
-      return generateImageWithRetry(prompt, modelIndex, retryCount + 1)
+    if (isOverloaded) {
+      throw new Error("SERVER_OVERLOADED")
     }
 
-    // 다음 모델로 폴백
-    if (modelIndex < IMAGE_MODELS.length - 1) {
-      console.log(`🔄 Falling back to next model: ${IMAGE_MODELS[modelIndex + 1]}`)
-      return generateImageWithRetry(prompt, modelIndex + 1, 0)
-    }
-
-    throw new Error(`All models failed: ${errorMessage}`)
+    throw new Error(`이미지 생성 실패: ${errorMessage}`)
   }
 }
 
@@ -571,11 +549,15 @@ Generate a polished, professional presentation slide that would be suitable for 
 
     console.log(`🎨 Generating image for slide ${slideNumber}...`)
 
-    const imageData = await generateImageWithRetry(prompt)
+    const imageData = await generateImage(prompt)
     console.log(`✓ Image generated for slide ${slideNumber}`)
     return imageData
-  } catch (error) {
+  } catch (error: any) {
     console.error(`Error generating image for slide ${slideNumber}:`, error)
+    // SERVER_OVERLOADED 에러는 그대로 전파
+    if (error?.message === "SERVER_OVERLOADED") {
+      throw error
+    }
     throw new Error(`슬라이드 ${slideNumber} 이미지 생성 중 오류가 발생했습니다`)
   }
 }
@@ -606,9 +588,13 @@ export async function generateAllSlideImages(
 
       // API rate limit을 위한 딜레이 (1초)
       await new Promise(resolve => setTimeout(resolve, 1000))
-    } catch (error) {
+    } catch (error: any) {
+      // SERVER_OVERLOADED 에러는 그대로 전파 (사용자에게 명확한 메시지 표시)
+      if (error?.message === "SERVER_OVERLOADED") {
+        throw error
+      }
       console.error(`Failed to generate image for slide ${slide.slideNumber}:`, error)
-      // 실패한 슬라이드는 빈 문자열로 처리
+      // 다른 에러는 빈 문자열로 처리
       images.push("")
     }
   }
@@ -661,11 +647,15 @@ Generate a polished, professional cover page image that would be suitable as the
 
     console.log(`🎨 Generating cover image...`)
 
-    const imageData = await generateImageWithRetry(prompt)
+    const imageData = await generateImage(prompt)
     console.log(`✓ Cover image generated`)
     return imageData
-  } catch (error) {
+  } catch (error: any) {
     console.error(`Error generating cover image:`, error)
+    // SERVER_OVERLOADED 에러는 그대로 전파
+    if (error?.message === "SERVER_OVERLOADED") {
+      throw error
+    }
     return null
   }
 }
