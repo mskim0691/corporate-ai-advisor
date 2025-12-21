@@ -500,6 +500,7 @@ Generate a polished, professional presentation slide that would be suitable for 
       model: "gemini-3-pro-image-preview",
       contents: prompt,
       config: {
+        temperature: 1.0,
         responseModalities: ["TEXT", "IMAGE"],
         imageConfig: {
           aspectRatio: "16:9",
@@ -627,6 +628,7 @@ Generate a polished, professional cover page image that would be suitable as the
       model: "gemini-3-pro-image-preview",
       contents: prompt,
       config: {
+        temperature: 1.0,
         responseModalities: ["TEXT", "IMAGE"],
         imageConfig: {
           aspectRatio: "16:9",
