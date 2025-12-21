@@ -457,8 +457,84 @@ export async function generatePresentationSlides(
   }
 }
 
+// 이미지 생성 모델 목록 (우선순위 순)
+const IMAGE_MODELS = [
+  "gemini-3-pro-image-preview",
+  "gemini-2.5-flash-preview-image-generation",
+]
+
+// 재시도 설정
+const MAX_RETRIES = 3
+const RETRY_DELAY_MS = 2000
+
 /**
- * Gemini Imagen 3을 사용하여 슬라이드 이미지를 생성합니다.
+ * 지수 백오프로 재시도하며 이미지를 생성합니다.
+ */
+async function generateImageWithRetry(
+  prompt: string,
+  modelIndex: number = 0,
+  retryCount: number = 0
+): Promise<string> {
+  const model = IMAGE_MODELS[modelIndex]
+
+  try {
+    console.log(`🎨 Trying model: ${model} (attempt ${retryCount + 1}/${MAX_RETRIES})`)
+
+    const response = await genAIImage.models.generateContent({
+      model,
+      contents: prompt,
+      config: {
+        responseModalities: ["TEXT", "IMAGE"],
+        imageConfig: {
+          aspectRatio: "16:9",
+          imageSize: "1K",
+        },
+      } as any,
+    })
+
+    // 응답에서 이미지 데이터 추출
+    if (!response.candidates || response.candidates.length === 0) {
+      throw new Error("No candidates in response")
+    }
+
+    const parts = response.candidates[0].content?.parts || []
+
+    for (const part of parts) {
+      if (part.inlineData && part.inlineData.data) {
+        console.log(`✓ Image generated with ${model}`)
+        return part.inlineData.data
+      }
+    }
+
+    throw new Error("No image data in response")
+  } catch (error: any) {
+    const errorMessage = error?.message || String(error)
+    const isOverloaded = errorMessage.includes("503") ||
+                         errorMessage.includes("overloaded") ||
+                         errorMessage.includes("UNAVAILABLE")
+
+    console.error(`❌ Error with ${model}: ${errorMessage}`)
+
+    // 재시도 가능한 경우
+    if (retryCount < MAX_RETRIES - 1) {
+      const delay = RETRY_DELAY_MS * Math.pow(2, retryCount) // 지수 백오프
+      console.log(`⏳ Retrying in ${delay}ms...`)
+      await new Promise(resolve => setTimeout(resolve, delay))
+      return generateImageWithRetry(prompt, modelIndex, retryCount + 1)
+    }
+
+    // 다음 모델로 폴백
+    if (modelIndex < IMAGE_MODELS.length - 1) {
+      console.log(`🔄 Falling back to next model: ${IMAGE_MODELS[modelIndex + 1]}`)
+      return generateImageWithRetry(prompt, modelIndex + 1, 0)
+    }
+
+    throw new Error(`All models failed: ${errorMessage}`)
+  }
+}
+
+/**
+ * Gemini Imagen을 사용하여 슬라이드 이미지를 생성합니다.
  * @param slideContent 슬라이드 내용 (제목, 본문)
  * @param slideNumber 슬라이드 번호
  * @param companyName 회사명
@@ -495,48 +571,9 @@ Generate a polished, professional presentation slide that would be suitable for 
 
     console.log(`🎨 Generating image for slide ${slideNumber}...`)
 
-    // Gemini 3 Pro Image Preview 모델 사용
-    // Note: temperature is not applicable for image generation - model handles variation internally
-    const response = await genAIImage.models.generateContent({
-      model: "gemini-3-pro-image-preview",
-      contents: prompt,
-      config: {
-        responseModalities: ["TEXT", "IMAGE"],
-        imageConfig: {
-          aspectRatio: "16:9",
-          imageSize: "1K",
-        },
-      } as any,
-    })
-
-    // 응답에서 이미지 데이터 추출
-    if (!response.candidates || response.candidates.length === 0) {
-      console.error(`❌ No candidates in response for slide ${slideNumber}`)
-      console.error(`Full response:`, JSON.stringify(response, null, 2).substring(0, 2000))
-      throw new Error("No candidates in response")
-    }
-
-    const parts = response.candidates[0].content?.parts || []
-    console.log(`📦 Response parts count: ${parts.length}`)
-
-    for (const part of parts) {
-      // 텍스트 파트 로깅
-      if (part.text) {
-        console.log(`📝 Text response for slide ${slideNumber}: ${part.text.substring(0, 100)}...`)
-      }
-      // inlineData 체크 (공식 문서 방식)
-      if (part.inlineData && part.inlineData.data) {
-        const imageData = part.inlineData.data
-        console.log(`✓ Image generated for slide ${slideNumber} (inlineData, ${imageData.length} bytes)`)
-        return imageData
-      }
-    }
-
-    // 디버그용 로그
-    console.error(`❌ No image data found in response for slide ${slideNumber}`)
-    console.error(`Parts structure:`, JSON.stringify(parts, null, 2).substring(0, 2000))
-
-    throw new Error("No image data in response")
+    const imageData = await generateImageWithRetry(prompt)
+    console.log(`✓ Image generated for slide ${slideNumber}`)
+    return imageData
   } catch (error) {
     console.error(`Error generating image for slide ${slideNumber}:`, error)
     throw new Error(`슬라이드 ${slideNumber} 이미지 생성 중 오류가 발생했습니다`)
@@ -624,35 +661,9 @@ Generate a polished, professional cover page image that would be suitable as the
 
     console.log(`🎨 Generating cover image...`)
 
-    // Note: temperature is not applicable for image generation - model handles variation internally
-    const response = await genAIImage.models.generateContent({
-      model: "gemini-3-pro-image-preview",
-      contents: prompt,
-      config: {
-        responseModalities: ["TEXT", "IMAGE"],
-        imageConfig: {
-          aspectRatio: "16:9",
-          imageSize: "1K",
-        },
-      } as any,
-    })
-
-    if (!response.candidates || response.candidates.length === 0) {
-      console.error(`❌ No candidates in response for cover image`)
-      return null
-    }
-
-    const parts = response.candidates[0].content?.parts || []
-
-    for (const part of parts) {
-      if (part.inlineData && part.inlineData.data) {
-        console.log(`✓ Cover image generated`)
-        return part.inlineData.data
-      }
-    }
-
-    console.error(`❌ No image data found in cover response`)
-    return null
+    const imageData = await generateImageWithRetry(prompt)
+    console.log(`✓ Cover image generated`)
+    return imageData
   } catch (error) {
     console.error(`Error generating cover image:`, error)
     return null
