@@ -21,6 +21,7 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
   const [loading, setLoading] = useState(true)
   const [generatingVisualReport, setGeneratingVisualReport] = useState(false)
   const [generationProgress, setGenerationProgress] = useState<string>("")
+  const [generationError, setGenerationError] = useState<string | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
@@ -91,6 +92,7 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
 
     setGeneratingVisualReport(true)
     setGenerationProgress("프레젠테이션 슬라이드 생성 중...")
+    setGenerationError(null)
 
     try {
       const response = await fetch(`/api/projects/${projectId}/generate-visual-report`, {
@@ -99,6 +101,12 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
 
       if (!response.ok) {
         const error = await response.json()
+        // 서버 과부하 에러인 경우 특별 처리
+        if (response.status === 503) {
+          setGenerationError(error.error || "현재 서버 과부하입니다. 나중에 다시 요청해주세요.")
+          setGeneratingVisualReport(false)
+          return
+        }
         throw new Error(error.error || "비주얼 리포트 생성 실패")
       }
 
@@ -107,7 +115,8 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
       setPdfUrl(result.pdfUrl)
     } catch (error) {
       console.error("Visual report generation error:", error)
-      setGenerationProgress("생성 중 오류가 발생했습니다. 다시 시도해주세요.")
+      const errorMessage = error instanceof Error ? error.message : "생성 중 오류가 발생했습니다."
+      setGenerationError(errorMessage)
     } finally {
       setGeneratingVisualReport(false)
     }
@@ -135,6 +144,30 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
     } finally {
       setDeleting(false)
     }
+  }
+
+  // 에러 발생 시 에러 화면 표시
+  if (generationError) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-8">
+          <div className="bg-red-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">오류 발생</h2>
+          <p className="text-gray-600 mb-6">{generationError}</p>
+          <Button
+            variant="outline"
+            onClick={() => router.back()}
+            className="px-6"
+          >
+            ← 뒤로 가기
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   if (loading || generatingVisualReport) {
