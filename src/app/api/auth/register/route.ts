@@ -83,7 +83,7 @@ export async function POST(req: Request) {
     // Send Telegram notification for new user registration
     try {
       await notifyNewUserRegistration({
-        userName: user.name,
+        userName: user.name || '이름 없음',
         userEmail: user.email,
         userId: user.id,
         credits: user.credits,
