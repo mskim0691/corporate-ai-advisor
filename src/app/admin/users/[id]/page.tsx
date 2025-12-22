@@ -49,9 +49,6 @@ export default function UserDetailPage() {
   const [editRole, setEditRole] = useState("")
   const [editPlan, setEditPlan] = useState("")
   const [deleting, setDeleting] = useState(false)
-  const [creditAmount, setCreditAmount] = useState("")
-  const [creditDescription, setCreditDescription] = useState("")
-  const [processingCredit, setProcessingCredit] = useState(false)
 
   useEffect(() => {
     if (params.id) {
@@ -116,45 +113,6 @@ export default function UserDetailPage() {
     }
   }
 
-  const handleCreditModification = async (type: 'grant' | 'deduct') => {
-    const amount = parseInt(creditAmount)
-    if (isNaN(amount) || amount <= 0) {
-      alert('유효한 크레딧 금액을 입력해주세요')
-      return
-    }
-
-    if (!creditDescription.trim()) {
-      alert('설명을 입력해주세요')
-      return
-    }
-
-    setProcessingCredit(true)
-    try {
-      const response = await fetch('/api/admin/credits', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: params.id,
-          amount: type === 'grant' ? amount : -amount,
-          description: creditDescription
-        })
-      })
-
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Failed to modify credits')
-      }
-
-      await fetchUser()
-      setCreditAmount('')
-      setCreditDescription('')
-      alert(`크레딧이 성공적으로 ${type === 'grant' ? '충전' : '차감'}되었습니다`)
-    } catch (err) {
-      alert('크레딧 처리 실패: ' + (err instanceof Error ? err.message : 'Unknown error'))
-    } finally {
-      setProcessingCredit(false)
-    }
-  }
 
   if (loading) {
     return (
@@ -294,71 +252,6 @@ export default function UserDetailPage() {
         </Card>
       </div>
 
-      {/* Credit Management */}
-      <Card className="p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">크레딧 관리</h2>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <div>
-              <p className="text-sm text-gray-600">현재 보유 크레딧</p>
-              <p className="text-3xl font-bold text-blue-600">{user.credits}</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                크레딧 금액
-              </label>
-              <input
-                type="number"
-                min="1"
-                value={creditAmount}
-                onChange={(e) => setCreditAmount(e.target.value)}
-                placeholder="예: 100"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                disabled={processingCredit}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                설명 (사유)
-              </label>
-              <input
-                type="text"
-                value={creditDescription}
-                onChange={(e) => setCreditDescription(e.target.value)}
-                placeholder="예: 이벤트 지급, 서비스 보상 등"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                disabled={processingCredit}
-              />
-            </div>
-            <div className="flex gap-3">
-              <Button
-                onClick={() => handleCreditModification('grant')}
-                disabled={processingCredit || !creditAmount || !creditDescription}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-              >
-                {processingCredit ? '처리 중...' : '크레딧 충전'}
-              </Button>
-              <Button
-                onClick={() => handleCreditModification('deduct')}
-                disabled={processingCredit || !creditAmount || !creditDescription}
-                className="flex-1 bg-red-600 hover:bg-red-700 text-white"
-              >
-                {processingCredit ? '처리 중...' : '크레딧 차감'}
-              </Button>
-            </div>
-          </div>
-
-          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-            <p className="text-xs text-yellow-800">
-              <strong>알림:</strong> 크레딧 충전/차감 내역은 모두 기록됩니다.
-            </p>
-          </div>
-        </div>
-      </Card>
-
       {/* Projects */}
       <Card className="p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
@@ -388,8 +281,13 @@ export default function UserDetailPage() {
             <tbody className="bg-white divide-y divide-gray-200">
               {user.projects.map((project) => (
                 <tr key={project.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {project.companyName}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <Link
+                      href={`/projects/${project.id}/analysis`}
+                      className="text-blue-600 hover:text-blue-900 hover:underline"
+                    >
+                      {project.companyName}
+                    </Link>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
