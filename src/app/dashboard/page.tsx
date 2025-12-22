@@ -328,6 +328,19 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
       </main>
+
+      <footer className="bg-gray-800 text-white py-8 mt-8">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-4">
+            <p>&copy; 2025 AI-GFC. All rights reserved.</p>
+          </div>
+          <div className="text-center text-sm text-gray-400 space-y-1">
+            <p>상호명: 이엑스이사일일 (566-57-00450) | 대표자: 김민수</p>
+            <p>주소: 서울특별시 강동구 강동대로55길 39, 101동 603호</p>
+            <p>유선번호: 070-8064-8232</p>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }
