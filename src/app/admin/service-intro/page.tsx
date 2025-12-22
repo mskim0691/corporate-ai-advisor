@@ -147,7 +147,47 @@ export default function AdminServiceIntroPage() {
   }
 
   const handleFormatBlock = (tag: string) => {
-    // Use formatBlock with proper tag format
+    const selection = window.getSelection()
+    if (!selection || selection.rangeCount === 0) {
+      editorRef.current?.focus()
+      return
+    }
+
+    // Find the current block element
+    let node = selection.anchorNode as HTMLElement | null
+    while (node && node !== editorRef.current) {
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        const element = node as HTMLElement
+        const tagName = element.tagName.toLowerCase()
+        // Check if this is a block-level element
+        if (['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div'].includes(tagName)) {
+          // Create new element with the desired tag
+          const newElement = document.createElement(tag)
+          newElement.innerHTML = element.innerHTML
+
+          // Copy styles if needed
+          if (tag === 'p') {
+            // Reset styles for paragraph
+            newElement.style.cssText = ''
+          }
+
+          element.parentNode?.replaceChild(newElement, element)
+
+          // Restore cursor position
+          const range = document.createRange()
+          range.selectNodeContents(newElement)
+          range.collapse(false)
+          selection.removeAllRanges()
+          selection.addRange(range)
+
+          editorRef.current?.focus()
+          return
+        }
+      }
+      node = node.parentElement
+    }
+
+    // Fallback to execCommand if no block element found
     document.execCommand("formatBlock", false, `<${tag}>`)
     editorRef.current?.focus()
   }
