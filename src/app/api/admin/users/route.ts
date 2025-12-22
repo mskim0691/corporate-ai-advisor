@@ -14,6 +14,15 @@ export async function GET() {
     const users = await prisma.user.findMany({
       include: {
         subscription: true,
+        projects: {
+          include: {
+            report: {
+              select: {
+                reportType: true
+              }
+            }
+          }
+        },
         _count: {
           select: {
             projects: true,
@@ -27,22 +36,31 @@ export async function GET() {
     })
 
     // Format the response
-    const formattedUsers = users.map(user => ({
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-      createdAt: user.createdAt,
-      subscription: {
-        plan: user.subscription?.plan || 'free',
-        status: user.subscription?.status || 'active',
-        currentPeriodEnd: user.subscription?.currentPeriodEnd
-      },
-      stats: {
-        projectCount: user._count.projects,
-        usageLogCount: user._count.usageLogs
+    const formattedUsers = users.map(user => {
+      // Count analysis solutions (reportType: 'analysis')
+      const analysisCount = user.projects.filter(p => p.report?.reportType === 'analysis').length
+      // Count visual reports (reportType: 'presentation')
+      const visualReportCount = user.projects.filter(p => p.report?.reportType === 'presentation').length
+
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        createdAt: user.createdAt,
+        subscription: {
+          plan: user.subscription?.plan || 'free',
+          status: user.subscription?.status || 'active',
+          currentPeriodEnd: user.subscription?.currentPeriodEnd
+        },
+        stats: {
+          projectCount: user._count.projects,
+          usageLogCount: user._count.usageLogs,
+          analysisCount,
+          visualReportCount
+        }
       }
-    }))
+    })
 
     return NextResponse.json({ users: formattedUsers })
   } catch (error) {
