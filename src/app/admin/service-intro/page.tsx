@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, useMemo } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import dynamic from "next/dynamic"
@@ -19,7 +19,7 @@ export default function AdminServiceIntroPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [message, setMessage] = useState("")
-  const quillRef = useRef<any>(null)
+  const [isUploading, setIsUploading] = useState(false)
 
   useEffect(() => {
     fetchContent()
@@ -63,7 +63,7 @@ export default function AdminServiceIntroPage() {
     }
   }
 
-  const imageHandler = () => {
+  const handleImageUpload = async () => {
     const input = document.createElement("input")
     input.setAttribute("type", "file")
     input.setAttribute("accept", "image/*")
@@ -72,6 +72,9 @@ export default function AdminServiceIntroPage() {
     input.onchange = async () => {
       const file = input.files?.[0]
       if (!file) return
+
+      setIsUploading(true)
+      setMessage("이미지 업로드 중...")
 
       try {
         const formData = new FormData()
@@ -84,41 +87,36 @@ export default function AdminServiceIntroPage() {
 
         if (response.ok) {
           const data = await response.json()
-          const quill = quillRef.current?.getEditor()
-          if (quill) {
-            const range = quill.getSelection(true)
-            quill.insertEmbed(range.index, "image", data.url)
-            quill.setSelection(range.index + 1)
-          }
+          // Insert image HTML at the end of content
+          const imgHtml = `<p><img src="${data.url}" alt="uploaded image" style="max-width: 100%; height: auto;"></p>`
+          setContent(prev => prev + imgHtml)
+          setMessage("이미지가 추가되었습니다. 에디터에서 위치를 조정하세요.")
         } else {
           setMessage("이미지 업로드에 실패했습니다.")
         }
       } catch (error) {
         console.error("Failed to upload image:", error)
         setMessage("이미지 업로드 중 오류가 발생했습니다.")
+      } finally {
+        setIsUploading(false)
       }
     }
   }
 
   const modules = useMemo(() => ({
-    toolbar: {
-      container: [
-        [{ header: [1, 2, 3, 4, false] }],
-        [{ font: [] }],
-        [{ size: ["small", false, "large", "huge"] }],
-        ["bold", "italic", "underline", "strike"],
-        [{ color: [] }, { background: [] }],
-        [{ list: "ordered" }, { list: "bullet" }],
-        [{ indent: "-1" }, { indent: "+1" }],
-        [{ align: [] }],
-        ["link", "image"],
-        ["blockquote", "code-block"],
-        ["clean"],
-      ],
-      handlers: {
-        image: imageHandler,
-      },
-    },
+    toolbar: [
+      [{ header: [1, 2, 3, 4, false] }],
+      [{ font: [] }],
+      [{ size: ["small", false, "large", "huge"] }],
+      ["bold", "italic", "underline", "strike"],
+      [{ color: [] }, { background: [] }],
+      [{ list: "ordered" }, { list: "bullet" }],
+      [{ indent: "-1" }, { indent: "+1" }],
+      [{ align: [] }],
+      ["link", "image"],
+      ["blockquote", "code-block"],
+      ["clean"],
+    ],
     clipboard: {
       matchVisual: false,
     },
@@ -228,8 +226,22 @@ export default function AdminServiceIntroPage() {
             }
           `}</style>
 
+          {/* Image upload button */}
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleImageUpload}
+              disabled={isUploading}
+            >
+              {isUploading ? "업로드 중..." : "이미지 업로드 (서버 저장)"}
+            </Button>
+            <span className="text-sm text-gray-500 self-center">
+              * 툴바의 이미지 버튼은 URL 입력용입니다
+            </span>
+          </div>
+
           <ReactQuill
-            ref={quillRef}
             theme="snow"
             value={content}
             onChange={setContent}
