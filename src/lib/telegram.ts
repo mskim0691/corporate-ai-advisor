@@ -111,3 +111,28 @@ ${data.content}
 
   return await sendTelegramNotification(message);
 }
+
+/**
+ * Format and send new user registration notification
+ */
+export async function notifyNewUserRegistration(data: {
+  userName: string;
+  userEmail: string;
+  userId: string;
+  credits: number;
+}) {
+  const message = `
+🎉 <b>신규 회원 가입 알림</b>
+
+👤 <b>이름:</b> ${data.userName}
+📧 <b>이메일:</b> ${data.userEmail}
+🆔 <b>사용자 ID:</b> <code>${data.userId}</code>
+💎 <b>초기 크레딧:</b> ${data.credits}
+
+⏰ <b>가입 시간:</b> ${new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}
+
+👉 관리자 패널에서 확인하세요!
+  `.trim();
+
+  return await sendTelegramNotification(message);
+}

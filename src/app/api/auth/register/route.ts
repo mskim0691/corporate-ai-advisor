@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { hash } from "bcryptjs"
 import { z } from "zod"
 import prisma from "@/lib/prisma"
+import { notifyNewUserRegistration } from "@/lib/telegram"
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -77,6 +78,19 @@ export async function POST(req: Request) {
           balanceAfter: initialCredits,
         },
       })
+    }
+
+    // Send Telegram notification for new user registration
+    try {
+      await notifyNewUserRegistration({
+        userName: user.name,
+        userEmail: user.email,
+        userId: user.id,
+        credits: user.credits,
+      })
+    } catch (telegramError) {
+      // Log error but don't fail registration if Telegram notification fails
+      console.error('Failed to send Telegram notification:', telegramError)
     }
 
     return NextResponse.json(
