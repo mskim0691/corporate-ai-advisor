@@ -224,6 +224,17 @@ export default function AdminServiceIntroPage() {
             .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="4"]::before {
               content: '제목 4';
             }
+            /* Paragraph and line spacing */
+            .ql-editor p {
+              margin-bottom: 1em;
+              line-height: 1.8;
+            }
+            .ql-editor p:empty {
+              min-height: 1.5em;
+            }
+            .ql-editor p br {
+              content: "";
+            }
           `}</style>
 
           {/* Image upload button */}
