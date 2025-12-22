@@ -58,3 +58,22 @@ body {
   color: var(--foreground);
   font-feature-settings: "rlig" 1, "calt" 1;
 }
+
+/* Service intro content styles - ensure line breaks are visible */
+.service-intro-content p {
+  margin-bottom: 1em;
+  min-height: 1.5em;
+  line-height: 1.8;
+}
+
+.service-intro-content p:empty,
+.service-intro-content p:has(> br:only-child) {
+  min-height: 1.5em;
+  display: block;
+}
+
+.service-intro-content br {
+  display: block;
+  content: "";
+  margin-top: 0.5em;
+}
