@@ -165,11 +165,12 @@ export default function AdminServiceIntroPage() {
         <CardContent className="space-y-4">
           <style jsx global>{`
             .ql-container {
-              min-height: 500px;
+              height: 500px;
               font-size: 16px;
+              overflow-y: auto;
             }
             .ql-editor {
-              min-height: 500px;
+              min-height: 100%;
             }
             .ql-toolbar {
               background: #f9fafb;
