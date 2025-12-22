@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 export default function AdminServiceIntroPage() {
   const [content, setContent] = useState("")
@@ -10,8 +12,15 @@ export default function AdminServiceIntroPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [message, setMessage] = useState("")
   const [isUploading, setIsUploading] = useState(false)
+  const [showLinkModal, setShowLinkModal] = useState(false)
+  const [showTableModal, setShowTableModal] = useState(false)
+  const [linkUrl, setLinkUrl] = useState("")
+  const [linkText, setLinkText] = useState("")
+  const [tableRows, setTableRows] = useState(3)
+  const [tableCols, setTableCols] = useState(3)
   const editorRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const savedSelectionRef = useRef<Range | null>(null)
 
   useEffect(() => {
     fetchContent()
@@ -115,9 +124,236 @@ export default function AdminServiceIntroPage() {
     }
   }
 
+  const saveSelection = () => {
+    const selection = window.getSelection()
+    if (selection && selection.rangeCount > 0) {
+      savedSelectionRef.current = selection.getRangeAt(0).cloneRange()
+    }
+  }
+
+  const restoreSelection = () => {
+    if (savedSelectionRef.current) {
+      const selection = window.getSelection()
+      if (selection) {
+        selection.removeAllRanges()
+        selection.addRange(savedSelectionRef.current)
+      }
+    }
+  }
+
   const execCommand = (command: string, value?: string) => {
     document.execCommand(command, false, value)
     editorRef.current?.focus()
+  }
+
+  const handleFormatBlock = (tag: string) => {
+    // Use formatBlock with proper tag format
+    document.execCommand("formatBlock", false, `<${tag}>`)
+    editorRef.current?.focus()
+  }
+
+  const openLinkModal = () => {
+    saveSelection()
+    const selection = window.getSelection()
+    if (selection && selection.toString()) {
+      setLinkText(selection.toString())
+    } else {
+      setLinkText("")
+    }
+    setLinkUrl("")
+    setShowLinkModal(true)
+  }
+
+  const insertLink = () => {
+    restoreSelection()
+    editorRef.current?.focus()
+
+    if (linkUrl) {
+      if (linkText) {
+        // If we have custom text, insert an anchor element
+        const anchor = document.createElement("a")
+        anchor.href = linkUrl
+        anchor.textContent = linkText
+        anchor.target = "_blank"
+        anchor.rel = "noopener noreferrer"
+        anchor.style.color = "#2563eb"
+        anchor.style.textDecoration = "underline"
+
+        const selection = window.getSelection()
+        if (selection && selection.rangeCount > 0) {
+          const range = selection.getRangeAt(0)
+          range.deleteContents()
+          range.insertNode(anchor)
+          range.setStartAfter(anchor)
+          range.setEndAfter(anchor)
+          selection.removeAllRanges()
+          selection.addRange(range)
+        }
+      } else {
+        // Use createLink command for selected text
+        document.execCommand("createLink", false, linkUrl)
+        // Style the link
+        const selection = window.getSelection()
+        if (selection && selection.anchorNode?.parentElement?.tagName === "A") {
+          const link = selection.anchorNode.parentElement as HTMLAnchorElement
+          link.target = "_blank"
+          link.rel = "noopener noreferrer"
+          link.style.color = "#2563eb"
+          link.style.textDecoration = "underline"
+        }
+      }
+    }
+
+    setShowLinkModal(false)
+    setLinkUrl("")
+    setLinkText("")
+  }
+
+  const openTableModal = () => {
+    saveSelection()
+    setTableRows(3)
+    setTableCols(3)
+    setShowTableModal(true)
+  }
+
+  const insertTable = () => {
+    restoreSelection()
+    editorRef.current?.focus()
+
+    const table = document.createElement("table")
+    table.style.width = "100%"
+    table.style.borderCollapse = "collapse"
+    table.style.margin = "1rem 0"
+
+    for (let i = 0; i < tableRows; i++) {
+      const row = document.createElement("tr")
+      for (let j = 0; j < tableCols; j++) {
+        const cell = document.createElement(i === 0 ? "th" : "td")
+        cell.style.border = "1px solid #d1d5db"
+        cell.style.padding = "0.5rem"
+        cell.style.textAlign = "left"
+        if (i === 0) {
+          cell.style.backgroundColor = "#f3f4f6"
+          cell.style.fontWeight = "bold"
+        }
+        cell.innerHTML = "&nbsp;"
+        row.appendChild(cell)
+      }
+      table.appendChild(row)
+    }
+
+    const selection = window.getSelection()
+    if (selection && selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0)
+      range.insertNode(table)
+      range.setStartAfter(table)
+      range.setEndAfter(table)
+      selection.removeAllRanges()
+      selection.addRange(range)
+    } else if (editorRef.current) {
+      editorRef.current.appendChild(table)
+    }
+
+    setShowTableModal(false)
+  }
+
+  const addTableRow = () => {
+    const selection = window.getSelection()
+    if (selection && selection.anchorNode) {
+      let cell = selection.anchorNode as HTMLElement
+      while (cell && cell.tagName !== "TD" && cell.tagName !== "TH") {
+        cell = cell.parentElement as HTMLElement
+      }
+      if (cell) {
+        const row = cell.parentElement as HTMLTableRowElement
+        const table = row.parentElement as HTMLTableElement
+        const newRow = document.createElement("tr")
+        const colCount = row.cells.length
+
+        for (let i = 0; i < colCount; i++) {
+          const newCell = document.createElement("td")
+          newCell.style.border = "1px solid #d1d5db"
+          newCell.style.padding = "0.5rem"
+          newCell.style.textAlign = "left"
+          newCell.innerHTML = "&nbsp;"
+          newRow.appendChild(newCell)
+        }
+
+        row.after(newRow)
+      }
+    }
+  }
+
+  const addTableColumn = () => {
+    const selection = window.getSelection()
+    if (selection && selection.anchorNode) {
+      let cell = selection.anchorNode as HTMLElement
+      while (cell && cell.tagName !== "TD" && cell.tagName !== "TH") {
+        cell = cell.parentElement as HTMLElement
+      }
+      if (cell) {
+        const row = cell.parentElement as HTMLTableRowElement
+        const table = row.parentElement as HTMLTableElement
+        const cellIndex = (cell as HTMLTableCellElement).cellIndex
+
+        Array.from(table.rows).forEach((tableRow, rowIndex) => {
+          const newCell = document.createElement(rowIndex === 0 ? "th" : "td")
+          newCell.style.border = "1px solid #d1d5db"
+          newCell.style.padding = "0.5rem"
+          newCell.style.textAlign = "left"
+          if (rowIndex === 0) {
+            newCell.style.backgroundColor = "#f3f4f6"
+            newCell.style.fontWeight = "bold"
+          }
+          newCell.innerHTML = "&nbsp;"
+          if (cellIndex + 1 < tableRow.cells.length) {
+            tableRow.cells[cellIndex + 1].before(newCell)
+          } else {
+            tableRow.appendChild(newCell)
+          }
+        })
+      }
+    }
+  }
+
+  const deleteTableRow = () => {
+    const selection = window.getSelection()
+    if (selection && selection.anchorNode) {
+      let cell = selection.anchorNode as HTMLElement
+      while (cell && cell.tagName !== "TD" && cell.tagName !== "TH") {
+        cell = cell.parentElement as HTMLElement
+      }
+      if (cell) {
+        const row = cell.parentElement as HTMLTableRowElement
+        const table = row.parentElement as HTMLTableElement
+        if (table.rows.length > 1) {
+          row.remove()
+        }
+      }
+    }
+  }
+
+  const deleteTableColumn = () => {
+    const selection = window.getSelection()
+    if (selection && selection.anchorNode) {
+      let cell = selection.anchorNode as HTMLElement
+      while (cell && cell.tagName !== "TD" && cell.tagName !== "TH") {
+        cell = cell.parentElement as HTMLElement
+      }
+      if (cell) {
+        const row = cell.parentElement as HTMLTableRowElement
+        const table = row.parentElement as HTMLTableElement
+        const cellIndex = (cell as HTMLTableCellElement).cellIndex
+
+        if (row.cells.length > 1) {
+          Array.from(table.rows).forEach((tableRow) => {
+            if (tableRow.cells[cellIndex]) {
+              tableRow.cells[cellIndex].remove()
+            }
+          })
+        }
+      }
+    }
   }
 
   if (isLoading) {
@@ -138,16 +374,17 @@ export default function AdminServiceIntroPage() {
       <Card>
         <CardHeader>
           <CardTitle>에디터</CardTitle>
-          <CardDescription>이미지를 삽입하고 텍스트를 작성할 수 있습니다.</CardDescription>
+          <CardDescription>이미지, 테이블, 링크를 삽입하고 텍스트를 작성할 수 있습니다.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Toolbar */}
+          {/* Toolbar Row 1 - Text Formatting */}
           <div className="flex flex-wrap gap-2 p-2 border rounded-lg bg-gray-50">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => execCommand("bold")}
+              title="굵게"
             >
               <strong>B</strong>
             </Button>
@@ -156,6 +393,7 @@ export default function AdminServiceIntroPage() {
               variant="outline"
               size="sm"
               onClick={() => execCommand("italic")}
+              title="기울임"
             >
               <em>I</em>
             </Button>
@@ -164,15 +402,26 @@ export default function AdminServiceIntroPage() {
               variant="outline"
               size="sm"
               onClick={() => execCommand("underline")}
+              title="밑줄"
             >
               <u>U</u>
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => execCommand("strikeThrough")}
+              title="취소선"
+            >
+              <s>S</s>
             </Button>
             <div className="w-px h-6 bg-gray-300 self-center" />
             <Button
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => execCommand("formatBlock", "h1")}
+              onClick={() => handleFormatBlock("h1")}
+              title="제목 1"
             >
               H1
             </Button>
@@ -180,7 +429,8 @@ export default function AdminServiceIntroPage() {
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => execCommand("formatBlock", "h2")}
+              onClick={() => handleFormatBlock("h2")}
+              title="제목 2"
             >
               H2
             </Button>
@@ -188,7 +438,8 @@ export default function AdminServiceIntroPage() {
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => execCommand("formatBlock", "h3")}
+              onClick={() => handleFormatBlock("h3")}
+              title="제목 3"
             >
               H3
             </Button>
@@ -196,7 +447,17 @@ export default function AdminServiceIntroPage() {
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => execCommand("formatBlock", "p")}
+              onClick={() => handleFormatBlock("h4")}
+              title="제목 4"
+            >
+              H4
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => handleFormatBlock("p")}
+              title="본문"
             >
               P
             </Button>
@@ -206,6 +467,7 @@ export default function AdminServiceIntroPage() {
               variant="outline"
               size="sm"
               onClick={() => execCommand("insertUnorderedList")}
+              title="글머리 목록"
             >
               • 목록
             </Button>
@@ -214,6 +476,7 @@ export default function AdminServiceIntroPage() {
               variant="outline"
               size="sm"
               onClick={() => execCommand("insertOrderedList")}
+              title="번호 목록"
             >
               1. 목록
             </Button>
@@ -223,34 +486,41 @@ export default function AdminServiceIntroPage() {
               variant="outline"
               size="sm"
               onClick={() => execCommand("justifyLeft")}
+              title="왼쪽 정렬"
             >
-              왼쪽
+              ◀
             </Button>
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => execCommand("justifyCenter")}
+              title="가운데 정렬"
             >
-              가운데
+              ◆
             </Button>
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => execCommand("justifyRight")}
+              title="오른쪽 정렬"
             >
-              오른쪽
+              ▶
             </Button>
-            <div className="w-px h-6 bg-gray-300 self-center" />
+          </div>
+
+          {/* Toolbar Row 2 - Insert Elements */}
+          <div className="flex flex-wrap gap-2 p-2 border rounded-lg bg-gray-50">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
+              title="이미지 삽입"
             >
-              {isUploading ? "업로드 중..." : "이미지 삽입"}
+              {isUploading ? "업로드 중..." : "🖼️ 이미지"}
             </Button>
             <input
               ref={fileInputRef}
@@ -259,13 +529,78 @@ export default function AdminServiceIntroPage() {
               className="hidden"
               onChange={handleFileSelect}
             />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={openLinkModal}
+              title="링크 삽입"
+            >
+              🔗 링크
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={openTableModal}
+              title="테이블 삽입"
+            >
+              📊 테이블 삽입
+            </Button>
+            <div className="w-px h-6 bg-gray-300 self-center" />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={addTableRow}
+              title="행 추가"
+            >
+              + 행
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={addTableColumn}
+              title="열 추가"
+            >
+              + 열
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={deleteTableRow}
+              title="행 삭제"
+            >
+              - 행
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={deleteTableColumn}
+              title="열 삭제"
+            >
+              - 열
+            </Button>
+            <div className="w-px h-6 bg-gray-300 self-center" />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => execCommand("insertHorizontalRule")}
+              title="구분선 삽입"
+            >
+              ─ 구분선
+            </Button>
           </div>
 
           {/* Editor */}
           <div
             ref={editorRef}
             contentEditable
-            className="min-h-[500px] p-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 prose prose-lg max-w-none bg-white"
+            className="min-h-[500px] p-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 prose prose-lg max-w-none bg-white [&_h1]:text-3xl [&_h1]:font-bold [&_h1]:mb-4 [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:mb-3 [&_h3]:text-xl [&_h3]:font-bold [&_h3]:mb-2 [&_h4]:text-lg [&_h4]:font-semibold [&_h4]:mb-2 [&_table]:w-full [&_table]:border-collapse [&_td]:border [&_td]:border-gray-300 [&_td]:p-2 [&_th]:border [&_th]:border-gray-300 [&_th]:p-2 [&_th]:bg-gray-100 [&_a]:text-blue-600 [&_a]:underline"
             dangerouslySetInnerHTML={{ __html: content }}
             onPaste={(e) => {
               // Handle image paste
@@ -308,6 +643,84 @@ export default function AdminServiceIntroPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Link Modal */}
+      {showLinkModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">링크 삽입</h3>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="linkText">표시 텍스트</Label>
+                <Input
+                  id="linkText"
+                  value={linkText}
+                  onChange={(e) => setLinkText(e.target.value)}
+                  placeholder="링크에 표시될 텍스트"
+                />
+              </div>
+              <div>
+                <Label htmlFor="linkUrl">URL</Label>
+                <Input
+                  id="linkUrl"
+                  value={linkUrl}
+                  onChange={(e) => setLinkUrl(e.target.value)}
+                  placeholder="https://example.com"
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setShowLinkModal(false)}>
+                  취소
+                </Button>
+                <Button onClick={insertLink}>
+                  삽입
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Table Modal */}
+      {showTableModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">테이블 삽입</h3>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="tableRows">행 수</Label>
+                <Input
+                  id="tableRows"
+                  type="number"
+                  min={1}
+                  max={20}
+                  value={tableRows}
+                  onChange={(e) => setTableRows(parseInt(e.target.value) || 1)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="tableCols">열 수</Label>
+                <Input
+                  id="tableCols"
+                  type="number"
+                  min={1}
+                  max={10}
+                  value={tableCols}
+                  onChange={(e) => setTableCols(parseInt(e.target.value) || 1)}
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setShowTableModal(false)}>
+                  취소
+                </Button>
+                <Button onClick={insertTable}>
+                  삽입
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
