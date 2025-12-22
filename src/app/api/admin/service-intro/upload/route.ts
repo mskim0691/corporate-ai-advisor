@@ -8,7 +8,8 @@ export const maxDuration = 60
 
 // Conditionally import supabase only if env vars are present
 const USE_SUPABASE = !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY)
-let supabase: ReturnType<typeof import("@/lib/supabase").supabase> | null = null
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let supabase: any = null
 
 if (USE_SUPABASE) {
   const { supabase: supabaseClient } = require("@/lib/supabase")
