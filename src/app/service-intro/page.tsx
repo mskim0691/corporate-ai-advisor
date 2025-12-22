@@ -1,17 +1,26 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { auth } from "@/lib/auth"
-import { PricingSection } from "@/components/pricing-section"
-import { RotatingBanner } from "@/components/rotating-banner"
+import prisma from "@/lib/prisma"
 
-export default async function Home() {
+async function getServiceIntro() {
+  const serviceIntro = await prisma.serviceIntro.findFirst({
+    orderBy: { updatedAt: "desc" },
+  })
+  return serviceIntro?.content || ""
+}
+
+export default async function ServiceIntroPage() {
   const session = await auth()
+  const content = await getServiceIntro()
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
       <header className="border-b bg-white">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">AI-GFC</h1>
+          <Link href="/">
+            <h1 className="text-2xl font-bold cursor-pointer hover:text-blue-600 transition-colors">AI-GFC</h1>
+          </Link>
           <div className="space-x-4">
             <Link href="/service-intro">
               <Button variant="ghost">서비스소개</Button>
@@ -39,36 +48,21 @@ export default async function Home() {
         </div>
       </header>
 
-      <main>
-        <RotatingBanner />
+      <main className="container mx-auto px-4 py-12">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-8">서비스 소개</h2>
 
-        <section className="bg-white py-16">
-          <div className="container mx-auto px-4">
-            <h3 className="text-3xl font-bold text-center mb-12">주요 기능</h3>
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="p-6 border rounded-lg">
-                <h4 className="text-xl font-semibold mb-3">간편한 문서 업로드</h4>
-                <p className="text-gray-600">
-                  재무제표, 사업계획서 등을 드래그 앤 드롭으로 간편하게 업로드
-                </p>
-              </div>
-              <div className="p-6 border rounded-lg">
-                <h4 className="text-xl font-semibold mb-3">AI 자동 분석</h4>
-                <p className="text-gray-600">
-                  첨단 AI 엔진이 기업정보를 분석하여 인사이트 제공
-                </p>
-              </div>
-              <div className="p-6 border rounded-lg">
-                <h4 className="text-xl font-semibold mb-3">컨설팅 제안서 생성</h4>
-                <p className="text-gray-600">
-                  핵심 컨설팅 전략 및 판매화법 제공
-                </p>
-              </div>
+          {content ? (
+            <div
+              className="prose prose-lg max-w-none bg-white rounded-lg shadow-sm p-8"
+              dangerouslySetInnerHTML={{ __html: content }}
+            />
+          ) : (
+            <div className="text-center py-12 text-gray-500 bg-white rounded-lg shadow-sm">
+              <p>서비스 소개 내용이 아직 등록되지 않았습니다.</p>
             </div>
-          </div>
-        </section>
-
-        <PricingSection />
+          )}
+        </div>
       </main>
 
       <footer className="bg-gray-800 text-white py-8">
