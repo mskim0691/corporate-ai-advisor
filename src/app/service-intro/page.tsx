@@ -54,7 +54,7 @@ export default async function ServiceIntroPage() {
 
       <main className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-8">서비스 소개</h2>
+          <h2 className="text-3xl font-bold text-center mb-8">대표님의 마음을 여는 단 하나의 열쇠, AI-GFC</h2>
 
           {content ? (
             <div
