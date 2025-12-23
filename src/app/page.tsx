@@ -58,7 +58,7 @@ export default async function Home() {
                   첨단 AI 엔진이 기업정보를 분석하여 인사이트 제공
                 </p>
                 <a
-                  href="/sample-report.pdf"
+                  href="/analysis_solution_sample.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-600 hover:text-blue-800 text-sm underline"
