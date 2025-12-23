@@ -53,9 +53,9 @@ export default async function Home() {
                 </p>
               </div>
               <div className="p-6 border rounded-lg">
-                <h4 className="text-xl font-semibold mb-3">AI 자동 분석</h4>
+                <h4 className="text-xl font-semibold mb-3">AI 심층 분석 솔루션 제공</h4>
                 <p className="text-gray-600 mb-2">
-                  첨단 AI 엔진이 기업정보를 분석하여 인사이트 제공
+                  첨단 AI 엔진이 기업정보를 분석하여 인사이트와 세일즈 화법(스크립트)까지 제공
                 </p>
                 <a
                   href="/analysis_solution_sample.pdf"
@@ -67,10 +67,18 @@ export default async function Home() {
                 </a>
               </div>
               <div className="p-6 border rounded-lg">
-                <h4 className="text-xl font-semibold mb-3">컨설팅 제안서 생성</h4>
-                <p className="text-gray-600">
-                  핵심 컨설팅 전략 및 판매화법 제공
+                <h4 className="text-xl font-semibold mb-3">고급 비주얼 레포트 생성</h4>
+                <p className="text-gray-600 mb-2">
+                  AI 기반 비주얼 레포트 제작
                 </p>
+                <a
+                  href="/visual_report_sample.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-800 text-sm underline"
+                >
+                  샘플 레포트 보기
+                </a>
               </div>
             </div>
           </div>
