@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -19,6 +19,23 @@ export default function NewProjectPage() {
 
   const [files, setFiles] = useState<File[]>([])
   const [isDragging, setIsDragging] = useState(false)
+  const [userCredits, setUserCredits] = useState(0)
+
+  useEffect(() => {
+    fetchUserCredits()
+  }, [])
+
+  const fetchUserCredits = async () => {
+    try {
+      const response = await fetch('/api/user/info')
+      if (response.ok) {
+        const data = await response.json()
+        setUserCredits(data.credits || 0)
+      }
+    } catch (err) {
+      console.error('Failed to fetch user credits:', err)
+    }
+  }
 
   /* 크레딧 기능 비활성화
   const [basicAnalysisCost, setBasicAnalysisCost] = useState(10)
@@ -96,6 +113,14 @@ export default function NewProjectPage() {
   const handleSubmit = async () => {
     if (files.length === 0) {
       setError("최소 1개의 파일을 업로드해주세요")
+      return
+    }
+
+    // 이용권 차감 확인
+    const expectedCredits = userCredits - 1
+    const confirmMessage = `솔루션 이용권이 -1 차감됩니다. 계속하시겠습니까?\n(예상 잔여 이용권: ${expectedCredits})`
+
+    if (!confirm(confirmMessage)) {
       return
     }
 
@@ -352,7 +377,7 @@ export default function NewProjectPage() {
                   disabled={isLoading || files.length === 0}
                   className="flex-1"
                 >
-                  {isLoading ? "분석 시작 중..." : "분석 시작"}
+                  {isLoading ? "AI엔진이 전략을 분석하고 있습니다. 시간이 조금 걸려도 기다려주세요~" : "분석시작 (이용권 -1)"}
                 </Button>
               </div>
             </CardContent>
