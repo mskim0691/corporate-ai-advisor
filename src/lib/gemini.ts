@@ -350,7 +350,8 @@ export async function analyzeCompanyText(
     representative: companyInfo.representative,
     industry: companyInfo.industry ? `**업종:** ${companyInfo.industry}` : "",
     fileList: fileList,
-    additionalRequest: additionalRequest ? `\n**추가 정보:**\n${additionalRequest}\n` : ""
+    additionalRequest: additionalRequest ? `\n**추가 정보:**\n${additionalRequest}\n` : "",
+    initialRiskAnalysis: ""  // 1단계 분석 없이 바로 솔루션 도출하므로 빈 값 전달
   })
 
   try {
