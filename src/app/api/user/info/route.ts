@@ -33,7 +33,6 @@ export async function GET() {
       name: user.name || "",
       email: user.email,
       plan: user.subscription?.plan || "free",
-      credits: user.credits || 0,
     })
   } catch (error) {
     console.error("Get user info error:", error)
@@ -76,7 +75,6 @@ export async function PATCH(req: Request) {
       name: updatedUser.name || "",
       email: updatedUser.email,
       plan: updatedUser.subscription?.plan || "free",
-      credits: updatedUser.credits || 0,
     })
   } catch (error) {
     console.error("Update user name error:", error)
