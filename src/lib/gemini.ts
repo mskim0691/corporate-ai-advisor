@@ -62,11 +62,11 @@ async function getLatestAvailableModel(): Promise<string> {
       const aName = a.name.replace("models/", "")
       const bName = b.name.replace("models/", "")
 
-      // Flash 모델 우선 (더 빠르고 비용 효율적)
-      const aIsFlash = aName.includes("flash")
-      const bIsFlash = bName.includes("flash")
-      if (aIsFlash && !bIsFlash) return -1
-      if (!aIsFlash && bIsFlash) return 1
+      // Pro 모델 우선 (더 높은 품질의 분석)
+      const aIsPro = aName.includes("pro")
+      const bIsPro = bName.includes("pro")
+      if (aIsPro && !bIsPro) return -1
+      if (!aIsPro && bIsPro) return 1
 
       // 버전 번호 비교 (2.5 > 2.0 > 1.5)
       const aVersion = parseFloat(aName.match(/\d+\.\d+/)?.[0] || "0")
@@ -83,7 +83,7 @@ async function getLatestAvailableModel(): Promise<string> {
   } catch (error) {
     console.error("Error fetching available models:", error)
     // 폴백: 안정적인 기본 모델 사용
-    cachedModelName = "gemini-2.5-flash"
+    cachedModelName = "gemini-2.5-pro"
     console.log(`⚠️  Using fallback model: ${cachedModelName}`)
     return cachedModelName
   }
