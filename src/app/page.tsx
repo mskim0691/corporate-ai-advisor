@@ -16,9 +16,6 @@ export default async function Home() {
             <Link href="/service-intro">
               <Button variant="ghost">서비스소개</Button>
             </Link>
-            <Link href="/pricing">
-              <Button variant="ghost">구독</Button>
-            </Link>
             {session?.user ? (
               <>
                 <Link href="/dashboard">
@@ -30,6 +27,9 @@ export default async function Home() {
               </>
             ) : (
               <>
+                <Link href="/pricing">
+                  <Button variant="ghost">구독</Button>
+                </Link>
                 <Link href="/auth/login">
                   <Button variant="ghost">로그인</Button>
                 </Link>
