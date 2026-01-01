@@ -277,3 +277,15 @@ model ServiceIntro {
 
   @@map("service_intros")
 }
+
+model LegalDocument {
+  id        String   @id @default(uuid())
+  type      String   @unique // 'terms' or 'privacy'
+  title     String   // Document title
+  content   String   // HTML content
+  version   String   @default("1.0") // Version number
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("legal_documents")
+}

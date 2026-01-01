@@ -126,6 +126,17 @@ export default function RegisterPage() {
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "가입 중..." : "회원가입"}
             </Button>
+            <p className="text-xs text-center text-gray-500">
+              회원가입 시{" "}
+              <Link href="/legal/terms" className="text-blue-600 hover:underline" target="_blank">
+                서비스 이용약관
+              </Link>
+              {" "}및{" "}
+              <Link href="/legal/privacy" className="text-blue-600 hover:underline" target="_blank">
+                개인정보처리방침
+              </Link>
+              에 동의하는 것으로 간주됩니다.
+            </p>
             <p className="text-sm text-center text-gray-600">
               이미 계정이 있으신가요?{" "}
               <Link href="/auth/login" className="text-blue-600 hover:underline">
