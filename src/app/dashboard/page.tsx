@@ -131,9 +131,6 @@ export default async function DashboardPage() {
             <h1 className="text-2xl font-bold cursor-pointer hover:text-blue-600 transition-colors">AI-GFC</h1>
           </Link>
           <div className="flex items-center gap-4">
-            <Link href="/pricing">
-              <Button variant="ghost">구독</Button>
-            </Link>
             {isAdmin && (
               <Link href="/admin">
                 <Button variant="outline">관리</Button>

@@ -32,14 +32,12 @@ export function UserMenu() {
         >
           내 정보 수정
         </DropdownMenuItem>
-        {/* 크레딧 기능 비활성화
         <DropdownMenuItem
-          onClick={() => router.push("/credit-history")}
+          onClick={() => router.push("/pricing")}
           className="cursor-pointer"
         >
-          크레딧충전
+          구독 관리
         </DropdownMenuItem>
-        */}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={handleLogout}
