@@ -1,25 +1,29 @@
 'use client';
 
 import { Suspense, useEffect, useRef, useState } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { loadPaymentWidget, PaymentWidgetInstance } from '@tosspayments/payment-widget-sdk';
 
-declare global {
-  interface Window {
-    TossPayments: any;
-  }
+interface PaymentData {
+  orderId: string;
+  orderName: string;
+  customerName: string;
+  customerEmail: string;
+  successUrl: string;
+  failUrl: string;
+  clientKey: string;
 }
 
 function CheckoutContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [paymentData, setPaymentData] = useState<any>(null);
-  const paymentWidgetRef = useRef<any>(null);
-  const paymentMethodWidgetRef = useRef<any>(null);
+  const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
+  const [paymentWidget, setPaymentWidget] = useState<PaymentWidgetInstance | null>(null);
+  const paymentMethodsWidgetRef = useRef<ReturnType<PaymentWidgetInstance['renderPaymentMethods']> | null>(null);
 
   const planName = searchParams.get('plan');
   const amount = searchParams.get('amount');
@@ -31,26 +35,38 @@ function CheckoutContent() {
       return;
     }
 
-    // 결제 정보 준비
     preparePayment();
   }, [planName, amount]);
 
   useEffect(() => {
-    if (!paymentData) return;
+    if (!paymentData?.clientKey) return;
 
-    // 토스페이먼츠 SDK 로드
-    const script = document.createElement('script');
-    script.src = 'https://js.tosspayments.com/v1/payment-widget';
-    script.async = true;
-    script.onload = () => initializePaymentWidget();
-    document.body.appendChild(script);
+    const initWidget = async () => {
+      try {
+        const widget = await loadPaymentWidget(paymentData.clientKey, paymentData.orderId);
+        setPaymentWidget(widget);
 
-    return () => {
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
+        // 결제 수단 위젯 렌더링
+        const paymentMethodsWidget = widget.renderPaymentMethods(
+          '#payment-method',
+          { value: parseInt(amount || '0') },
+          { variantKey: 'DEFAULT' }
+        );
+        paymentMethodsWidgetRef.current = paymentMethodsWidget;
+
+        // 이용약관 위젯 렌더링
+        widget.renderAgreement('#agreement', { variantKey: 'AGREEMENT' });
+
+        setLoading(false);
+      } catch (err: any) {
+        console.error('Widget init error:', err);
+        setError('결제 위젯 로딩에 실패했습니다');
+        setLoading(false);
       }
     };
-  }, [paymentData]);
+
+    initWidget();
+  }, [paymentData, amount]);
 
   const preparePayment = async () => {
     try {
@@ -70,43 +86,17 @@ function CheckoutContent() {
 
       const data = await response.json();
       setPaymentData(data);
-      setLoading(false);
     } catch (err: any) {
       setError(err.message);
       setLoading(false);
     }
   };
 
-  const initializePaymentWidget = () => {
-    if (!paymentData?.clientKey || !window.TossPayments) return;
-
-    const tossPayments = window.TossPayments(paymentData.clientKey);
-    const paymentWidget = tossPayments.paymentWidget({
-      customerKey: paymentData.orderId,
-    });
-
-    paymentWidgetRef.current = paymentWidget;
-
-    // 결제 위젯 렌더링
-    paymentWidget.renderPaymentMethods({
-      selector: '#payment-method',
-      variantKey: 'DEFAULT',
-    }).then((paymentMethodWidget: any) => {
-      paymentMethodWidgetRef.current = paymentMethodWidget;
-    });
-
-    // 이용약관 위젯 렌더링
-    paymentWidget.renderAgreement({
-      selector: '#agreement',
-      variantKey: 'AGREEMENT',
-    });
-  };
-
   const handlePayment = async () => {
-    if (!paymentWidgetRef.current || !paymentData) return;
+    if (!paymentWidget || !paymentData) return;
 
     try {
-      await paymentWidgetRef.current.requestPayment({
+      await paymentWidget.requestPayment({
         orderId: paymentData.orderId,
         orderName: paymentData.orderName,
         customerName: paymentData.customerName,
@@ -116,23 +106,11 @@ function CheckoutContent() {
       });
     } catch (err: any) {
       if (err.code === 'USER_CANCEL') {
-        // 사용자가 취소한 경우
         return;
       }
       setError(err.message || '결제 중 오류가 발생했습니다');
     }
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">결제 준비 중...</p>
-        </div>
-      </div>
-    );
-  }
 
   if (error) {
     return (
@@ -171,7 +149,9 @@ function CheckoutContent() {
             <div className="bg-gray-50 p-4 rounded-lg">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-gray-600">상품명</span>
-                <span className="font-semibold">{paymentData?.orderName}</span>
+                <span className="font-semibold">
+                  AI-GFC {planName?.toUpperCase()} 플랜 월간 구독
+                </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">결제 금액</span>
@@ -181,11 +161,20 @@ function CheckoutContent() {
               </div>
             </div>
 
+            {loading && (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <p className="text-gray-600">결제 준비 중...</p>
+                </div>
+              </div>
+            )}
+
             {/* 토스페이먼츠 결제 위젯 */}
-            <div id="payment-method" className="min-h-[300px]"></div>
+            <div id="payment-method" className={loading ? 'hidden' : ''}></div>
 
             {/* 이용약관 위젯 */}
-            <div id="agreement"></div>
+            <div id="agreement" className={loading ? 'hidden' : ''}></div>
 
             <div className="flex gap-4">
               <Link href="/pricing" className="flex-1">
@@ -194,8 +183,9 @@ function CheckoutContent() {
               <Button
                 className="flex-1 bg-blue-600 hover:bg-blue-700"
                 onClick={handlePayment}
+                disabled={loading || !paymentWidget}
               >
-                결제하기
+                {loading ? '로딩 중...' : '결제하기'}
               </Button>
             </div>
           </CardContent>
