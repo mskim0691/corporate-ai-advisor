@@ -1,17 +1,18 @@
 'use client';
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import 'react-quill-new/dist/quill.snow.css';
+import '@uiw/react-md-editor/markdown-editor.css';
+import '@uiw/react-markdown-preview/markdown.css';
 
-const ReactQuill = dynamic(() => import('react-quill-new'), {
+const MDEditor = dynamic(() => import('@uiw/react-md-editor'), {
   ssr: false,
-  loading: () => <div className="h-[400px] bg-gray-100 animate-pulse rounded-lg" />
+  loading: () => <div className="h-[500px] bg-gray-100 animate-pulse rounded-lg" />
 });
 
 interface LegalDocument {
@@ -109,30 +110,6 @@ export default function AdminLegalPage() {
     }
   };
 
-  const quillModules = useMemo(() => ({
-    toolbar: [
-      [{ header: [1, 2, 3, 4, 5, 6, false] }],
-      ['bold', 'italic', 'underline', 'strike'],
-      [{ list: 'ordered' }, { list: 'bullet' }],
-      [{ indent: '-1' }, { indent: '+1' }],
-      [{ align: [] }],
-      ['link'],
-      ['clean'],
-    ],
-  }), []);
-
-  const quillFormats = useMemo(() => [
-    'header',
-    'bold',
-    'italic',
-    'underline',
-    'strike',
-    'list',
-    'indent',
-    'align',
-    'link',
-  ], []);
-
   if (loading) {
     return (
       <div className="space-y-6">
@@ -150,7 +127,7 @@ export default function AdminLegalPage() {
       <div>
         <h1 className="text-3xl font-bold text-gray-900">약관 관리</h1>
         <p className="mt-2 text-sm text-gray-600">
-          서비스 이용약관 및 개인정보처리방침을 관리합니다
+          서비스 이용약관 및 개인정보처리방침을 관리합니다 (마크다운 형식)
         </p>
       </div>
 
@@ -191,20 +168,18 @@ export default function AdminLegalPage() {
               </div>
 
               <div className="space-y-2">
-                <Label>내용</Label>
-                <div className="border rounded-lg overflow-hidden">
-                  <ReactQuill
-                    theme="snow"
+                <Label>내용 (마크다운)</Label>
+                <div data-color-mode="light">
+                  <MDEditor
                     value={termsData.content}
-                    onChange={(content) => setTermsData({ ...termsData, content })}
-                    modules={quillModules}
-                    formats={quillFormats}
-                    style={{ height: '400px' }}
+                    onChange={(value) => setTermsData({ ...termsData, content: value || '' })}
+                    height={500}
+                    preview="live"
                   />
                 </div>
               </div>
 
-              <div className="flex justify-between items-center pt-12">
+              <div className="flex justify-between items-center pt-4">
                 <p className="text-sm text-gray-500">
                   {documents.find(d => d.type === 'terms')?.updatedAt && (
                     <>최종 수정: {new Date(documents.find(d => d.type === 'terms')!.updatedAt).toLocaleString('ko-KR')}</>
@@ -249,20 +224,18 @@ export default function AdminLegalPage() {
               </div>
 
               <div className="space-y-2">
-                <Label>내용</Label>
-                <div className="border rounded-lg overflow-hidden">
-                  <ReactQuill
-                    theme="snow"
+                <Label>내용 (마크다운)</Label>
+                <div data-color-mode="light">
+                  <MDEditor
                     value={privacyData.content}
-                    onChange={(content) => setPrivacyData({ ...privacyData, content })}
-                    modules={quillModules}
-                    formats={quillFormats}
-                    style={{ height: '400px' }}
+                    onChange={(value) => setPrivacyData({ ...privacyData, content: value || '' })}
+                    height={500}
+                    preview="live"
                   />
                 </div>
               </div>
 
-              <div className="flex justify-between items-center pt-12">
+              <div className="flex justify-between items-center pt-4">
                 <p className="text-sm text-gray-500">
                   {documents.find(d => d.type === 'privacy')?.updatedAt && (
                     <>최종 수정: {new Date(documents.find(d => d.type === 'privacy')!.updatedAt).toLocaleString('ko-KR')}</>
