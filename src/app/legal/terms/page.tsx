@@ -1,16 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import '@uiw/react-markdown-preview/markdown.css';
+import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-
-const MarkdownPreview = dynamic(() => import('@uiw/react-markdown-preview'), {
-  ssr: false,
-  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />
-});
 
 export default function TermsPage() {
   const [content, setContent] = useState('');
@@ -58,12 +52,10 @@ export default function TermsPage() {
             </div>
           ) : (
             <>
-              <div data-color-mode="light" className="wmde-markdown-var">
-                <MarkdownPreview
-                  source={content}
-                  style={{ padding: 0, backgroundColor: 'transparent' }}
-                  remarkPlugins={[remarkGfm]}
-                />
+              <div className="prose prose-lg max-w-none prose-headings:font-bold prose-h1:text-3xl prose-h2:text-xl prose-h2:mt-8 prose-h2:mb-4 prose-p:my-4 prose-ul:my-4 prose-ol:my-4 prose-li:my-1">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {content}
+                </ReactMarkdown>
               </div>
               {updatedAt && (
                 <p className="text-sm text-gray-500 mt-8 pt-4 border-t">
