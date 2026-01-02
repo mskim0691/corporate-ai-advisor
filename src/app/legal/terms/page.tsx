@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import '@uiw/react-markdown-preview/markdown.css';
+import remarkGfm from 'remark-gfm';
 
 const MarkdownPreview = dynamic(() => import('@uiw/react-markdown-preview'), {
   ssr: false,
@@ -57,8 +58,12 @@ export default function TermsPage() {
             </div>
           ) : (
             <>
-              <div data-color-mode="light">
-                <MarkdownPreview source={content} style={{ padding: 0, backgroundColor: 'transparent' }} />
+              <div data-color-mode="light" className="wmde-markdown-var">
+                <MarkdownPreview
+                  source={content}
+                  style={{ padding: 0, backgroundColor: 'transparent' }}
+                  remarkPlugins={[remarkGfm]}
+                />
               </div>
               {updatedAt && (
                 <p className="text-sm text-gray-500 mt-8 pt-4 border-t">
