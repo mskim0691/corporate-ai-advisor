@@ -1,8 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import '@uiw/react-markdown-preview/markdown.css';
+
+const MarkdownPreview = dynamic(() => import('@uiw/react-markdown-preview'), {
+  ssr: false,
+  loading: () => <div className="h-64 bg-gray-100 animate-pulse rounded-lg" />
+});
 
 export default function PrivacyPage() {
   const [content, setContent] = useState('');
@@ -50,10 +57,9 @@ export default function PrivacyPage() {
             </div>
           ) : (
             <>
-              <div
-                className="prose prose-lg max-w-none"
-                dangerouslySetInnerHTML={{ __html: content }}
-              />
+              <div data-color-mode="light">
+                <MarkdownPreview source={content} style={{ padding: 0, backgroundColor: 'transparent' }} />
+              </div>
               {updatedAt && (
                 <p className="text-sm text-gray-500 mt-8 pt-4 border-t">
                   최종 수정일: {new Date(updatedAt).toLocaleDateString('ko-KR')}
