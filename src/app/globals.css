@@ -130,3 +130,29 @@ body {
 .service-intro-content li.ql-indent-8 {
   padding-left: 12em;
 }
+
+/* Legal document markdown styles */
+.legal-content ol {
+  list-style-type: decimal !important;
+  padding-left: 1.5em !important;
+  margin: 1em 0 !important;
+}
+
+.legal-content ul {
+  list-style-type: disc !important;
+  padding-left: 1.5em !important;
+  margin: 1em 0 !important;
+}
+
+.legal-content li {
+  margin: 0.5em 0 !important;
+  display: list-item !important;
+}
+
+.legal-content ol > li {
+  list-style-type: decimal !important;
+}
+
+.legal-content ul > li {
+  list-style-type: disc !important;
+}
