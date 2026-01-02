@@ -29,6 +29,7 @@ export default function AdminLegalPage() {
   const [documents, setDocuments] = useState<LegalDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const [activeTab, setActiveTab] = useState('terms');
 
   const [termsData, setTermsData] = useState({
@@ -76,6 +77,19 @@ export default function AdminLegalPage() {
     }
   }, []);
 
+  const fetchDefaultContent = useCallback(async (type: 'terms' | 'privacy') => {
+    try {
+      const response = await fetch(`/api/legal/${type}`);
+      if (response.ok) {
+        const data = await response.json();
+        return data;
+      }
+    } catch (error) {
+      console.error('Failed to fetch default content:', error);
+    }
+    return null;
+  }, []);
+
   useEffect(() => {
     fetchDocuments();
   }, [fetchDocuments]);
@@ -107,6 +121,49 @@ export default function AdminLegalPage() {
       alert('저장에 실패했습니다.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleReset = async (type: 'terms' | 'privacy') => {
+    if (!confirm('기본값으로 초기화하시겠습니까? 현재 저장된 내용이 삭제됩니다.')) {
+      return;
+    }
+
+    setResetting(true);
+    try {
+      // Delete existing document
+      await fetch(`/api/admin/legal?type=${type}`, {
+        method: 'DELETE',
+      });
+
+      // Fetch default content
+      const defaultData = await fetchDefaultContent(type);
+
+      if (defaultData) {
+        if (type === 'terms') {
+          setTermsData({
+            title: defaultData.title,
+            content: defaultData.content,
+            version: defaultData.version
+          });
+        } else {
+          setPrivacyData({
+            title: defaultData.title,
+            content: defaultData.content,
+            version: defaultData.version
+          });
+        }
+
+        // Remove from documents list
+        setDocuments(docs => docs.filter(d => d.type !== type));
+
+        alert('기본값으로 초기화되었습니다. 저장 버튼을 눌러 저장하세요.');
+      }
+    } catch (error) {
+      console.error('Failed to reset:', error);
+      alert('초기화에 실패했습니다.');
+    } finally {
+      setResetting(false);
     }
   };
 
@@ -180,11 +237,21 @@ export default function AdminLegalPage() {
               </div>
 
               <div className="flex justify-between items-center pt-4">
-                <p className="text-sm text-gray-500">
-                  {documents.find(d => d.type === 'terms')?.updatedAt && (
-                    <>최종 수정: {new Date(documents.find(d => d.type === 'terms')!.updatedAt).toLocaleString('ko-KR')}</>
-                  )}
-                </p>
+                <div className="flex items-center gap-4">
+                  <p className="text-sm text-gray-500">
+                    {documents.find(d => d.type === 'terms')?.updatedAt && (
+                      <>최종 수정: {new Date(documents.find(d => d.type === 'terms')!.updatedAt).toLocaleString('ko-KR')}</>
+                    )}
+                  </p>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleReset('terms')}
+                    disabled={resetting}
+                    size="sm"
+                  >
+                    {resetting ? '초기화 중...' : '기본값으로 초기화'}
+                  </Button>
+                </div>
                 <Button onClick={() => handleSave('terms')} disabled={saving}>
                   {saving ? '저장 중...' : '저장'}
                 </Button>
@@ -236,11 +303,21 @@ export default function AdminLegalPage() {
               </div>
 
               <div className="flex justify-between items-center pt-4">
-                <p className="text-sm text-gray-500">
-                  {documents.find(d => d.type === 'privacy')?.updatedAt && (
-                    <>최종 수정: {new Date(documents.find(d => d.type === 'privacy')!.updatedAt).toLocaleString('ko-KR')}</>
-                  )}
-                </p>
+                <div className="flex items-center gap-4">
+                  <p className="text-sm text-gray-500">
+                    {documents.find(d => d.type === 'privacy')?.updatedAt && (
+                      <>최종 수정: {new Date(documents.find(d => d.type === 'privacy')!.updatedAt).toLocaleString('ko-KR')}</>
+                    )}
+                  </p>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleReset('privacy')}
+                    disabled={resetting}
+                    size="sm"
+                  >
+                    {resetting ? '초기화 중...' : '기본값으로 초기화'}
+                  </Button>
+                </div>
                 <Button onClick={() => handleSave('privacy')} disabled={saving}>
                   {saving ? '저장 중...' : '저장'}
                 </Button>

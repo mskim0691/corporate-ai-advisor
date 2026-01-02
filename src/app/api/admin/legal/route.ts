@@ -94,3 +94,47 @@ export async function PUT(request: Request) {
     );
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const session = await auth();
+
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Check if user is admin
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true }
+    });
+
+    if (user?.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const type = searchParams.get('type');
+
+    if (!type || !['terms', 'privacy'].includes(type)) {
+      return NextResponse.json(
+        { error: 'Invalid document type' },
+        { status: 400 }
+      );
+    }
+
+    await prisma.legalDocument.delete({
+      where: { type }
+    }).catch(() => {
+      // Document doesn't exist, that's fine
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Failed to delete legal document:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete legal document' },
+      { status: 500 }
+    );
+  }
+}
