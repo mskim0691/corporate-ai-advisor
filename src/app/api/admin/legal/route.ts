@@ -87,8 +87,9 @@ export async function PUT(request: Request) {
     return NextResponse.json(document);
   } catch (error) {
     console.error('Failed to update legal document:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { error: 'Failed to update legal document' },
+      { error: `Failed to update legal document: ${errorMessage}` },
       { status: 500 }
     );
   }
