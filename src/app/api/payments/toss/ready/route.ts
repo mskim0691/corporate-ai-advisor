@@ -47,6 +47,9 @@ export async function POST(req: Request) {
     }
 
     // 토스페이먼츠 결제 위젯용 데이터 반환
+    // customerKey는 고객 식별을 위한 고유 키 (사용자 ID 기반)
+    const customerKey = `CK_${session.user.id.replace(/-/g, '').substring(0, 20)}`
+
     return NextResponse.json({
       orderId,
       amount,
@@ -56,6 +59,7 @@ export async function POST(req: Request) {
       successUrl: `${baseUrl}/api/payments/toss/success?planName=${planName}`,
       failUrl: `${baseUrl}/api/payments/toss/fail`,
       clientKey,
+      customerKey,
     })
   } catch (error) {
     console.error("Payment ready error:", error)

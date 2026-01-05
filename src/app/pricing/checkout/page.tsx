@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { loadPaymentWidget, PaymentWidgetInstance } from '@tosspayments/payment-widget-sdk';
+import { loadTossPayments, TossPaymentsWidgets } from '@tosspayments/tosspayments-sdk';
 
 interface PaymentData {
   orderId: string;
@@ -15,6 +15,7 @@ interface PaymentData {
   successUrl: string;
   failUrl: string;
   clientKey: string;
+  customerKey: string;
 }
 
 function CheckoutContent() {
@@ -22,8 +23,8 @@ function CheckoutContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
-  const [paymentWidget, setPaymentWidget] = useState<PaymentWidgetInstance | null>(null);
-  const paymentMethodsWidgetRef = useRef<ReturnType<PaymentWidgetInstance['renderPaymentMethods']> | null>(null);
+  const [widgets, setWidgets] = useState<TossPaymentsWidgets | null>(null);
+  const [ready, setReady] = useState(false);
 
   const planName = searchParams.get('plan');
   const amount = searchParams.get('amount');
@@ -43,24 +44,39 @@ function CheckoutContent() {
 
     const initWidget = async () => {
       try {
-        const widget = await loadPaymentWidget(paymentData.clientKey, paymentData.orderId);
-        setPaymentWidget(widget);
+        // v2 SDK 초기화
+        const tossPayments = await loadTossPayments(paymentData.clientKey);
+
+        // 결제 위젯 인스턴스 생성
+        const widgetsInstance = tossPayments.widgets({
+          customerKey: paymentData.customerKey,
+        });
+
+        setWidgets(widgetsInstance);
+
+        // 금액 설정
+        await widgetsInstance.setAmount({
+          currency: 'KRW',
+          value: parseInt(amount || '0'),
+        });
 
         // 결제 수단 위젯 렌더링
-        const paymentMethodsWidget = widget.renderPaymentMethods(
-          '#payment-method',
-          { value: parseInt(amount || '0') },
-          { variantKey: 'DEFAULT' }
-        );
-        paymentMethodsWidgetRef.current = paymentMethodsWidget;
+        await widgetsInstance.renderPaymentMethods({
+          selector: '#payment-method',
+          variantKey: 'DEFAULT',
+        });
 
         // 이용약관 위젯 렌더링
-        widget.renderAgreement('#agreement', { variantKey: 'AGREEMENT' });
+        await widgetsInstance.renderAgreement({
+          selector: '#agreement',
+          variantKey: 'AGREEMENT',
+        });
 
+        setReady(true);
         setLoading(false);
       } catch (err: any) {
         console.error('Widget init error:', err);
-        setError('결제 위젯 로딩에 실패했습니다');
+        setError('결제 위젯 로딩에 실패했습니다: ' + (err.message || ''));
         setLoading(false);
       }
     };
@@ -93,10 +109,10 @@ function CheckoutContent() {
   };
 
   const handlePayment = async () => {
-    if (!paymentWidget || !paymentData) return;
+    if (!widgets || !paymentData || !ready) return;
 
     try {
-      await paymentWidget.requestPayment({
+      await widgets.requestPayment({
         orderId: paymentData.orderId,
         orderName: paymentData.orderName,
         customerName: paymentData.customerName,
@@ -183,7 +199,7 @@ function CheckoutContent() {
               <Button
                 className="flex-1 bg-blue-600 hover:bg-blue-700"
                 onClick={handlePayment}
-                disabled={loading || !paymentWidget}
+                disabled={loading || !ready}
               >
                 {loading ? '로딩 중...' : '결제하기'}
               </Button>
