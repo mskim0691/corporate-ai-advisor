@@ -282,16 +282,31 @@ export default function PricingPage() {
                 </p>
               </div>
               <div>
-                <h4 className="font-semibold mb-2">구독은 언제든 취소할 수 있나요?</h4>
-                <p className="text-gray-600">
-                  네, 언제든지 구독을 취소할 수 있습니다. 취소 시 현재 결제 주기가 끝날 때까지 서비스를 이용할 수 있습니다.
-                </p>
-              </div>
-              <div>
                 <h4 className="font-semibold mb-2">플랜 변경은 어떻게 하나요?</h4>
                 <p className="text-gray-600">
                   언제든지 상위 플랜으로 업그레이드하거나 하위 플랜으로 다운그레이드할 수 있습니다. 변경 사항은 다음 결제 주기부터 적용됩니다.
                 </p>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2">구독 해지 및 환불은 어떻게 하나요?</h4>
+                <div className="text-gray-600 space-y-3">
+                  <p>
+                    <strong>구독 해지:</strong> 언제든지 다음 달 구독을 해지(정기결제 중단)할 수 있습니다. 해지 신청 시, 다음 결제일부터 요금이 청구되지 않으며, 현재 이용 중인 유료 회차의 만료일까지는 서비스 이용 권한이 유지됩니다.
+                  </p>
+                  <div>
+                    <p className="mb-2"><strong>환불 규정:</strong></p>
+                    <ul className="list-disc pl-5 space-y-1">
+                      <li><strong>전액 환불:</strong> 결제일로부터 7일 이내에 서비스 이용 이력(기업 분석 조회, 제안서 생성 및 다운로드 등)이 전혀 없는 경우에 한하여 전액 환불이 가능합니다.</li>
+                      <li><strong>환불 불가:</strong> 다음의 경우 해당 월 이용 요금은 환불되지 않습니다.
+                        <ul className="list-disc pl-5 mt-1 space-y-1">
+                          <li>결제 후 7일이 경과한 경우</li>
+                          <li>결제 후 서비스를 1회라도 이용한 경우 (단순 조회 포함)</li>
+                          <li>2단계 비주얼레포트 (PDF 등) 생성을 실행한 경우 (디지털 콘텐츠의 가치가 제공된 것으로 간주)</li>
+                        </ul>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
