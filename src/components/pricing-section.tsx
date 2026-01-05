@@ -26,10 +26,21 @@ interface PricingPlan {
 export function PricingSection() {
   const [plans, setPlans] = useState<PricingPlan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     fetchPlans();
+    checkLoginStatus();
   }, []);
+
+  const checkLoginStatus = async () => {
+    try {
+      const response = await fetch('/api/user/subscription');
+      setIsLoggedIn(response.ok);
+    } catch {
+      setIsLoggedIn(false);
+    }
+  };
 
   const fetchPlans = async () => {
     try {
@@ -122,7 +133,7 @@ export function PricingSection() {
                     </li>
                   ))}
                 </ul>
-                <Link href="/auth/register">
+                <Link href={isLoggedIn ? '/pricing' : '/auth/login'}>
                   {plan.buttonVariant === 'outline' ? (
                     <Button variant="outline" className="w-full">
                       {plan.buttonText}

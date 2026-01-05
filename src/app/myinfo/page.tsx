@@ -126,6 +126,11 @@ export default function MyInfoPage() {
       </header>
 
       <main className="container mx-auto px-4 py-12 max-w-2xl">
+        <div className="mb-4">
+          <Button variant="outline" onClick={() => router.back()}>
+            ← 뒤로
+          </Button>
+        </div>
         <Card>
           <CardHeader>
             <CardTitle>회원 정보</CardTitle>
