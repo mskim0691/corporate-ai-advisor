@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -19,47 +19,6 @@ export default function NewProjectPage() {
 
   const [files, setFiles] = useState<File[]>([])
   const [isDragging, setIsDragging] = useState(false)
-  const [userCredits, setUserCredits] = useState(0)
-
-  useEffect(() => {
-    fetchUserCredits()
-  }, [])
-
-  const fetchUserCredits = async () => {
-    try {
-      const response = await fetch('/api/user/info')
-      if (response.ok) {
-        const data = await response.json()
-        setUserCredits(data.credits || 0)
-      }
-    } catch (err) {
-      console.error('Failed to fetch user credits:', err)
-    }
-  }
-
-  /* 크레딧 기능 비활성화
-  const [basicAnalysisCost, setBasicAnalysisCost] = useState(10)
-
-  useEffect(() => {
-    fetchCreditPrices()
-  }, [])
-
-  const fetchCreditPrices = async () => {
-    try {
-      const response = await fetch('/api/admin/credit-prices')
-      if (response.ok) {
-        const priceData = await response.json()
-        const basicPrice = priceData.find((p: any) => p.type === 'basic_analysis')
-        if (basicPrice) {
-          setBasicAnalysisCost(basicPrice.credits)
-        }
-      }
-    } catch (err) {
-      console.error('Failed to fetch credit prices:', err)
-      // Keep default value of 10 if fetch fails
-    }
-  }
-  */
 
   const handleNext = () => {
     if (!companyName || !representative) {
@@ -116,9 +75,8 @@ export default function NewProjectPage() {
       return
     }
 
-    // 이용권 차감 확인
-    const expectedCredits = userCredits - 1
-    const confirmMessage = `솔루션 이용권이 -1 차감됩니다. 계속하시겠습니까?\n(예상 잔여 이용권: ${expectedCredits})`
+    // 분석 시작 확인
+    const confirmMessage = `분석을 시작하시겠습니까?\n(이번 달 분석제안서 생성 횟수가 1회 차감됩니다)`
 
     if (!confirm(confirmMessage)) {
       return
@@ -377,7 +335,7 @@ export default function NewProjectPage() {
                   disabled={isLoading || files.length === 0}
                   className="flex-1"
                 >
-                  {isLoading ? "AI엔진이 전략을 분석하고 있습니다. 시간이 조금 걸려도 기다려주세요~" : "분석시작 (이용권 -1)"}
+                  {isLoading ? "AI엔진이 전략을 분석하고 있습니다. 시간이 조금 걸려도 기다려주세요~" : "분석 시작"}
                 </Button>
               </div>
             </CardContent>

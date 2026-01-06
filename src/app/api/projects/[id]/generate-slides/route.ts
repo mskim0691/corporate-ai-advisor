@@ -2,7 +2,6 @@ import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import prisma from "@/lib/prisma"
 import { generatePresentationSlides } from "@/lib/gemini"
-// import { hasEnoughCredits, deductPresentationCredits, getCreditPrice } from "@/lib/credits" // 크레딧 기능 비활성화
 
 export async function POST(
   req: Request,
@@ -41,29 +40,6 @@ export async function POST(
       )
     }
 
-    // Check if user is admin - admins don't need to pay credits
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { role: true }
-    })
-
-    const isAdmin = user?.role === "admin"
-
-    /* 크레딧 기능 비활성화
-    // If not admin, check credits before generating presentation
-    if (!isAdmin) {
-      const creditCost = await getCreditPrice('premium_presentation')
-      const enoughCredits = await hasEnoughCredits(session.user.id, creditCost)
-
-      if (!enoughCredits) {
-        return NextResponse.json(
-          { error: `크레딧이 부족합니다. 고급 프레젠테이션 제작에는 ${creditCost} 크레딧이 필요합니다.` },
-          { status: 403 }
-        )
-      }
-    }
-    */
-
     try {
       const presentationResult = await generatePresentationSlides(
         project.report.textAnalysis,
@@ -76,19 +52,6 @@ export async function POST(
           analysisData: JSON.stringify(presentationResult),
         },
       })
-
-      /* 크레딧 기능 비활성화
-      // Deduct credits only for non-admin users after successful generation
-      if (!isAdmin) {
-        try {
-          await deductPresentationCredits(session.user.id, project.id)
-        } catch (error) {
-          console.error("Failed to deduct presentation credits:", error)
-          // Note: We don't rollback the presentation since it was already created
-          // This is a business decision - the presentation is created but credits might not be deducted
-        }
-      }
-      */
 
       return NextResponse.json({ status: "success" })
     } catch (error) {

@@ -310,17 +310,6 @@ export default async function AdminDashboard() {
               <p className="text-sm text-gray-600">서비스 이용약관 및 개인정보처리방침을 관리합니다</p>
               <p className="mt-4 text-2xl font-bold text-gray-600">관리</p>
             </Link>
-
-            {/* 크레딧 기능 비활성화
-            <Link
-              href="/admin/credit-prices"
-              className="p-6 bg-white border border-gray-200 rounded-lg hover:border-cyan-300 hover:shadow-md transition-all"
-            >
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">크레딧 가격</h3>
-              <p className="text-sm text-gray-600">크레딧 소비 가격을 설정합니다</p>
-              <p className="mt-4 text-2xl font-bold text-cyan-600">설정</p>
-            </Link>
-            */}
           </div>
         </div>
       </div>

@@ -16,7 +16,7 @@ export async function GET() {
       }),
       prisma.user.findUnique({
         where: { id: session.user.id },
-        select: { role: true, credits: true }
+        select: { role: true }
       })
     ])
 
@@ -24,7 +24,6 @@ export async function GET() {
       plan: subscription?.plan || "free",
       status: subscription?.status || "active",
       role: user?.role || "user",
-      credits: user?.credits || 0,
     })
   } catch (error) {
     console.error("Get subscription error:", error)
