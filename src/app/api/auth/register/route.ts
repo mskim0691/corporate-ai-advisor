@@ -37,21 +37,12 @@ export async function POST(req: Request) {
 
     const passwordHash = await hash(password, 10)
 
-    // Get initial credit policy
-    const initialCreditPolicy = await prisma.initialCreditPolicy.findFirst({
-      where: { isActive: true },
-      orderBy: { createdAt: 'desc' }
-    })
-
-    const initialCredits = initialCreditPolicy?.credits || 0
-
-    // Create user with initial credits
+    // Create user
     const user = await prisma.user.create({
       data: {
         email,
         passwordHash,
         name,
-        credits: initialCredits,
         subscription: {
           create: {
             plan: "free",
@@ -63,22 +54,8 @@ export async function POST(req: Request) {
         id: true,
         email: true,
         name: true,
-        credits: true,
       },
     })
-
-    // Create credit transaction record if initial credits were granted
-    if (initialCredits > 0) {
-      await prisma.creditTransaction.create({
-        data: {
-          userId: user.id,
-          amount: initialCredits,
-          type: 'initial_grant',
-          description: '회원가입 축하 크레딧',
-          balanceAfter: initialCredits,
-        },
-      })
-    }
 
     // Send Telegram notification for new user registration
     try {
@@ -86,7 +63,6 @@ export async function POST(req: Request) {
         userName: user.name || '이름 없음',
         userEmail: user.email,
         userId: user.id,
-        credits: user.credits,
       })
     } catch (telegramError) {
       // Log error but don't fail registration if Telegram notification fails

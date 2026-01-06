@@ -11,7 +11,6 @@ interface UserDetail {
   email: string
   name: string | null
   role: string
-  credits: number
   createdAt: string
   subscription: {
     id: string

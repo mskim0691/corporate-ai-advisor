@@ -72,26 +72,6 @@ async function getUserDashboardData(userId: string) {
   return { subscription, usageLog, projects, totalProjectCount, totalPresentationCount, monthlyPresentationCount }
 }
 
-/* 크레딧 기능 비활성화
-async function getCreditPrices() {
-  const prices = await prisma.creditPrice.findMany({
-    where: {
-      type: {
-        in: ['basic_analysis', 'premium_presentation']
-      }
-    }
-  })
-
-  const basicPrice = prices.find(p => p.type === 'basic_analysis')
-  const premiumPrice = prices.find(p => p.type === 'premium_presentation')
-
-  return {
-    basic: basicPrice?.credits || 10,
-    premium: premiumPrice?.credits || 50
-  }
-}
-*/
-
 export default async function DashboardPage() {
   const session = await auth()
 
@@ -122,7 +102,7 @@ export default async function DashboardPage() {
   const presentationUsage = monthlyPresentationCount
 
   const canCreateProject = solutionUsage < solutionLimit
-  const remainingPresentationCredits = presentationLimit === 999999 ? 999999 : Math.max(0, presentationLimit - presentationUsage)
+  const remainingPresentations = presentationLimit === 999999 ? 999999 : Math.max(0, presentationLimit - presentationUsage)
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -313,7 +293,7 @@ export default async function DashboardPage() {
                           <VisualReportButton
                             projectId={project.id}
                             hasReport={!!project.report?.pdfUrl}
-                            remainingCredits={remainingPresentationCredits}
+                            remainingCount={remainingPresentations}
                           />
                         </>
                       )}

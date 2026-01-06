@@ -4,7 +4,6 @@ import prisma from "@/lib/prisma"
 import { z } from "zod"
 import { getCurrentYearMonth } from "@/lib/utils"
 import { checkProjectCreationPolicy } from "@/lib/policy"
-// import { hasEnoughCredits, deductAnalysisCredits, getCreditPrice } from "@/lib/credits" // 크레딧 기능 비활성화
 
 const projectSchema = z.object({
   companyName: z.string().min(1),
@@ -60,19 +59,6 @@ export async function POST(req: Request) {
       )
     }
 
-    /* 크레딧 기능 비활성화
-    // Check if user has enough credits
-    const creditCost = await getCreditPrice('basic_analysis')
-    const enoughCredits = await hasEnoughCredits(user.id, creditCost)
-
-    if (!enoughCredits) {
-      return NextResponse.json(
-        { error: `크레딧이 부족합니다. 분석에는 ${creditCost} 크레딧이 필요합니다.` },
-        { status: 403 }
-      )
-    }
-    */
-
     const { companyName, businessNumber, representative, industry } = parsed.data
 
     const project = await prisma.project.create({
@@ -85,17 +71,6 @@ export async function POST(req: Request) {
         status: "pending",
       },
     })
-
-    /* 크레딧 기능 비활성화
-    // Deduct credits for the analysis
-    try {
-      await deductAnalysisCredits(user.id, project.id)
-    } catch (error) {
-      // If credit deduction fails, delete the project
-      await prisma.project.delete({ where: { id: project.id } })
-      throw error
-    }
-    */
 
     // Increment usage log for monthly quota tracking
     const yearMonth = getCurrentYearMonth()
