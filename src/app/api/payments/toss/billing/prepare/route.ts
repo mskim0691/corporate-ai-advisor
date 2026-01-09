@@ -11,24 +11,49 @@ export async function POST(req: Request) {
 
     const { planName, amount } = await req.json()
 
+    const secretKey = process.env.TOSS_SECRET_KEY
+    if (!secretKey) {
+      return NextResponse.json({ error: "결제 설정 오류" }, { status: 500 })
+    }
+
     // customerKey는 사용자 ID 기반으로 생성 (고유하고 안전하게)
     const customerKey = `CK_${session.user.id.replace(/-/g, '').substring(0, 20)}`
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
-    // 빌링키 발급 요청을 위한 authKey 생성 (서버에서 처리)
-    const authUrl = `https://api.tosspayments.com/v1/billing/authorizations/card?`
-    const params = new URLSearchParams({
-      customerKey,
-      successUrl: `${baseUrl}/api/payments/toss/billing/success?planName=${planName}&amount=${amount}`,
-      failUrl: `${baseUrl}/pricing?error=billing_auth_failed`,
-    })
+    // 빌링키 발급을 위한 카드 등록 페이지 URL 요청
+    const response = await fetch(
+      'https://api.tosspayments.com/v1/billing/authorizations/card',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Basic ${Buffer.from(`${secretKey}:`).toString('base64')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          customerKey,
+          successUrl: `${baseUrl}/api/payments/toss/billing/success?planName=${planName}&amount=${amount}`,
+          failUrl: `${baseUrl}/pricing?error=billing_auth_failed`,
+          customerEmail: session.user.email,
+          customerName: session.user.name || session.user.email,
+        }),
+      }
+    )
 
+    const data = await response.json()
+
+    if (!response.ok) {
+      console.error('Billing auth request error:', data)
+      return NextResponse.json(
+        { error: data.message || '빌링 인증 요청 실패' },
+        { status: response.status }
+      )
+    }
+
+    // TossPayments가 반환한 인증 URL로 리다이렉트
     return NextResponse.json({
-      redirectUrl: authUrl + params.toString(),
+      redirectUrl: data.url,
       customerKey,
-      customerEmail: session.user.email,
-      customerName: session.user.name || session.user.email,
     })
   } catch (error) {
     console.error("Billing prepare error:", error)
