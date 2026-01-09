@@ -31,7 +31,9 @@ model Subscription {
   userId               String    @unique @map("user_id")
   plan                 String    @default("free") // 'free', 'pro', or 'expert'
   status               String    @default("active")
-  stripeSubscriptionId String?   @map("stripe_subscription_id")
+  stripeSubscriptionId String?   @map("stripe_subscription_id") // Legacy field, now used for billingKey
+  billingKey           String?   @map("billing_key") // TossPayments billing key for auto-payment
+  customerKey          String?   @map("customer_key") // TossPayments customer key
   currentPeriodStart   DateTime? @map("current_period_start")
   currentPeriodEnd     DateTime? @map("current_period_end")
   createdAt            DateTime  @default(now()) @map("created_at")
