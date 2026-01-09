@@ -51,12 +51,14 @@ function CheckoutContent() {
       const { loadTossPayments } = await import('@tosspayments/tosspayments-sdk');
       const tossPayments = await loadTossPayments(clientKey);
 
+      // payment 인스턴스 생성
+      const payment = tossPayments.payment({ customerKey });
+
       const baseUrl = window.location.origin;
 
       // 빌링키 발급 요청
-      await tossPayments.requestBillingAuth({
+      await payment.requestBillingAuth({
         method: 'CARD',
-        customerKey,
         successUrl: `${baseUrl}/api/payments/toss/billing/success?planName=${planName}&amount=${amount}&customerKey=${customerKey}`,
         failUrl: `${baseUrl}/pricing?error=billing_auth_failed`,
       });
