@@ -25,41 +25,26 @@ function CheckoutContent() {
     try {
       setLoading(true);
 
-      // 서버에서 customerKey와 URL 받아오기
-      const prepareResponse = await fetch('/api/payments/toss/billing/prepare', {
+      // 서버에서 빌링 인증 준비 (서버가 TossPayments API를 직접 호출)
+      const response = await fetch('/api/payments/toss/billing/prepare', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ planName, amount: parseInt(amount || '0') }),
       });
 
-      const prepareData = await prepareResponse.json();
+      const data = await response.json();
 
-      if (!prepareResponse.ok) {
-        console.error('Billing prepare error:', prepareData);
-        throw new Error(prepareData.error || '빌링 인증 준비 실패');
+      if (!response.ok) {
+        console.error('Billing prepare error:', data);
+        throw new Error(data.error || '빌링 인증 준비 실패');
       }
 
-      const { customerKey, successUrl, failUrl } = prepareData;
-
-      // TossPayments Payment Widget SDK 로드
-      const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
-      if (!clientKey) {
-        throw new Error('결제 설정 오류');
+      // 서버에서 반환한 빌링 인증 URL로 리다이렉트
+      if (data.authUrl) {
+        window.location.href = data.authUrl;
+      } else {
+        throw new Error('인증 URL을 받지 못했습니다');
       }
-
-      // 동적 import 사용
-      const { loadTossPayments } = await import('@tosspayments/tosspayments-sdk');
-      const tossPayments = await loadTossPayments(clientKey);
-
-      // Payment Widget 인스턴스 생성 (빌링키 발급용)
-      const widgets = tossPayments.widgets({ customerKey });
-
-      // 빌링키 발급을 위한 authKey 발급 페이지로 이동
-      await widgets.requestBillingAuth({
-        method: 'CARD',
-        successUrl,
-        failUrl,
-      });
     } catch (err: any) {
       console.error('Billing auth error:', err);
       setError(err.message || '빌링 인증 중 오류가 발생했습니다');
