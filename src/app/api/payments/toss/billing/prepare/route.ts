@@ -34,10 +34,6 @@ export async function POST(req: Request) {
           customerKey,
           successUrl: `${baseUrl}/api/payments/toss/billing/success?planName=${planName}&amount=${amount}&customerKey=${customerKey}`,
           failUrl: `${baseUrl}/pricing?error=billing_auth_failed`,
-          customerEmail: session.user.email,
-          customerName: session.user.name || session.user.email,
-          cardCompany: undefined, // 선택 파라미터
-          cardInstallmentPlan: undefined, // 선택 파라미터
         }),
       }
     )
@@ -47,13 +43,16 @@ export async function POST(req: Request) {
     if (!response.ok) {
       console.error('Billing auth request error:', {
         status: response.status,
-        data,
+        statusText: response.statusText,
+        errorData: data,
         requestBody: {
           customerKey,
           successUrl: `${baseUrl}/api/payments/toss/billing/success?planName=${planName}&amount=${amount}&customerKey=${customerKey}`,
           failUrl: `${baseUrl}/pricing?error=billing_auth_failed`,
-          customerEmail: session.user.email,
-          customerName: session.user.name || session.user.email,
+        },
+        userContext: {
+          userId: session.user.id,
+          email: session.user.email,
         }
       })
       return NextResponse.json(
