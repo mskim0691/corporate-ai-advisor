@@ -19,9 +19,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
+        console.log('[Auth] Login attempt with:', credentials?.email)
+
         const parsed = loginSchema.safeParse(credentials)
 
         if (!parsed.success) {
+          console.log('[Auth] Validation failed:', parsed.error)
           return null
         }
 
@@ -35,15 +38,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         })
 
         if (!user) {
+          console.log('[Auth] User not found:', email)
           return null
         }
+
+        console.log('[Auth] User found:', { id: user.id, email: user.email })
 
         const isPasswordValid = await compare(password, user.passwordHash)
 
         if (!isPasswordValid) {
+          console.log('[Auth] Invalid password for:', email)
           return null
         }
 
+        console.log('[Auth] Login successful:', email)
         return {
           id: user.id,
           email: user.email,
