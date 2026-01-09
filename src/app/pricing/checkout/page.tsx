@@ -25,7 +25,7 @@ function CheckoutContent() {
     try {
       setLoading(true);
 
-      // 서버에서 customerKey 받아오기
+      // 서버에서 customerKey와 URL 받아오기
       const prepareResponse = await fetch('/api/payments/toss/billing/prepare', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -39,9 +39,9 @@ function CheckoutContent() {
         throw new Error(prepareData.error || '빌링 인증 준비 실패');
       }
 
-      const { customerKey } = prepareData;
+      const { customerKey, successUrl, failUrl } = prepareData;
 
-      // TossPayments SDK v2 로드 및 빌링 인증 요청
+      // TossPayments Payment Widget SDK 로드
       const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
       if (!clientKey) {
         throw new Error('결제 설정 오류');
@@ -51,16 +51,14 @@ function CheckoutContent() {
       const { loadTossPayments } = await import('@tosspayments/tosspayments-sdk');
       const tossPayments = await loadTossPayments(clientKey);
 
-      // payment 인스턴스 생성
-      const payment = tossPayments.payment({ customerKey });
+      // Payment Widget 인스턴스 생성 (빌링키 발급용)
+      const widgets = tossPayments.widgets({ customerKey });
 
-      const baseUrl = window.location.origin;
-
-      // 빌링키 발급 요청
-      await payment.requestBillingAuth({
+      // 빌링키 발급을 위한 authKey 발급 페이지로 이동
+      await widgets.requestBillingAuth({
         method: 'CARD',
-        successUrl: `${baseUrl}/api/payments/toss/billing/success?planName=${planName}&amount=${amount}&customerKey=${customerKey}`,
-        failUrl: `${baseUrl}/pricing?error=billing_auth_failed`,
+        successUrl,
+        failUrl,
       });
     } catch (err: any) {
       console.error('Billing auth error:', err);
