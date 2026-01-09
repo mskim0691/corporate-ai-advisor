@@ -5,22 +5,12 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { loadTossPayments, TossPaymentsPayment } from '@tosspayments/tosspayments-sdk';
-
-interface BillingAuthData {
-  clientKey: string;
-  customerKey: string;
-  customerEmail: string;
-  customerName: string;
-}
 
 function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [billingAuthData, setBillingAuthData] = useState<BillingAuthData | null>(null);
-  const [payment, setPayment] = useState<TossPaymentsPayment | null>(null);
 
   const planName = searchParams.get('plan');
   const amount = searchParams.get('amount');
@@ -28,16 +18,14 @@ function CheckoutContent() {
   useEffect(() => {
     if (!planName || !amount) {
       setError('잘못된 접근입니다');
-      setLoading(false);
-      return;
     }
-
-    initializeBillingAuth();
   }, [planName, amount]);
 
-  const initializeBillingAuth = async () => {
+  const handleBillingAuth = async () => {
     try {
-      // 클라이언트 키와 고객 키 가져오기
+      setLoading(true);
+
+      // 서버에서 빌링 인증 URL 받아오기
       const response = await fetch('/api/payments/toss/billing/prepare', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -50,43 +38,10 @@ function CheckoutContent() {
       }
 
       const data = await response.json();
-      setBillingAuthData(data);
 
-      // TossPayments SDK 초기화
-      const tossPayments = await loadTossPayments(data.clientKey);
-      const paymentInstance = tossPayments.payment({
-        customerKey: data.customerKey,
-      });
-
-      setPayment(paymentInstance);
-      setLoading(false);
+      // TossPayments 빌링 인증 페이지로 리다이렉트
+      window.location.href = data.redirectUrl;
     } catch (err: any) {
-      setError(err.message);
-      setLoading(false);
-    }
-  };
-
-  const handleBillingAuth = async () => {
-    if (!payment || !billingAuthData || !planName || !amount) return;
-
-    try {
-      setLoading(true);
-
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
-
-      // 빌링키 발급을 위한 카드 인증 요청
-      await payment.requestBillingAuth({
-        method: 'CARD',
-        successUrl: `${baseUrl}/api/payments/toss/billing/success?planName=${planName}&amount=${amount}`,
-        failUrl: `${baseUrl}/pricing?error=billing_auth_failed`,
-        customerEmail: billingAuthData.customerEmail,
-        customerName: billingAuthData.customerName,
-      });
-    } catch (err: any) {
-      if (err.code === 'USER_CANCEL') {
-        setLoading(false);
-        return;
-      }
       setError(err.message || '빌링 인증 중 오류가 발생했습니다');
       setLoading(false);
     }
@@ -150,15 +105,6 @@ function CheckoutContent() {
               </div>
             </div>
 
-            {loading && (
-              <div className="flex items-center justify-center py-12">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                  <p className="text-gray-600">로딩 중...</p>
-                </div>
-              </div>
-            )}
-
             <div className="flex gap-4">
               <Link href="/pricing" className="flex-1">
                 <Button variant="outline" className="w-full" disabled={loading}>
@@ -168,7 +114,7 @@ function CheckoutContent() {
               <Button
                 className="flex-1 bg-blue-600 hover:bg-blue-700"
                 onClick={handleBillingAuth}
-                disabled={loading || !payment}
+                disabled={loading}
               >
                 {loading ? '처리 중...' : '카드 등록 및 구독하기'}
               </Button>
