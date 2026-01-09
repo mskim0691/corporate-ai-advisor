@@ -11,17 +11,55 @@ export async function POST(req: Request) {
 
     const { planName, amount } = await req.json()
 
+    const secretKey = process.env.TOSS_SECRET_KEY
+    if (!secretKey) {
+      return NextResponse.json({ error: "결제 설정 오류" }, { status: 500 })
+    }
+
     // customerKey는 사용자 ID 기반으로 생성 (고유하고 안전하게)
     const customerKey = `CK_${session.user.id.replace(/-/g, '').substring(0, 20)}`
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
-    // TossPayments는 클라이언트 측에서 카드 정보를 입력받아 authKey를 발급하고,
-    // 서버에서 그 authKey를 빌링키로 변환하는 방식을 사용합니다.
-    // 따라서 여기서는 customerKey와 URL만 반환합니다.
+    // TossPayments 빌링 카드 등록 페이지 URL 요청
+    const response = await fetch(
+      'https://api.tosspayments.com/v1/billing/authorizations/card',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Basic ${Buffer.from(`${secretKey}:`).toString('base64')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          customerKey,
+          successUrl: `${baseUrl}/api/payments/toss/billing/success?planName=${planName}&amount=${amount}&customerKey=${customerKey}`,
+          failUrl: `${baseUrl}/pricing?error=billing_auth_failed`,
+        }),
+      }
+    )
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      console.error('Billing auth request error:', {
+        status: response.status,
+        statusText: response.statusText,
+        errorData: data,
+        requestBody: {
+          customerKey,
+          successUrl: `${baseUrl}/api/payments/toss/billing/success?planName=${planName}&amount=${amount}&customerKey=${customerKey}`,
+          failUrl: `${baseUrl}/pricing?error=billing_auth_failed`,
+        },
+      })
+      return NextResponse.json(
+        { error: data.message || '빌링 인증 요청 실패', details: data },
+        { status: response.status }
+      )
+    }
+
+    // TossPayments가 반환한 카드 등록 페이지 URL로 리다이렉트
     return NextResponse.json({
+      authUrl: data.url,
       customerKey,
-      successUrl: `${baseUrl}/api/payments/toss/billing/success?planName=${planName}&amount=${amount}&customerKey=${customerKey}`,
-      failUrl: `${baseUrl}/pricing?error=billing_auth_failed`,
     })
   } catch (error) {
     console.error("Billing prepare error:", error)
