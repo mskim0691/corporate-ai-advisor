@@ -117,6 +117,9 @@ export default async function DashboardPage() {
                 <Button variant="outline">관리</Button>
               </Link>
             )}
+            <Link href="/pricing">
+              <Button variant="outline">구독 관리</Button>
+            </Link>
             <UserMenu />
           </div>
         </div>

@@ -133,7 +133,7 @@ export function PricingSection() {
                     </li>
                   ))}
                 </ul>
-                <Link href={isLoggedIn ? '/pricing' : '/auth/login'}>
+                <Link href={isLoggedIn ? '/pricing' : '/auth/login?callbackUrl=/pricing'}>
                   {plan.buttonVariant === 'outline' ? (
                     <Button variant="outline" className="w-full">
                       {plan.buttonText}

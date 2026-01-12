@@ -32,12 +32,6 @@ export function UserMenu() {
         >
           내 정보 수정
         </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => router.push("/pricing")}
-          className="cursor-pointer"
-        >
-          구독 관리
-        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={handleLogout}

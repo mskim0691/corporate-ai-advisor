@@ -5,49 +5,97 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { loadTossPayments } from '@tosspayments/tosspayments-sdk';
+
+interface UserInfo {
+  id: string;
+  name: string;
+  email: string;
+  plan: string;
+}
 
 function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
   const planName = searchParams.get('plan');
   const amount = searchParams.get('amount');
 
+  // 사용자 정보 가져오기
   useEffect(() => {
     if (!planName || !amount) {
       setError('잘못된 접근입니다');
+      return;
     }
-  }, [planName, amount]);
+
+    const fetchUserInfo = async () => {
+      try {
+        const response = await fetch('/api/user/info');
+        if (response.status === 401) {
+          // 로그인이 필요한 경우 로그인 페이지로 리다이렉트
+          router.push('/auth/login?callbackUrl=' + encodeURIComponent(`/pricing/checkout?plan=${planName}&amount=${amount}`));
+          return;
+        }
+        if (response.ok) {
+          const data = await response.json();
+          setUserInfo(data);
+        } else {
+          setError('사용자 정보를 가져오는데 실패했습니다');
+        }
+      } catch (err) {
+        console.error('Fetch user info error:', err);
+        setError('사용자 정보를 가져오는데 실패했습니다');
+      }
+    };
+
+    fetchUserInfo();
+  }, [planName, amount, router]);
 
   const handleBillingAuth = async () => {
     try {
       setLoading(true);
+      setError(null);
 
-      // 서버에서 빌링 인증 준비 (서버가 TossPayments API를 직접 호출)
-      const response = await fetch('/api/payments/toss/billing/prepare', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planName, amount: parseInt(amount || '0') }),
+      const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
+      if (!clientKey) {
+        throw new Error('결제 설정이 올바르지 않습니다. 관리자에게 문의하세요.');
+      }
+
+      if (!userInfo) {
+        throw new Error('사용자 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
+      }
+
+      // customerKey 생성 (사용자 ID 기반)
+      const customerKey = `CK_${userInfo.id.replace(/-/g, '').substring(0, 20)}`;
+
+      // TossPayments SDK v2 초기화
+      const tossPayments = await loadTossPayments(clientKey);
+
+      // payment 인스턴스 생성 (customerKey 필수)
+      const payment = tossPayments.payment({ customerKey });
+
+      // 빌링 인증 요청 (결제창 열림)
+      await payment.requestBillingAuth({
+        method: 'CARD',
+        successUrl: `${window.location.origin}/api/payments/toss/billing/success?planName=${planName}&amount=${amount}&customerKey=${customerKey}`,
+        failUrl: `${window.location.origin}/pricing?error=billing_auth_failed`,
+        customerEmail: userInfo.email || undefined,
+        customerName: userInfo.name || undefined,
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        console.error('Billing prepare error:', data);
-        throw new Error(data.error || '빌링 인증 준비 실패');
-      }
-
-      // 서버에서 반환한 빌링 인증 URL로 리다이렉트
-      if (data.authUrl) {
-        window.location.href = data.authUrl;
-      } else {
-        throw new Error('인증 URL을 받지 못했습니다');
-      }
     } catch (err: any) {
       console.error('Billing auth error:', err);
-      setError(err.message || '빌링 인증 중 오류가 발생했습니다');
+      // SDK에서 발생하는 에러 처리
+      if (err.code === 'USER_CANCEL') {
+        setError('결제가 취소되었습니다');
+      } else if (err.message) {
+        setError(err.message);
+      } else {
+        setError('빌링 인증 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      }
       setLoading(false);
     }
   };
@@ -87,11 +135,11 @@ function CheckoutContent() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h3 className="font-semibold text-blue-900 mb-2">💳 빌링 결제 안내</h3>
+              <h3 className="font-semibold text-blue-900 mb-2">빌링 결제 안내</h3>
               <ul className="text-sm text-blue-800 space-y-1">
-                <li>• 카드 정보를 안전하게 등록하여 매월 자동으로 결제됩니다</li>
-                <li>• 첫 결제는 즉시 진행되며, 이후 매월 자동 갱신됩니다</li>
-                <li>• 언제든지 구독을 해지할 수 있습니다</li>
+                <li>카드 정보를 안전하게 등록하여 매월 자동으로 결제됩니다</li>
+                <li>첫 결제는 즉시 진행되며, 이후 매월 자동 갱신됩니다</li>
+                <li>언제든지 구독을 해지할 수 있습니다</li>
               </ul>
             </div>
 
@@ -105,7 +153,7 @@ function CheckoutContent() {
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">월 결제 금액</span>
                 <span className="text-xl font-bold text-blue-600">
-                  ₩{parseInt(amount || '0').toLocaleString()}
+                  {parseInt(amount || '0').toLocaleString()}원
                 </span>
               </div>
             </div>
@@ -119,9 +167,9 @@ function CheckoutContent() {
               <Button
                 className="flex-1 bg-blue-600 hover:bg-blue-700"
                 onClick={handleBillingAuth}
-                disabled={loading}
+                disabled={loading || !userInfo}
               >
-                {loading ? '처리 중...' : '카드 등록 및 구독하기'}
+                {loading ? '처리 중...' : !userInfo ? '로딩 중...' : '카드 등록 및 구독하기'}
               </Button>
             </div>
 
