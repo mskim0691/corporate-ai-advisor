@@ -258,9 +258,10 @@ export async function uploadFileToGemini(filePath: string, mimeType: string) {
     }
 
     return file
-  } catch (error) {
+  } catch (error: any) {
     console.error(`Gemini upload error for ${filePath}:`, error)
-    throw new Error(`Failed to upload file to Gemini.`)
+    const errorMessage = error?.message || error?.toString() || "Unknown error"
+    throw new Error(`파일 업로드 실패 (${filePath}): ${errorMessage}`)
   }
 }
 
@@ -376,9 +377,10 @@ export async function analyzeCompanyText(
     return {
       analysis: text
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("Gemini API error (text analysis with grounding):", error)
-    throw new Error("AI 분석 중 오류가 발생했습니다")
+    const errorMessage = error?.message || error?.toString() || "Unknown error"
+    throw new Error(`AI 분석 중 오류: ${errorMessage}`)
   }
 }
 
