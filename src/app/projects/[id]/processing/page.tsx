@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 export default function ProcessingPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
   const [status, setStatus] = useState("processing")
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [projectId, setProjectId] = useState<string | null>(null)
 
   // Unwrap params Promise
@@ -22,11 +23,19 @@ export default function ProcessingPage({ params }: { params: Promise<{ id: strin
     // 첫 진입 시 분석 시작
     const startAnalysis = async () => {
       try {
-        await fetch(`/api/projects/${projectId}/detailed-analysis`, {
+        const response = await fetch(`/api/projects/${projectId}/detailed-analysis`, {
           method: "POST",
         })
+
+        if (!response.ok) {
+          const data = await response.json()
+          setStatus("failed")
+          setErrorMessage(data.details || data.error || "알 수 없는 오류")
+        }
       } catch (error) {
         console.error("Failed to start analysis:", error)
+        setStatus("failed")
+        setErrorMessage(error instanceof Error ? error.message : "네트워크 오류")
       }
     }
 
@@ -42,6 +51,9 @@ export default function ProcessingPage({ params }: { params: Promise<{ id: strin
           router.push(`/projects/${projectId}/analysis`)
         } else if (data.status === "failed") {
           setStatus("failed")
+          if (!errorMessage) {
+            setErrorMessage("분석 중 오류가 발생했습니다")
+          }
         }
       } catch (error) {
         console.error("Status check error:", error)
@@ -54,7 +66,7 @@ export default function ProcessingPage({ params }: { params: Promise<{ id: strin
     const interval = setInterval(checkStatus, 3000)
 
     return () => clearInterval(interval)
-  }, [projectId, router])
+  }, [projectId, router, errorMessage])
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -66,7 +78,7 @@ export default function ProcessingPage({ params }: { params: Promise<{ id: strin
           <CardDescription className="text-center">
             {status === "processing"
               ? "AI가 문서를 분석하고 있습니다. 잠시만 기다려주세요..."
-              : "분석 중 오류가 발생했습니다. 다시 시도해주세요."}
+              : "분석 중 오류가 발생했습니다."}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex justify-center py-8">
@@ -79,7 +91,13 @@ export default function ProcessingPage({ params }: { params: Promise<{ id: strin
             </div>
           ) : (
             <div className="text-center">
-              <p className="text-red-600 mb-4">분석에 실패했습니다</p>
+              <p className="text-red-600 mb-2">분석에 실패했습니다</p>
+              {errorMessage && (
+                <div className="bg-red-50 border border-red-200 rounded p-3 mb-4 text-left">
+                  <p className="text-sm text-red-800 font-medium">에러 상세:</p>
+                  <p className="text-sm text-red-700 mt-1 break-all">{errorMessage}</p>
+                </div>
+              )}
               <button
                 onClick={() => router.push("/dashboard")}
                 className="text-blue-600 hover:underline"
