@@ -292,3 +292,21 @@ model LegalDocument {
 
   @@map("legal_documents")
 }
+
+model Coupon {
+  id            String    @id @default(uuid())
+  code          String    @unique // Format: XXXX-XXXX-XXXX-XXXX
+  plan          String    @default("pro") // Plan to apply when redeemed
+  durationDays  Int       @default(30) @map("duration_days") // Duration in days
+  redeemedBy    String?   @map("redeemed_by") // User ID who redeemed
+  redeemedAt    DateTime? @map("redeemed_at") // When the coupon was redeemed
+  expiresAt     DateTime? @map("expires_at") // When the applied plan expires
+  batchId       String?   @map("batch_id") // For grouping coupons created together
+  note          String?   // Optional note for admin
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@map("coupons")
+  @@index([code])
+  @@index([redeemedBy])
+  @@index([batchId])
+}

@@ -386,6 +386,16 @@ export default function PricingPage() {
                       plan.buttonText
                     )}
                   </Button>
+                  {plan.name === 'pro' && (
+                    <div className="mt-3 text-center">
+                      <Link
+                        href="/pricing/coupon"
+                        className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                      >
+                        이용권 등록하기
+                      </Link>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             );

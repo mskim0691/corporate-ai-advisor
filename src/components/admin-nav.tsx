@@ -142,6 +142,13 @@ export function AdminNav() {
               >
                 가격 플랜
               </Link>
+              <Link
+                href="/admin/coupons"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                onClick={() => setMemberMenuOpen(false)}
+              >
+                이용권 쿠폰
+              </Link>
             </div>
           </div>
         )}
