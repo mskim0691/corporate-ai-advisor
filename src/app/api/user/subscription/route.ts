@@ -20,9 +20,33 @@ export async function GET() {
       })
     ])
 
+    // 쿠폰 사용자 만료 체크: billingKey 없이 currentPeriodEnd가 지난 경우 free로 처리
+    let effectivePlan = subscription?.plan || "free"
+    let effectiveStatus = subscription?.status || "active"
+
+    if (
+      subscription &&
+      subscription.currentPeriodEnd &&
+      new Date() > subscription.currentPeriodEnd &&
+      !subscription.billingKey
+    ) {
+      // 만료된 쿠폰 사용자 - DB도 업데이트
+      effectivePlan = "free"
+      effectiveStatus = "expired"
+
+      // DB 업데이트 (비동기로 처리, 응답 지연 방지)
+      prisma.subscription.update({
+        where: { userId: session.user.id },
+        data: {
+          plan: "free",
+          status: "expired",
+        },
+      }).catch((err) => console.error("Failed to update expired subscription:", err))
+    }
+
     return NextResponse.json({
-      plan: subscription?.plan || "free",
-      status: subscription?.status || "active",
+      plan: effectivePlan,
+      status: effectiveStatus,
       role: user?.role || "user",
       pendingPlan: subscription?.pendingPlan || null,
       currentPeriodEnd: subscription?.currentPeriodEnd || null,
