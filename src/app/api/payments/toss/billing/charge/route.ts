@@ -45,9 +45,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "결제 설정 오류" }, { status: 500 })
     }
 
+    // pendingPlan이 있으면 해당 플랜으로 결제, 없으면 현재 플랜
+    const planToCharge = subscription.pendingPlan || subscription.plan
+
     // 요금 정보 조회
     const pricingPlan = await prisma.pricingPlan.findUnique({
-      where: { name: subscription.plan },
+      where: { name: planToCharge },
     })
 
     if (!pricingPlan) {
@@ -67,7 +70,7 @@ export async function POST(req: Request) {
           customerKey: subscription.customerKey,
           amount: pricingPlan.price,
           orderId: `SUB_${Date.now()}_${userId.substring(0, 8)}`,
-          orderName: `AI-GFC ${subscription.plan.toUpperCase()} 플랜 월 구독료`,
+          orderName: `AI-GFC ${planToCharge.toUpperCase()} 플랜 월 구독료`,
           customerEmail: subscription.user.email,
           customerName: subscription.user.name || subscription.user.email,
         }),
@@ -87,7 +90,7 @@ export async function POST(req: Request) {
           currency: 'KRW',
           status: 'failed',
           transactionId: paymentData.code || 'FAILED',
-          description: `${subscription.plan.toUpperCase()} 플랜 자동결제 실패: ${paymentData.message}`,
+          description: `${planToCharge.toUpperCase()} 플랜 자동결제 실패: ${paymentData.message}`,
         },
       })
 
@@ -102,8 +105,15 @@ export async function POST(req: Request) {
     const periodEnd = new Date(now)
     periodEnd.setMonth(periodEnd.getMonth() + 1)
 
+    // pendingPlan이 있었는지 확인 (플랜 업그레이드 여부)
+    const wasUpgrade = !!subscription.pendingPlan
+
     await prisma.$transaction(async (tx) => {
       // 결제 로그 생성
+      const description = wasUpgrade
+        ? `${subscription.plan.toUpperCase()} → ${planToCharge.toUpperCase()} 플랜 업그레이드 자동결제`
+        : `${planToCharge.toUpperCase()} 플랜 자동결제`
+
       await tx.paymentLog.create({
         data: {
           userId,
@@ -112,15 +122,17 @@ export async function POST(req: Request) {
           status: 'completed',
           transactionId: paymentData.orderId,
           paymentMethod: paymentData.method,
-          description: `${subscription.plan.toUpperCase()} 플랜 자동결제`,
+          description,
           paidAt: new Date(paymentData.approvedAt),
         },
       })
 
-      // 구독 기간 갱신
+      // 구독 기간 갱신 및 플랜 변경 적용
       await tx.subscription.update({
         where: { userId },
         data: {
+          plan: planToCharge, // pendingPlan이 있었으면 해당 플랜으로 변경
+          pendingPlan: null,  // pendingPlan 초기화
           currentPeriodStart: now,
           currentPeriodEnd: periodEnd,
           status: 'active',

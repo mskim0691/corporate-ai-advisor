@@ -30,6 +30,7 @@ model Subscription {
   id                   String    @id @default(uuid())
   userId               String    @unique @map("user_id")
   plan                 String    @default("free") // 'free', 'pro', or 'expert'
+  pendingPlan          String?   @map("pending_plan") // Scheduled plan change (applied at next billing)
   status               String    @default("active")
   stripeSubscriptionId String?   @map("stripe_subscription_id") // Legacy field, now used for billingKey
   billingKey           String?   @map("billing_key") // TossPayments billing key for auto-payment
