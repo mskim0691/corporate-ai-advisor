@@ -246,6 +246,10 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
       </header>
 
       <main className="mx-auto px-2 md:px-4 py-4 md:py-8 w-full md:w-11/12 lg:w-4/5 xl:w-3/4">
+        {/* 면책 문구 */}
+        <p className="text-xs text-gray-500 mb-4 text-center">
+          본 자료는 영업 참고용이며, 정확한 금액 계산과 법률적 판단은 전문가와 상담하시기 바랍니다.
+        </p>
 
         <Card className="shadow-xl">
           <CardContent className="p-0 flex justify-center">

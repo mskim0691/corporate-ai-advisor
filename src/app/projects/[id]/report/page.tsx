@@ -228,6 +228,11 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
       </header>
 
       <main className="container mx-auto px-4 py-8">
+        {/* 면책 문구 */}
+        <p className="text-xs text-gray-500 mb-4 text-center">
+          본 자료는 영업 참고용이며, 정확한 금액 계산과 법률적 판단은 전문가와 상담하시기 바랍니다.
+        </p>
+
         {pdfUrl ? (
           <div className="bg-white rounded-lg shadow-lg overflow-hidden">
             <iframe
