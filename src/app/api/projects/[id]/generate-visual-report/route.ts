@@ -49,6 +49,51 @@ export async function POST(
       )
     }
 
+    // 이미 PDF가 있으면 생성하지 않음 (차감 방지)
+    if (project.report?.pdfUrl) {
+      return NextResponse.json({
+        status: "already_exists",
+        pdfUrl: project.report.pdfUrl,
+      })
+    }
+
+    // 사용량 체크
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id! },
+      include: { subscription: true },
+    })
+
+    const currentMonth = new Date().toISOString().slice(0, 7)
+    const monthlyUsage = await prisma.monthlyUsage.findUnique({
+      where: {
+        userId_month: {
+          userId: session.user.id!,
+          month: currentMonth,
+        },
+      },
+    })
+
+    // 그룹 정책 확인
+    let maxPresentations = user?.subscription?.monthlyPresentation || 0
+    if (user?.groupPolicyId) {
+      const groupPolicy = await prisma.groupPolicy.findUnique({
+        where: { id: user.groupPolicyId },
+      })
+      if (groupPolicy) {
+        maxPresentations = groupPolicy.monthlyPresentation
+      }
+    }
+
+    const usedPresentations = monthlyUsage?.presentationCount || 0
+    const remainingPresentations = maxPresentations - usedPresentations
+
+    if (remainingPresentations <= 0) {
+      return NextResponse.json(
+        { error: "이번 달 비주얼 레포트 생성 횟수를 모두 사용했습니다." },
+        { status: 403 }
+      )
+    }
+
     try {
       // Step 1: Generate presentation slides using step3-presentation-generation prompt
       console.log(`📊 Step 1: Generating presentation slides for ${project.companyName}...`)
@@ -228,6 +273,46 @@ export async function POST(
           pdfUrl: relativePdfUrl,
         },
       })
+
+      // 비주얼 레포트 생성 횟수 차감
+      const currentMonth = new Date().toISOString().slice(0, 7) // YYYY-MM 형식
+
+      // 현재 사용량 조회
+      const existingUsage = await prisma.monthlyUsage.findUnique({
+        where: {
+          userId_month: {
+            userId: session.user.id!,
+            month: currentMonth,
+          },
+        },
+      })
+
+      if (existingUsage) {
+        // 기존 레코드 업데이트
+        await prisma.monthlyUsage.update({
+          where: {
+            userId_month: {
+              userId: session.user.id!,
+              month: currentMonth,
+            },
+          },
+          data: {
+            presentationCount: existingUsage.presentationCount + 1,
+          },
+        })
+      } else {
+        // 새 레코드 생성
+        await prisma.monthlyUsage.create({
+          data: {
+            userId: session.user.id!,
+            month: currentMonth,
+            analysisCount: 0,
+            presentationCount: 1,
+          },
+        })
+      }
+
+      console.log(`✓ Visual report usage counted for user ${session.user.id}`)
 
       return NextResponse.json({
         status: "success",
