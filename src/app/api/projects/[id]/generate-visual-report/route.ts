@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import prisma from "@/lib/prisma"
 import { generatePresentationSlides, generateAllSlideImages, generateCoverImage } from "@/lib/gemini"
+import { checkPresentationCreationPolicy } from "@/lib/policy"
 import { PDFDocument } from "pdf-lib"
 import { createClient } from "@supabase/supabase-js"
 
@@ -24,6 +25,16 @@ export async function POST(
     }
 
     const { id } = await params
+
+    // 사용자 정보 조회
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id! },
+      include: { subscription: true },
+    })
+
+    if (!user) {
+      return NextResponse.json({ error: "사용자를 찾을 수 없습니다" }, { status: 404 })
+    }
 
     const project = await prisma.project.findFirst({
       where: {
@@ -57,39 +68,16 @@ export async function POST(
       })
     }
 
-    // 사용량 체크
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id! },
-      include: { subscription: true },
-    })
+    // 사용량 체크 (기존 policy 함수 사용)
+    const policyCheck = await checkPresentationCreationPolicy(
+      session.user.id!,
+      user.role,
+      user.subscription?.plan
+    )
 
-    const currentMonth = new Date().toISOString().slice(0, 7)
-    const monthlyUsage = await prisma.monthlyUsage.findUnique({
-      where: {
-        userId_month: {
-          userId: session.user.id!,
-          month: currentMonth,
-        },
-      },
-    })
-
-    // 그룹 정책 확인
-    let maxPresentations = user?.subscription?.monthlyPresentation || 0
-    if (user?.groupPolicyId) {
-      const groupPolicy = await prisma.groupPolicy.findUnique({
-        where: { id: user.groupPolicyId },
-      })
-      if (groupPolicy) {
-        maxPresentations = groupPolicy.monthlyPresentation
-      }
-    }
-
-    const usedPresentations = monthlyUsage?.presentationCount || 0
-    const remainingPresentations = maxPresentations - usedPresentations
-
-    if (remainingPresentations <= 0) {
+    if (!policyCheck.allowed) {
       return NextResponse.json(
-        { error: "이번 달 비주얼 레포트 생성 횟수를 모두 사용했습니다." },
+        { error: policyCheck.message || "이번 달 비주얼 레포트 생성 횟수를 모두 사용했습니다." },
         { status: 403 }
       )
     }
@@ -266,53 +254,16 @@ export async function POST(
         console.log(`✓ Visual report PDF saved locally: ${relativePdfUrl}`)
       }
 
-      // Save PDF URL to database
+      // Save PDF URL to database and update reportType to 'presentation' (for usage counting)
       await prisma.report.update({
         where: { id: project.report.id },
         data: {
           pdfUrl: relativePdfUrl,
+          reportType: 'presentation', // 이것이 사용량 카운트에 반영됨
         },
       })
 
-      // 비주얼 레포트 생성 횟수 차감
-      const currentMonth = new Date().toISOString().slice(0, 7) // YYYY-MM 형식
-
-      // 현재 사용량 조회
-      const existingUsage = await prisma.monthlyUsage.findUnique({
-        where: {
-          userId_month: {
-            userId: session.user.id!,
-            month: currentMonth,
-          },
-        },
-      })
-
-      if (existingUsage) {
-        // 기존 레코드 업데이트
-        await prisma.monthlyUsage.update({
-          where: {
-            userId_month: {
-              userId: session.user.id!,
-              month: currentMonth,
-            },
-          },
-          data: {
-            presentationCount: existingUsage.presentationCount + 1,
-          },
-        })
-      } else {
-        // 새 레코드 생성
-        await prisma.monthlyUsage.create({
-          data: {
-            userId: session.user.id!,
-            month: currentMonth,
-            analysisCount: 0,
-            presentationCount: 1,
-          },
-        })
-      }
-
-      console.log(`✓ Visual report usage counted for user ${session.user.id}`)
+      console.log(`✓ Visual report created for ${project.companyName}`)
 
       return NextResponse.json({
         status: "success",
