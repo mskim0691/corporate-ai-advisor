@@ -334,7 +334,7 @@ export default function PricingPage() {
                   <div>
                     <p className="mb-2"><strong>환불 규정:</strong></p>
                     <ul className="list-disc pl-5 space-y-1">
-                      <li><strong>전액 환불:</strong> 결제일로부터 7일 이내에 서비스 이용 이력(기업 분석 조회, 제안서 생성 및 다운로드 등)이 전혀 없는 경우에 한하여 전액 환불이 가능합니다.</li>
+                      <li><strong>전액 환불:</strong> 결제일로부터 7일 이내에 서비스 이용 이력(기업 분석 조회, 제안서 생성 및 다운로드 등)이 전혀 없는 경우에 한하여 전액 환불이 가능합니다. (환불 문의는 <Link href="/qna" className="text-blue-600 hover:underline">1:1게시판</Link>으로)</li>
                       <li><strong>환불 불가:</strong> 다음의 경우 해당 월 이용 요금은 환불되지 않습니다.
                         <ul className="list-disc pl-5 mt-1 space-y-1">
                           <li>결제 후 7일이 경과한 경우</li>
