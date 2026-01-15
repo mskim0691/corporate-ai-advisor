@@ -5,6 +5,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Footer } from '@/components/footer';
 
 interface PricingPlan {
@@ -37,6 +45,8 @@ export default function PricingPage() {
   const [loading, setLoading] = useState(true);
   const [currentPlan, setCurrentPlan] = useState<string>('free');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showDowngradeDialog, setShowDowngradeDialog] = useState(false);
+  const [downgrading, setDowngrading] = useState(false);
 
   useEffect(() => {
     fetchPlans();
@@ -78,16 +88,44 @@ export default function PricingPage() {
       return;
     }
 
-    if (plan.name === 'free') {
-      return;
-    }
-
     if (plan.name === currentPlan) {
       return;
     }
 
-    // 결제 페이지로 이동
-    router.push(`/pricing/checkout?plan=${plan.name}&amount=${plan.price}`);
+    // 다운그레이드 (Free 플랜으로)
+    if (plan.name === 'free' && currentPlan !== 'free') {
+      setShowDowngradeDialog(true);
+      return;
+    }
+
+    // 업그레이드는 결제 페이지로
+    if (plan.name !== 'free') {
+      router.push(`/pricing/checkout?plan=${plan.name}&amount=${plan.price}`);
+    }
+  };
+
+  const handleDowngrade = async () => {
+    setDowngrading(true);
+    try {
+      const response = await fetch('/api/user/subscription/downgrade', {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        alert(data.message || 'Free 플랜으로 변경되었습니다.');
+        setCurrentPlan('free');
+        setShowDowngradeDialog(false);
+      } else {
+        const error = await response.json();
+        alert(error.error || '다운그레이드 중 오류가 발생했습니다.');
+      }
+    } catch (error) {
+      console.error('Downgrade error:', error);
+      alert('다운그레이드 중 오류가 발생했습니다.');
+    } finally {
+      setDowngrading(false);
+    }
   };
 
   const getPlanOrder = (planName: string) => {
@@ -314,6 +352,45 @@ export default function PricingPage() {
       </main>
 
       <Footer />
+
+      {/* 다운그레이드 확인 모달 */}
+      <Dialog open={showDowngradeDialog} onOpenChange={setShowDowngradeDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Free 플랜으로 다운그레이드</DialogTitle>
+            <DialogDescription className="space-y-2">
+              <p>
+                현재 <strong>{currentPlan === 'expert' ? 'Expert' : 'Pro'}</strong> 플랜에서{' '}
+                <strong>Free</strong> 플랜으로 변경하시겠습니까?
+              </p>
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mt-3">
+                <p className="text-yellow-800 text-sm font-medium">주의사항:</p>
+                <ul className="text-yellow-700 text-sm mt-1 space-y-1">
+                  <li>• 정기결제가 즉시 해지됩니다.</li>
+                  <li>• Free 플랜의 기능만 사용 가능합니다.</li>
+                  <li>• 이미 결제한 금액은 환불되지 않습니다.</li>
+                </ul>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setShowDowngradeDialog(false)}
+              disabled={downgrading}
+            >
+              취소
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDowngrade}
+              disabled={downgrading}
+            >
+              {downgrading ? '처리 중...' : '다운그레이드 확인'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
