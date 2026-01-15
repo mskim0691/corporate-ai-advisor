@@ -53,6 +53,8 @@ export default function PricingPage() {
   const [upgrading, setUpgrading] = useState(false);
   const [pendingPlan, setPendingPlan] = useState<string | null>(null);
   const [nextBillingDate, setNextBillingDate] = useState<string | null>(null);
+  const [showCancelUpgradeDialog, setShowCancelUpgradeDialog] = useState(false);
+  const [cancelingUpgrade, setCancelingUpgrade] = useState(false);
 
   useEffect(() => {
     fetchPlans();
@@ -172,6 +174,29 @@ export default function PricingPage() {
     }
   };
 
+  const handleCancelUpgrade = async () => {
+    setCancelingUpgrade(true);
+    try {
+      const response = await fetch('/api/user/subscription/schedule-upgrade', {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        alert('업그레이드 예약이 취소되었습니다.');
+        setPendingPlan(null);
+        setShowCancelUpgradeDialog(false);
+      } else {
+        const error = await response.json();
+        alert(error.error || '예약 취소 중 오류가 발생했습니다.');
+      }
+    } catch (error) {
+      console.error('Cancel upgrade error:', error);
+      alert('예약 취소 중 오류가 발생했습니다.');
+    } finally {
+      setCancelingUpgrade(false);
+    }
+  };
+
   const getPlanOrder = (planName: string) => {
     const order: Record<string, number> = { free: 0, pro: 1, expert: 2 };
     return order[planName] ?? 0;
@@ -274,8 +299,17 @@ export default function PricingPage() {
                   </div>
                 )}
                 {pendingPlan === plan.name && (
-                  <div className="absolute top-0 left-0 bg-blue-500 text-white px-4 py-1 text-sm font-bold rounded-br-lg rounded-tl-lg">
-                    변경 예약됨
+                  <div className="absolute top-0 left-0 bg-blue-500 text-white px-4 py-1 text-sm font-bold rounded-br-lg rounded-tl-lg flex flex-col items-start">
+                    <span>변경 예약됨</span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowCancelUpgradeDialog(true);
+                      }}
+                      className="text-xs underline hover:text-blue-200 mt-0.5"
+                    >
+                      예약 취소
+                    </button>
                   </div>
                 )}
                 <CardHeader className="text-center pt-8">
@@ -479,6 +513,37 @@ export default function PricingPage() {
               disabled={upgrading}
             >
               {upgrading ? '처리 중...' : '업그레이드 예약'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 업그레이드 예약 취소 확인 모달 */}
+      <Dialog open={showCancelUpgradeDialog} onOpenChange={setShowCancelUpgradeDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>업그레이드 예약 취소</DialogTitle>
+            <DialogDescription>
+              <p>업그레이드 예약을 취소합니다.</p>
+              <p className="mt-2 text-gray-600">
+                현재 플랜({currentPlan === 'pro' ? 'Pro' : currentPlan})을 유지하시겠습니까?
+              </p>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setShowCancelUpgradeDialog(false)}
+              disabled={cancelingUpgrade}
+            >
+              닫기
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleCancelUpgrade}
+              disabled={cancelingUpgrade}
+            >
+              {cancelingUpgrade ? '처리 중...' : '예약 취소'}
             </Button>
           </DialogFooter>
         </DialogContent>
