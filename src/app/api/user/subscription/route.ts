@@ -24,6 +24,8 @@ export async function GET() {
       plan: subscription?.plan || "free",
       status: subscription?.status || "active",
       role: user?.role || "user",
+      pendingPlan: subscription?.pendingPlan || null,
+      currentPeriodEnd: subscription?.currentPeriodEnd || null,
     })
   } catch (error) {
     console.error("Get subscription error:", error)

@@ -37,6 +37,8 @@ interface PricingPlan {
 interface UserSubscription {
   plan: string;
   status: string;
+  pendingPlan?: string | null;
+  currentPeriodEnd?: string | null;
 }
 
 export default function PricingPage() {
@@ -47,6 +49,10 @@ export default function PricingPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showDowngradeDialog, setShowDowngradeDialog] = useState(false);
   const [downgrading, setDowngrading] = useState(false);
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
+  const [upgrading, setUpgrading] = useState(false);
+  const [pendingPlan, setPendingPlan] = useState<string | null>(null);
+  const [nextBillingDate, setNextBillingDate] = useState<string | null>(null);
 
   useEffect(() => {
     fetchPlans();
@@ -73,6 +79,10 @@ export default function PricingPage() {
       if (response.ok) {
         const data: UserSubscription = await response.json();
         setCurrentPlan(data.plan || 'free');
+        setPendingPlan(data.pendingPlan || null);
+        if (data.currentPeriodEnd) {
+          setNextBillingDate(new Date(data.currentPeriodEnd).toLocaleDateString('ko-KR'));
+        }
         setIsLoggedIn(true);
       } else if (response.status === 401) {
         setIsLoggedIn(false);
@@ -98,7 +108,13 @@ export default function PricingPage() {
       return;
     }
 
-    // 업그레이드는 결제 페이지로
+    // Pro → Expert 업그레이드 (다음 결제 주기에 적용)
+    if (currentPlan === 'pro' && plan.name === 'expert') {
+      setShowUpgradeDialog(true);
+      return;
+    }
+
+    // 그 외 업그레이드는 결제 페이지로 (Free → Pro, Free → Expert)
     if (plan.name !== 'free') {
       router.push(`/pricing/checkout?plan=${plan.name}&amount=${plan.price}`);
     }
@@ -125,6 +141,34 @@ export default function PricingPage() {
       alert('다운그레이드 중 오류가 발생했습니다.');
     } finally {
       setDowngrading(false);
+    }
+  };
+
+  const handleScheduleUpgrade = async () => {
+    setUpgrading(true);
+    try {
+      const response = await fetch('/api/user/subscription/schedule-upgrade', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ targetPlan: 'expert' }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        alert(data.message || 'Expert 플랜으로 변경이 예약되었습니다.');
+        setPendingPlan('expert');
+        setShowUpgradeDialog(false);
+      } else {
+        const error = await response.json();
+        alert(error.error || '플랜 변경 예약 중 오류가 발생했습니다.');
+      }
+    } catch (error) {
+      console.error('Schedule upgrade error:', error);
+      alert('플랜 변경 예약 중 오류가 발생했습니다.');
+    } finally {
+      setUpgrading(false);
     }
   };
 
@@ -229,6 +273,11 @@ export default function PricingPage() {
                     현재 플랜
                   </div>
                 )}
+                {pendingPlan === plan.name && (
+                  <div className="absolute top-0 left-0 bg-blue-500 text-white px-4 py-1 text-sm font-bold rounded-br-lg rounded-tl-lg">
+                    변경 예약됨
+                  </div>
+                )}
                 <CardHeader className="text-center pt-8">
                   <CardTitle className="text-2xl">{plan.displayName}</CardTitle>
                   <CardDescription>
@@ -288,11 +337,13 @@ export default function PricingPage() {
                   <Button
                     className={`w-full ${isHighlighted ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
                     variant={plan.buttonVariant === 'outline' ? 'outline' : 'default'}
-                    disabled={isCurrentPlan}
+                    disabled={isCurrentPlan || pendingPlan === plan.name}
                     onClick={() => handleSubscribe(plan)}
                   >
                     {isCurrentPlan ? (
                       '현재 사용 중'
+                    ) : pendingPlan === plan.name ? (
+                      '변경 예약됨'
                     ) : isUpgrade(plan.name) ? (
                       '업그레이드'
                     ) : isDowngrade(plan.name) ? (
@@ -387,6 +438,47 @@ export default function PricingPage() {
               disabled={downgrading}
             >
               {downgrading ? '처리 중...' : '다운그레이드 확인'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Expert 업그레이드 예약 확인 모달 */}
+      <Dialog open={showUpgradeDialog} onOpenChange={setShowUpgradeDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Expert 플랜으로 업그레이드</DialogTitle>
+            <DialogDescription className="space-y-2">
+              <p>
+                요금제를 <strong>Expert</strong> 플랜으로 변경합니다.
+              </p>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
+                <p className="text-blue-800 text-sm font-medium">안내사항:</p>
+                <ul className="text-blue-700 text-sm mt-1 space-y-1">
+                  <li>• 변경 적용 시점은 다음 결제 주기일입니다.</li>
+                  {nextBillingDate && (
+                    <li>• 예상 적용일: <strong>{nextBillingDate}</strong></li>
+                  )}
+                  <li>• 적용 시점부터 Expert 플랜 요금이 청구됩니다.</li>
+                  <li>• 분석 솔루션 생성 권한: 50회/월</li>
+                  <li>• 비주얼 레포트 생성 권한: 50회/월</li>
+                </ul>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setShowUpgradeDialog(false)}
+              disabled={upgrading}
+            >
+              취소
+            </Button>
+            <Button
+              onClick={handleScheduleUpgrade}
+              disabled={upgrading}
+            >
+              {upgrading ? '처리 중...' : '업그레이드 예약'}
             </Button>
           </DialogFooter>
         </DialogContent>
