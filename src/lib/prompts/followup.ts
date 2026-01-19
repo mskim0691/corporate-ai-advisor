@@ -2,8 +2,6 @@
  * 후속 미팅 대응 분석 프롬프트
  */
 
-import prisma from "@/lib/prisma"
-
 interface FollowupPromptParams {
   companyName: string
   businessNumber: string
@@ -13,20 +11,32 @@ interface FollowupPromptParams {
   meetingNotes: string
 }
 
-// 기본 프롬프트 (DB에 없을 경우 fallback)
-const DEFAULT_PROMPT_TEMPLATE = `당신은 전문 B2B 영업 컨설턴트입니다. 아래 정보를 바탕으로 후속 미팅 대응 전략을 제안해주세요.
+export function buildFollowupPrompt(params: FollowupPromptParams): string {
+  const {
+    companyName,
+    businessNumber,
+    representative,
+    industry,
+    textAnalysis,
+    meetingNotes,
+  } = params
+
+  const textAnalysisSummary = textAnalysis.substring(0, 5000) +
+    (textAnalysis.length > 5000 ? "\n... (이하 생략)" : "")
+
+  return `당신은 전문 B2B 영업 컨설턴트입니다. 아래 정보를 바탕으로 후속 미팅 대응 전략을 제안해주세요.
 
 [회사 정보]
-- 회사명: {{companyName}}
-- 사업자번호: {{businessNumber}}
-- 대표자: {{representative}}
-{{#if industry}}- 업종: {{industry}}{{/if}}
+- 회사명: ${companyName}
+- 사업자번호: ${businessNumber}
+- 대표자: ${representative}
+${industry ? `- 업종: ${industry}` : ""}
 
 [기존 분석 제안서 내용 요약]
-{{textAnalysisSummary}}
+${textAnalysisSummary}
 
 [고객 미팅 결과]
-{{meetingNotes}}
+${meetingNotes}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -90,53 +100,5 @@ const DEFAULT_PROMPT_TEMPLATE = `당신은 전문 B2B 영업 컨설턴트입니�
 ---
 
 위 섹션들을 모두 포함하여 실용적이고 구체적인 조언을 작성해주세요.
-각 섹션에서 반드시 \`##\`, \`###\` 헤더와 \`-\` 리스트, \`>\` 인용문, \`---\` 구분선을 적극 활용하세요.
-컨설팅 비용에 대한 부분은 절대 언급하지 말아주세요.`
-
-/**
- * DB에서 프롬프트 템플릿을 가져와 변수를 치환하여 최종 프롬프트를 생성합니다.
- */
-export async function buildFollowupPrompt(params: FollowupPromptParams): Promise<string> {
-  const {
-    companyName,
-    businessNumber,
-    representative,
-    industry,
-    textAnalysis,
-    meetingNotes,
-  } = params
-
-  // DB에서 프롬프트 템플릿 가져오기
-  let template: string
-  try {
-    const promptRecord = await prisma.prompt.findUnique({
-      where: { name: "followup_analysis" }
-    })
-    template = promptRecord?.content || DEFAULT_PROMPT_TEMPLATE
-  } catch (error) {
-    console.error("Failed to fetch prompt from DB, using default:", error)
-    template = DEFAULT_PROMPT_TEMPLATE
-  }
-
-  // 변수 치환
-  const textAnalysisSummary = textAnalysis.substring(0, 5000) +
-    (textAnalysis.length > 5000 ? "\n... (이하 생략)" : "")
-
-  let prompt = template
-    .replace(/\{\{companyName\}\}/g, companyName)
-    .replace(/\{\{businessNumber\}\}/g, businessNumber)
-    .replace(/\{\{representative\}\}/g, representative)
-    .replace(/\{\{textAnalysisSummary\}\}/g, textAnalysisSummary)
-    .replace(/\{\{meetingNotes\}\}/g, meetingNotes)
-
-  // 조건부 industry 처리
-  if (industry) {
-    prompt = prompt.replace(/\{\{#if industry\}\}(.*?)\{\{\/if\}\}/gs, (_, content) =>
-      content.replace(/\{\{industry\}\}/g, industry)
-    )
-  } else {
-    prompt = prompt.replace(/\{\{#if industry\}\}.*?\{\{\/if\}\}/gs, "")
-  }
-
-  return prompt
+각 섹션에서 반드시 \`##\`, \`###\` 헤더와 \`-\` 리스트, \`>\` 인용문, \`---\` 구분선을 적극 활용하세요.`
 }
