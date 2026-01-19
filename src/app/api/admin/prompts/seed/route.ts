@@ -1,20 +1,9 @@
-/**
- * 후속 미팅 대응 분석 프롬프트
- */
-
+import { NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
+import { requireAdmin } from "@/lib/admin"
 
-interface FollowupPromptParams {
-  companyName: string
-  businessNumber: string
-  representative: string
-  industry?: string | null
-  textAnalysis: string
-  meetingNotes: string
-}
-
-// 기본 프롬프트 (DB에 없을 경우 fallback)
-const DEFAULT_PROMPT_TEMPLATE = `당신은 전문 B2B 영업 컨설턴트입니다. 아래 정보를 바탕으로 후속 미팅 대응 전략을 제안해주세요.
+// followup_analysis 프롬프트 템플릿
+const FOLLOWUP_PROMPT_TEMPLATE = `당신은 전문 B2B 영업 컨설턴트입니다. 아래 정보를 바탕으로 후속 미팅 대응 전략을 제안해주세요.
 
 [회사 정보]
 - 회사명: {{companyName}}
@@ -94,49 +83,52 @@ const DEFAULT_PROMPT_TEMPLATE = `당신은 전문 B2B 영업 컨설턴트입니�
 컨설팅 비용에 대한 부분은 절대 언급하지 말아주세요.`
 
 /**
- * DB에서 프롬프트 템플릿을 가져와 변수를 치환하여 최종 프롬프트를 생성합니다.
+ * POST /api/admin/prompts/seed
+ * Seed the followup_analysis prompt to the database
  */
-export async function buildFollowupPrompt(params: FollowupPromptParams): Promise<string> {
-  const {
-    companyName,
-    businessNumber,
-    representative,
-    industry,
-    textAnalysis,
-    meetingNotes,
-  } = params
+export async function POST() {
+  const adminCheck = await requireAdmin()
+  if (adminCheck instanceof NextResponse) return adminCheck
 
-  // DB에서 프롬프트 템플릿 가져오기
-  let template: string
   try {
-    const promptRecord = await prisma.prompt.findUnique({
+    // Check if followup_analysis prompt already exists
+    const existing = await prisma.prompt.findUnique({
       where: { name: "followup_analysis" }
     })
-    template = promptRecord?.content || DEFAULT_PROMPT_TEMPLATE
+
+    if (existing) {
+      // Update existing prompt
+      const prompt = await prisma.prompt.update({
+        where: { name: "followup_analysis" },
+        data: {
+          content: FOLLOWUP_PROMPT_TEMPLATE,
+          description: "후속 미팅 대응 분석 프롬프트 - 미팅 결과를 바탕으로 후속 전략 생성"
+        }
+      })
+      return NextResponse.json({
+        message: "프롬프트가 업데이트되었습니다",
+        prompt
+      })
+    }
+
+    // Create new prompt
+    const prompt = await prisma.prompt.create({
+      data: {
+        name: "followup_analysis",
+        content: FOLLOWUP_PROMPT_TEMPLATE,
+        description: "후속 미팅 대응 분석 프롬프트 - 미팅 결과를 바탕으로 후속 전략 생성"
+      }
+    })
+
+    return NextResponse.json({
+      message: "프롬프트가 생성되었습니다",
+      prompt
+    })
   } catch (error) {
-    console.error("Failed to fetch prompt from DB, using default:", error)
-    template = DEFAULT_PROMPT_TEMPLATE
-  }
-
-  // 변수 치환
-  const textAnalysisSummary = textAnalysis.substring(0, 5000) +
-    (textAnalysis.length > 5000 ? "\n... (이하 생략)" : "")
-
-  let prompt = template
-    .replace(/\{\{companyName\}\}/g, companyName)
-    .replace(/\{\{businessNumber\}\}/g, businessNumber)
-    .replace(/\{\{representative\}\}/g, representative)
-    .replace(/\{\{textAnalysisSummary\}\}/g, textAnalysisSummary)
-    .replace(/\{\{meetingNotes\}\}/g, meetingNotes)
-
-  // 조건부 industry 처리
-  if (industry) {
-    prompt = prompt.replace(/\{\{#if industry\}\}(.*?)\{\{\/if\}\}/gs, (_, content) =>
-      content.replace(/\{\{industry\}\}/g, industry)
+    console.error("Failed to seed prompt:", error)
+    return NextResponse.json(
+      { error: "프롬프트 시드에 실패했습니다" },
+      { status: 500 }
     )
-  } else {
-    prompt = prompt.replace(/\{\{#if industry\}\}.*?\{\{\/if\}\}/gs, "")
   }
-
-  return prompt
 }

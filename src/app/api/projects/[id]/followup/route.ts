@@ -108,7 +108,7 @@ export async function POST(
       tools: [{ googleSearch: {} as any }] as any,
     })
 
-    const prompt = buildFollowupPrompt({
+    const prompt = await buildFollowupPrompt({
       companyName: project.companyName,
       businessNumber: project.businessNumber,
       representative: project.representative,
