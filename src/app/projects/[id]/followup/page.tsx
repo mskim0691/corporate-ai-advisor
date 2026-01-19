@@ -19,6 +19,8 @@ export default function FollowupPage({ params }: { params: Promise<{ id: string 
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [showMarkdown, setShowMarkdown] = useState(false)
 
   useEffect(() => {
     params.then(({ id }) => {
@@ -49,7 +51,20 @@ export default function FollowupPage({ params }: { params: Promise<{ id: string 
       }
     }
 
+    const fetchUserRole = async () => {
+      try {
+        const response = await fetch("/api/user/subscription")
+        const data = await response.json()
+        if (response.ok && data.role === "admin") {
+          setIsAdmin(true)
+        }
+      } catch (err) {
+        console.error("Failed to fetch user role:", err)
+      }
+    }
+
     fetchProject()
+    fetchUserRole()
   }, [projectId])
 
   const handleGenerateFollowup = async () => {
@@ -139,6 +154,16 @@ export default function FollowupPage({ params }: { params: Promise<{ id: string 
             >
               대시보드
             </Button>
+            {isAdmin && followupAnalysis && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowMarkdown(!showMarkdown)}
+                className="text-xs md:text-sm bg-yellow-50 text-yellow-700 border-yellow-300 hover:bg-yellow-100"
+              >
+                {showMarkdown ? "렌더링 보기" : "마크다운 보기"}
+              </Button>
+            )}
           </div>
         </div>
       </header>
@@ -208,32 +233,40 @@ export default function FollowupPage({ params }: { params: Promise<{ id: string 
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
-              <div className="prose prose-sm max-w-none leading-loose
-                prose-headings:text-green-800 prose-headings:font-bold
-                prose-h1:text-xl prose-h1:border-b prose-h1:border-green-200 prose-h1:pb-3 prose-h1:mb-6
-                prose-h2:text-lg prose-h2:mt-10 prose-h2:mb-4 prose-h2:pb-2 prose-h2:border-b prose-h2:border-green-100
-                prose-h3:text-base prose-h3:text-green-700 prose-h3:mt-6 prose-h3:mb-3 prose-h3:font-semibold
-                prose-h4:text-sm prose-h4:text-green-600 prose-h4:mt-4 prose-h4:mb-2 prose-h4:font-medium
-                prose-p:text-gray-700 prose-p:leading-loose prose-p:my-4
-                prose-strong:text-green-800
-                prose-ul:my-4 prose-ul:space-y-2
-                prose-ol:my-4 prose-ol:space-y-2
-                prose-li:text-gray-700 prose-li:marker:text-green-500 prose-li:leading-relaxed
-                prose-blockquote:border-l-4 prose-blockquote:border-green-400 prose-blockquote:bg-green-50 prose-blockquote:py-3 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:not-italic prose-blockquote:text-gray-700 prose-blockquote:my-6
-                prose-table:border-collapse prose-table:w-full prose-table:my-6
-                prose-th:bg-green-100 prose-th:text-green-800 prose-th:font-semibold prose-th:p-3 prose-th:border prose-th:border-green-200
-                prose-td:p-3 prose-td:border prose-td:border-green-100
-                prose-a:text-green-600 prose-a:underline hover:prose-a:text-green-800
-                prose-code:bg-green-50 prose-code:text-green-800 prose-code:px-1 prose-code:rounded
-                prose-hr:my-8 prose-hr:border-green-200
-              ">
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm, remarkBreaks]}
-                  rehypePlugins={[rehypeRaw]}
-                >
-                  {followupAnalysis}
-                </ReactMarkdown>
-              </div>
+              {showMarkdown ? (
+                <div className="bg-white rounded-lg w-full">
+                  <pre className="whitespace-pre-wrap font-mono text-xs md:text-sm bg-gray-50 p-4 md:p-6 rounded-lg overflow-auto max-h-screen border border-gray-200">
+                    {followupAnalysis}
+                  </pre>
+                </div>
+              ) : (
+                <div className="prose prose-sm max-w-none leading-loose
+                  prose-headings:text-green-800 prose-headings:font-bold
+                  prose-h1:text-xl prose-h1:border-b prose-h1:border-green-200 prose-h1:pb-3 prose-h1:mb-6
+                  prose-h2:text-lg prose-h2:mt-10 prose-h2:mb-4 prose-h2:pb-2 prose-h2:border-b prose-h2:border-green-100
+                  prose-h3:text-base prose-h3:text-green-700 prose-h3:mt-6 prose-h3:mb-3 prose-h3:font-semibold
+                  prose-h4:text-sm prose-h4:text-green-600 prose-h4:mt-4 prose-h4:mb-2 prose-h4:font-medium
+                  prose-p:text-gray-700 prose-p:leading-loose prose-p:my-4
+                  prose-strong:text-green-800
+                  prose-ul:my-4 prose-ul:space-y-2
+                  prose-ol:my-4 prose-ol:space-y-2
+                  prose-li:text-gray-700 prose-li:marker:text-green-500 prose-li:leading-relaxed
+                  prose-blockquote:border-l-4 prose-blockquote:border-green-400 prose-blockquote:bg-green-50 prose-blockquote:py-3 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:not-italic prose-blockquote:text-gray-700 prose-blockquote:my-6
+                  prose-table:border-collapse prose-table:w-full prose-table:my-6
+                  prose-th:bg-green-100 prose-th:text-green-800 prose-th:font-semibold prose-th:p-3 prose-th:border prose-th:border-green-200
+                  prose-td:p-3 prose-td:border prose-td:border-green-100
+                  prose-a:text-green-600 prose-a:underline hover:prose-a:text-green-800
+                  prose-code:bg-green-50 prose-code:text-green-800 prose-code:px-1 prose-code:rounded
+                  prose-hr:my-8 prose-hr:border-green-200
+                ">
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm, remarkBreaks]}
+                    rehypePlugins={[rehypeRaw]}
+                  >
+                    {followupAnalysis}
+                  </ReactMarkdown>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
