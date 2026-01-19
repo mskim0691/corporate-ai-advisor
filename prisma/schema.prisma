@@ -94,6 +94,8 @@ model Report {
   analysisData          String?   @map("analysis_data") // JSON string for slides (step 2)
   pdfUrl                String?   @map("pdf_url")
   regenerationCount     Int       @default(0) @map("regeneration_count") // Number of times solution was regenerated (max 1)
+  meetingNotes          String?   @map("meeting_notes") // User's meeting notes after client meeting
+  followupAnalysis      String?   @map("followup_analysis") // AI-generated followup analysis based on meeting notes
   shareToken            String?   @unique @map("share_token")
   sharePassword         String?   @map("share_password")
   shareExpiresAt        DateTime? @map("share_expires_at")
