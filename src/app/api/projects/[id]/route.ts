@@ -57,6 +57,8 @@ export async function GET(
         analysisData: project.report.analysisData,
         pdfUrl: project.report.pdfUrl,
         regenerationCount: project.report.regenerationCount,
+        meetingNotes: project.report.meetingNotes,
+        followupAnalysis: project.report.followupAnalysis,
       } : null,
     })
   } catch (error) {
