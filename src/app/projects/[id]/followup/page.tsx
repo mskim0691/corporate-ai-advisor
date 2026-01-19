@@ -197,15 +197,34 @@ export default function FollowupPage({ params }: { params: Promise<{ id: string 
 
         {/* 후속 분석 결과 */}
         {followupAnalysis && (
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-lg text-green-700">AI 후속 대응 분석</CardTitle>
-              <CardDescription>
+          <Card className="shadow-lg border-green-200 bg-gradient-to-br from-green-50/50 to-emerald-50/30">
+            <CardHeader className="border-b border-green-100 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-t-lg">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <span className="text-xl">🎯</span>
+                AI 후속 대응 분석
+              </CardTitle>
+              <CardDescription className="text-green-100">
                 미팅 결과와 기존 분석 내용을 바탕으로 생성된 후속 대응 전략입니다.
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="prose prose-sm max-w-none">
+            <CardContent className="pt-6">
+              <div className="prose prose-sm max-w-none
+                prose-headings:text-green-800 prose-headings:font-bold
+                prose-h1:text-xl prose-h1:border-b prose-h1:border-green-200 prose-h1:pb-2 prose-h1:mb-4
+                prose-h2:text-lg prose-h2:mt-6 prose-h2:mb-3 prose-h2:flex prose-h2:items-center prose-h2:gap-2
+                prose-h3:text-base prose-h3:text-green-700 prose-h3:mt-4 prose-h3:mb-2
+                prose-p:text-gray-700 prose-p:leading-relaxed
+                prose-strong:text-green-800
+                prose-ul:my-2 prose-ul:space-y-1
+                prose-ol:my-2 prose-ol:space-y-1
+                prose-li:text-gray-700 prose-li:marker:text-green-500
+                prose-blockquote:border-l-4 prose-blockquote:border-green-400 prose-blockquote:bg-green-50 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:not-italic prose-blockquote:text-gray-700
+                prose-table:border-collapse prose-table:w-full
+                prose-th:bg-green-100 prose-th:text-green-800 prose-th:font-semibold prose-th:p-2 prose-th:border prose-th:border-green-200
+                prose-td:p-2 prose-td:border prose-td:border-green-100
+                prose-a:text-green-600 prose-a:underline hover:prose-a:text-green-800
+                prose-code:bg-green-50 prose-code:text-green-800 prose-code:px-1 prose-code:rounded
+              ">
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm, remarkBreaks]}
                   rehypePlugins={[rehypeRaw]}
