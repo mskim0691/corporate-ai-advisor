@@ -298,6 +298,11 @@ export default async function DashboardPage() {
                             hasReport={!!project.report?.pdfUrl}
                             remainingCount={remainingPresentations}
                           />
+                          <Link href={`/projects/${project.id}/followup`}>
+                            <Button variant="outline" size="sm" className="bg-green-50 text-green-700 border-green-300 hover:bg-green-100">
+                              후속 미팅 대응
+                            </Button>
+                          </Link>
                         </>
                       )}
                       <DeleteProjectButton
