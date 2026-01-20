@@ -157,14 +157,14 @@ export default function FollowupPage({ params }: { params: Promise<{ id: string 
               variant="outline"
               size="sm"
               onClick={() => router.push(`/projects/${projectId}/report`)}
-              className="text-xs md:text-sm"
+              className="text-xs md:text-sm bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-100"
             >
               비주얼 레포트
             </Button>
             <Button
               variant="outline"
               size="sm"
-              className="bg-gray-100 text-xs md:text-sm"
+              className="bg-green-100 text-green-800 border-green-300 text-xs md:text-sm"
               disabled
             >
               후속 미팅 대응
