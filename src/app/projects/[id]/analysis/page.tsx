@@ -166,13 +166,38 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
             >
               분석제안서
             </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePresentationClick}
+              className="text-xs md:text-sm"
+              disabled={!hasPdfReport && !canCreatePresentation}
+            >
+              비주얼 레포트
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push(`/projects/${projectId}/followup`)}
+              className="text-xs md:text-sm"
+            >
+              후속 미팅 대응
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push("/dashboard")}
+              className="text-xs md:text-sm"
+            >
+              대시보드
+            </Button>
             {isAdmin && (
               <>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setShowMarkdown(!showMarkdown)}
-                  className={`text-xs md:text-sm ${showMarkdown ? "bg-green-100 text-green-800 border-green-300" : ""}`}
+                  className={`text-xs md:text-sm ${showMarkdown ? "bg-yellow-100 text-yellow-800 border-yellow-300" : "bg-yellow-50 text-yellow-700 border-yellow-300"}`}
                 >
                   {showMarkdown ? "렌더링 보기" : "마크다운 보기"}
                 </Button>
@@ -186,30 +211,6 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
                 </Button>
               </>
             )}
-            <Button
-              size="sm"
-              onClick={handlePresentationClick}
-              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-xs md:text-sm"
-              disabled={!hasPdfReport && !canCreatePresentation}
-            >
-              {hasPdfReport ? "비주얼 레포트 보기" : "비주얼 레포트 생성"}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => router.push(`/projects/${projectId}/followup`)}
-              className="text-xs md:text-sm bg-green-50 text-green-700 border-green-300 hover:bg-green-100"
-            >
-              후속 미팅 대응
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => router.push("/dashboard")}
-              className="text-xs md:text-sm"
-            >
-              대시보드
-            </Button>
           </div>
         </div>
       </header>

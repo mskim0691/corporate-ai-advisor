@@ -133,10 +133,26 @@ export default function FollowupPage({ params }: { params: Promise<{ id: string 
             <Button
               variant="outline"
               size="sm"
+              onClick={() => router.push(`/projects/${projectId}/library`)}
+              className="text-xs md:text-sm"
+            >
+              라이브러리
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => router.push(`/projects/${projectId}/analysis`)}
               className="text-xs md:text-sm"
             >
               분석제안서
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push(`/projects/${projectId}/report`)}
+              className="text-xs md:text-sm"
+            >
+              비주얼 레포트
             </Button>
             <Button
               variant="outline"

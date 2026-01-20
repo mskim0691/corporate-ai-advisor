@@ -207,20 +207,20 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
               </Button>
             )}
           </div>
-          <div className="flex gap-3">
-            <Button variant="outline" asChild>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" asChild className="text-xs md:text-sm">
               <Link href={`/projects/${projectId}/library`}>라이브러리</Link>
             </Button>
-            <Button variant="outline" asChild>
-              <Link href={`/projects/${projectId}/initial-risk`}>현황분석</Link>
+            <Button variant="outline" size="sm" asChild className="text-xs md:text-sm">
+              <Link href={`/projects/${projectId}/analysis`}>분석제안서</Link>
             </Button>
-            <Button variant="outline" asChild>
-              <Link href={`/projects/${projectId}/analysis`}>솔루션</Link>
+            <Button variant="outline" size="sm" className="bg-gray-100 text-xs md:text-sm" disabled>
+              비주얼 레포트
             </Button>
-            <Button variant="outline" className="bg-gray-100" disabled>
-              리포트
+            <Button variant="outline" size="sm" asChild className="text-xs md:text-sm">
+              <Link href={`/projects/${projectId}/followup`}>후속 미팅 대응</Link>
             </Button>
-            <Button variant="outline" asChild>
+            <Button variant="outline" size="sm" asChild className="text-xs md:text-sm">
               <Link href="/dashboard">대시보드</Link>
             </Button>
           </div>

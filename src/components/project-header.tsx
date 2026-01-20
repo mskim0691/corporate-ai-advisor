@@ -6,7 +6,7 @@ import prisma from "@/lib/prisma"
 interface ProjectHeaderProps {
   projectId: string
   companyName: string
-  currentPage: "library" | "initial-risk" | "analysis" | "report"
+  currentPage: "library" | "initial-risk" | "analysis" | "report" | "followup"
   subtitle?: string
   hasPdfReport?: boolean
 }
@@ -30,17 +30,29 @@ export async function ProjectHeader({
     isAdmin = user?.role === "admin"
   }
 
+  const getPageTitle = () => {
+    switch (currentPage) {
+      case "library": return "라이브러리"
+      case "initial-risk": return "현황분석"
+      case "analysis": return "분석제안서"
+      case "report": return "비주얼 레포트"
+      case "followup": return "후속 미팅 대응"
+      default: return ""
+    }
+  }
+
   return (
     <header className="bg-white border-b">
-      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold">{companyName} {currentPage === "library" ? "라이브러리" : currentPage === "initial-risk" ? "현황분석" : currentPage === "analysis" ? "솔루션" : "리포트"}</h1>
-          {subtitle && <p className="text-sm text-gray-600">{subtitle}</p>}
+      <div className="container mx-auto px-4 py-4">
+        <div className="mb-4">
+          <h1 className="text-xl md:text-2xl font-bold break-words">{companyName} {getPageTitle()}</h1>
+          {subtitle && <p className="text-xs md:text-sm text-gray-600 mt-1">{subtitle}</p>}
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap gap-2">
           <Button
             variant="outline"
-            className={currentPage === "library" ? "bg-gray-100" : ""}
+            size="sm"
+            className={`text-xs md:text-sm ${currentPage === "library" ? "bg-gray-100" : ""}`}
             disabled={currentPage === "library"}
             asChild={currentPage !== "library"}
           >
@@ -52,7 +64,8 @@ export async function ProjectHeader({
           </Button>
           <Button
             variant="outline"
-            className={currentPage === "analysis" ? "bg-gray-100" : ""}
+            size="sm"
+            className={`text-xs md:text-sm ${currentPage === "analysis" ? "bg-gray-100" : ""}`}
             disabled={currentPage === "analysis"}
             asChild={currentPage !== "analysis"}
           >
@@ -64,23 +77,35 @@ export async function ProjectHeader({
           </Button>
           <Button
             variant="outline"
-            className={currentPage === "report" ? "bg-gray-100" : ""}
+            size="sm"
+            className={`text-xs md:text-sm ${currentPage === "report" ? "bg-gray-100" : ""}`}
             disabled={currentPage === "report"}
             asChild={currentPage !== "report"}
           >
             {currentPage === "report" ? (
-              <span>{hasPdfReport ? "비주얼 레포트 보기" : "비주얼 레포트 생성"}</span>
+              <span>비주얼 레포트</span>
             ) : (
-              <Link href={`/projects/${projectId}/report`}>
-                {hasPdfReport ? "비주얼 레포트 보기" : "비주얼 레포트 생성"}
-              </Link>
+              <Link href={`/projects/${projectId}/report`}>비주얼 레포트</Link>
             )}
           </Button>
-          <Button variant="outline" asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            className={`text-xs md:text-sm ${currentPage === "followup" ? "bg-gray-100" : ""}`}
+            disabled={currentPage === "followup"}
+            asChild={currentPage !== "followup"}
+          >
+            {currentPage === "followup" ? (
+              <span>후속 미팅 대응</span>
+            ) : (
+              <Link href={`/projects/${projectId}/followup`}>후속 미팅 대응</Link>
+            )}
+          </Button>
+          <Button variant="outline" size="sm" className="text-xs md:text-sm" asChild>
             <Link href="/dashboard">대시보드</Link>
           </Button>
           {isAdmin && (
-            <Button variant="outline" asChild>
+            <Button variant="outline" size="sm" className="text-xs md:text-sm" asChild>
               <Link href="/admin">관리</Link>
             </Button>
           )}
