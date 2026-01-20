@@ -39,9 +39,9 @@ export function VisualReportButton({
         variant="default"
         size="sm"
         onClick={handleClick}
-        className="bg-blue-600 hover:bg-blue-700 text-white"
+        className="text-xs px-2 py-1 h-7 md:h-8 md:px-3 bg-blue-600 hover:bg-blue-700 text-white"
       >
-        비주얼레포트 보기
+        비주얼레포트
       </Button>
     )
   }
@@ -53,7 +53,7 @@ export function VisualReportButton({
         variant="outline"
         size="sm"
         disabled
-        className="opacity-50 cursor-not-allowed"
+        className="text-xs px-2 py-1 h-7 md:h-8 md:px-3 opacity-50 cursor-not-allowed"
       >
         사용량 초과
       </Button>
@@ -66,8 +66,9 @@ export function VisualReportButton({
       variant="outline"
       size="sm"
       onClick={handleClick}
+      className="text-xs px-2 py-1 h-7 md:h-8 md:px-3"
     >
-      비주얼레포트 생성
+      비주얼레포트
     </Button>
   )
 }

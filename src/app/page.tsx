@@ -11,34 +11,36 @@ export default async function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
       <header className="border-b bg-white">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">AI-GFC</h1>
-          <div className="flex items-center gap-4">
-            <Link href="/service-intro">
-              <Button variant="outline">서비스소개</Button>
-            </Link>
-            {session?.user ? (
-              <>
-                <Link href="/dashboard">
-                  <Button variant="outline">대시보드</Button>
-                </Link>
-                <Link href="/myinfo">
-                  <Button>회원 정보</Button>
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link href="/pricing">
-                  <Button variant="outline">구독</Button>
-                </Link>
-                <Link href="/auth/login">
-                  <Button variant="outline">로그인</Button>
-                </Link>
-                <Link href="/auth/register">
-                  <Button>회원가입(무료)</Button>
-                </Link>
-              </>
-            )}
+        <div className="container mx-auto px-4 py-3 md:py-4">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
+            <h1 className="text-xl md:text-2xl font-bold">AI-GFC</h1>
+            <div className="flex flex-wrap items-center gap-2 md:gap-4">
+              <Link href="/service-intro">
+                <Button variant="outline" size="sm" className="text-xs px-2 py-1 h-7 md:h-9 md:px-4 md:text-sm">서비스소개</Button>
+              </Link>
+              {session?.user ? (
+                <>
+                  <Link href="/dashboard">
+                    <Button variant="outline" size="sm" className="text-xs px-2 py-1 h-7 md:h-9 md:px-4 md:text-sm">대시보드</Button>
+                  </Link>
+                  <Link href="/myinfo">
+                    <Button size="sm" className="text-xs px-2 py-1 h-7 md:h-9 md:px-4 md:text-sm">회원 정보</Button>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link href="/pricing">
+                    <Button variant="outline" size="sm" className="text-xs px-2 py-1 h-7 md:h-9 md:px-4 md:text-sm">구독</Button>
+                  </Link>
+                  <Link href="/auth/login">
+                    <Button variant="outline" size="sm" className="text-xs px-2 py-1 h-7 md:h-9 md:px-4 md:text-sm">로그인</Button>
+                  </Link>
+                  <Link href="/auth/register">
+                    <Button size="sm" className="text-xs px-2 py-1 h-7 md:h-9 md:px-4 md:text-sm">회원가입</Button>
+                  </Link>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </header>

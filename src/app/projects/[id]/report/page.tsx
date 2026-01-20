@@ -193,36 +193,39 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold">{companyName} 비주얼 리포트</h1>
-            {isAdmin && pdfUrl && (
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => setShowDeleteDialog(true)}
-                disabled={deleting}
-              >
-                {deleting ? "삭제 중..." : "PDF 삭제"}
+        <div className="container mx-auto px-4 py-3 md:py-4">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
+            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 min-w-0">
+              <h1 className="text-lg md:text-2xl font-bold truncate">{companyName} 비주얼 리포트</h1>
+              {isAdmin && pdfUrl && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setShowDeleteDialog(true)}
+                  disabled={deleting}
+                  className="text-xs px-2 py-1 h-7 md:h-8 md:px-3 w-fit"
+                >
+                  {deleting ? "삭제 중..." : "PDF 삭제"}
+                </Button>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-1.5 md:gap-2">
+              <Button variant="outline" size="sm" asChild className="text-xs px-2 py-1 h-7 md:h-8 md:px-3">
+                <Link href={`/projects/${projectId}/library`}>라이브러리</Link>
               </Button>
-            )}
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" asChild className="text-xs md:text-sm">
-              <Link href={`/projects/${projectId}/library`}>라이브러리</Link>
-            </Button>
-            <Button variant="outline" size="sm" asChild className="text-xs md:text-sm">
-              <Link href={`/projects/${projectId}/analysis`}>분석제안서</Link>
-            </Button>
-            <Button variant="outline" size="sm" className="bg-blue-100 text-blue-800 border-blue-300 text-xs md:text-sm" disabled>
-              비주얼 레포트
-            </Button>
-            <Button variant="outline" size="sm" asChild className="text-xs md:text-sm bg-green-50 text-green-700 border-green-300 hover:bg-green-100">
-              <Link href={`/projects/${projectId}/followup`}>후속 미팅 대응</Link>
-            </Button>
-            <Button variant="outline" size="sm" asChild className="text-xs md:text-sm">
-              <Link href="/dashboard">대시보드</Link>
-            </Button>
+              <Button variant="outline" size="sm" asChild className="text-xs px-2 py-1 h-7 md:h-8 md:px-3">
+                <Link href={`/projects/${projectId}/analysis`}>분석제안서</Link>
+              </Button>
+              <Button variant="outline" size="sm" className="text-xs px-2 py-1 h-7 md:h-8 md:px-3 bg-blue-100 text-blue-800 border-blue-300" disabled>
+                비주얼 레포트
+              </Button>
+              <Button variant="outline" size="sm" asChild className="text-xs px-2 py-1 h-7 md:h-8 md:px-3 bg-green-50 text-green-700 border-green-300 hover:bg-green-100">
+                <Link href={`/projects/${projectId}/followup`}>후속 미팅</Link>
+              </Button>
+              <Button variant="outline" size="sm" asChild className="text-xs px-2 py-1 h-7 md:h-8 md:px-3">
+                <Link href="/dashboard">대시보드</Link>
+              </Button>
+            </div>
           </div>
         </div>
       </header>

@@ -86,20 +86,22 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/">
-            <h1 className="text-2xl font-bold cursor-pointer hover:text-blue-600 transition-colors">AI-GFC</h1>
-          </Link>
-          <div className="flex items-center gap-4">
-            {isAdmin && (
-              <Link href="/admin">
-                <Button variant="outline">관리</Button>
-              </Link>
-            )}
-            <Link href="/pricing">
-              <Button variant="outline">구독 관리</Button>
+        <div className="container mx-auto px-4 py-3 md:py-4">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
+            <Link href="/">
+              <h1 className="text-xl md:text-2xl font-bold cursor-pointer hover:text-blue-600 transition-colors">AI-GFC</h1>
             </Link>
-            <UserMenu />
+            <div className="flex items-center gap-2 md:gap-4">
+              {isAdmin && (
+                <Link href="/admin">
+                  <Button variant="outline" size="sm" className="text-xs px-2 py-1 h-7 md:h-9 md:px-4 md:text-sm">관리</Button>
+                </Link>
+              )}
+              <Link href="/pricing">
+                <Button variant="outline" size="sm" className="text-xs px-2 py-1 h-7 md:h-9 md:px-4 md:text-sm">구독 관리</Button>
+              </Link>
+              <UserMenu />
+            </div>
           </div>
         </div>
       </header>
@@ -110,11 +112,6 @@ export default async function DashboardPage() {
           <p className="text-gray-700 text-lg">
             <span className="text-xl font-bold text-blue-600">크레탑</span> 분석보고서, <span className="text-xl font-bold text-blue-600">재무제표</span> 파일을 <span className="text-xl font-bold text-blue-600">업로드</span> 하면 기업 컨설팅 <span className="text-xl font-bold text-blue-600">AI 분석</span>을 해드립니다.
           </p>
-        </div>
-
-        <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <AnnouncementsBanner />
-          <CustomerServiceSection />
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -237,11 +234,11 @@ export default async function DashboardPage() {
                 {projects.map((project) => (
                   <div
                     key={project.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+                    className="flex flex-col md:flex-row md:items-center md:justify-between p-3 md:p-4 border rounded-lg hover:bg-gray-50 gap-3"
                   >
-                    <div>
-                      <h3 className="font-semibold">{project.companyName}</h3>
-                      <p className="text-sm text-gray-600">
+                    <div className="min-w-0">
+                      <h3 className="font-semibold truncate">{project.companyName}</h3>
+                      <p className="text-sm text-gray-600 truncate">
                         {project.businessNumber} · {project.representative}
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
@@ -249,7 +246,7 @@ export default async function DashboardPage() {
                         {new Date(project.createdAt).toLocaleDateString("ko-KR")}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
                       <span
                         className={`px-2 py-1 text-xs rounded-full ${
                           project.status === "completed"
@@ -272,12 +269,12 @@ export default async function DashboardPage() {
                       {project.status === "completed" && (
                         <>
                           <Link href={`/projects/${project.id}/library`}>
-                            <Button variant="outline" size="sm">
+                            <Button variant="outline" size="sm" className="text-xs px-2 py-1 h-7 md:h-8 md:px-3">
                               라이브러리
                             </Button>
                           </Link>
                           <Link href={`/projects/${project.id}/analysis`}>
-                            <Button variant="outline" size="sm">
+                            <Button variant="outline" size="sm" className="text-xs px-2 py-1 h-7 md:h-8 md:px-3">
                               분석제안서
                             </Button>
                           </Link>
@@ -287,8 +284,8 @@ export default async function DashboardPage() {
                             remainingCount={remainingPresentations}
                           />
                           <Link href={`/projects/${project.id}/followup`}>
-                            <Button variant="outline" size="sm" className="bg-green-50 text-green-700 border-green-300 hover:bg-green-100">
-                              후속 미팅 대응
+                            <Button variant="outline" size="sm" className="text-xs px-2 py-1 h-7 md:h-8 md:px-3 bg-green-50 text-green-700 border-green-300 hover:bg-green-100">
+                              후속 미팅
                             </Button>
                           </Link>
                         </>
@@ -304,6 +301,11 @@ export default async function DashboardPage() {
             )}
           </CardContent>
         </Card>
+
+        <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+          <AnnouncementsBanner />
+          <CustomerServiceSection />
+        </div>
       </main>
 
       <Footer />
