@@ -127,15 +127,19 @@ export default async function DashboardPage() {
               <div className="text-2xl font-bold">
                 {subscription?.plan === "expert" ? "Expert" : subscription?.plan === "pro" ? "Pro" : "Free"}
               </div>
-              {billingEndDate && (
+              {groupName === 'free' ? (
+                <>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Free 플랜은 매달 1일 사용권이 초기화됩니다.
+                  </p>
+                  <Link href="/pricing" className="text-sm text-blue-600 hover:underline">
+                    업그레이드
+                  </Link>
+                </>
+              ) : billingEndDate && (
                 <p className="text-sm text-gray-600 mt-1">
                   이번달 만료일: {billingEndDate}
                 </p>
-              )}
-              {groupName === 'free' && (
-                <Link href="/pricing" className="text-sm text-blue-600 hover:underline">
-                  업그레이드
-                </Link>
               )}
             </CardContent>
           </Card>
