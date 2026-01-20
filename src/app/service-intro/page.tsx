@@ -25,14 +25,14 @@ export default async function ServiceIntroPage() {
           <Link href="/">
             <h1 className="text-2xl font-bold cursor-pointer hover:text-blue-600 transition-colors">AI-GFC</h1>
           </Link>
-          <div className="space-x-4">
+          <div className="flex items-center gap-4">
             <Link href="/service-intro">
-              <Button variant="ghost">서비스소개</Button>
+              <Button variant="outline">서비스소개</Button>
             </Link>
             {session?.user ? (
               <>
                 <Link href="/dashboard">
-                  <Button variant="ghost">대시보드</Button>
+                  <Button variant="outline">대시보드</Button>
                 </Link>
                 <Link href="/myinfo">
                   <Button>회원 정보</Button>
@@ -41,7 +41,7 @@ export default async function ServiceIntroPage() {
             ) : (
               <>
                 <Link href="/auth/login">
-                  <Button variant="ghost">로그인</Button>
+                  <Button variant="outline">로그인</Button>
                 </Link>
                 <Link href="/auth/register">
                   <Button>회원가입(무료)</Button>

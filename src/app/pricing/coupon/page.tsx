@@ -109,6 +109,11 @@ export default function CouponPage() {
                     className="font-mono text-center text-lg tracking-wider"
                     maxLength={19}
                     autoFocus
+                    inputMode="text"
+                    autoCapitalize="characters"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    spellCheck={false}
                   />
                   {error && (
                     <p className="text-red-500 text-sm mt-2">{error}</p>

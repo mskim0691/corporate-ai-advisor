@@ -37,7 +37,7 @@ export async function ProjectHeader({
           <h1 className="text-2xl font-bold">{companyName} {currentPage === "library" ? "라이브러리" : currentPage === "initial-risk" ? "현황분석" : currentPage === "analysis" ? "솔루션" : "리포트"}</h1>
           {subtitle && <p className="text-sm text-gray-600">{subtitle}</p>}
         </div>
-        <div className="flex gap-3">
+        <div className="flex items-center gap-4">
           <Button
             variant="outline"
             className={currentPage === "library" ? "bg-gray-100" : ""}
