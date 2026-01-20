@@ -122,61 +122,63 @@ export default function FollowupPage({ params }: { params: Promise<{ id: string 
   return (
     <div className="min-h-screen bg-gray-50 followup-page">
       <header className="bg-white border-b followup-print-hide">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold">{companyName} 후속 미팅 대응</h1>
-            {isAdmin && followupAnalysis && (
+        <div className="container mx-auto px-4 py-3 md:py-4">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
+            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 min-w-0">
+              <h1 className="text-lg md:text-2xl font-bold truncate">{companyName} 후속 미팅 대응</h1>
+              {isAdmin && followupAnalysis && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowMarkdown(!showMarkdown)}
+                  className="text-xs px-2 py-1 h-7 md:h-8 md:px-3 bg-yellow-50 text-yellow-700 border-yellow-300 hover:bg-yellow-100 w-fit"
+                >
+                  {showMarkdown ? "렌더링" : "마크다운"}
+                </Button>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-1.5 md:gap-2">
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setShowMarkdown(!showMarkdown)}
-                className="text-xs md:text-sm bg-yellow-50 text-yellow-700 border-yellow-300 hover:bg-yellow-100"
+                onClick={() => router.push(`/projects/${projectId}/library`)}
+                className="text-xs px-2 py-1 h-7 md:h-8 md:px-3"
               >
-                {showMarkdown ? "렌더링 보기" : "마크다운 보기"}
+                라이브러리
               </Button>
-            )}
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => router.push(`/projects/${projectId}/library`)}
-              className="text-xs md:text-sm"
-            >
-              라이브러리
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => router.push(`/projects/${projectId}/analysis`)}
-              className="text-xs md:text-sm"
-            >
-              분석제안서
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => router.push(`/projects/${projectId}/report`)}
-              className="text-xs md:text-sm bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-100"
-            >
-              비주얼 레포트
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="bg-green-100 text-green-800 border-green-300 text-xs md:text-sm"
-              disabled
-            >
-              후속 미팅 대응
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => router.push("/dashboard")}
-              className="text-xs md:text-sm"
-            >
-              대시보드
-            </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push(`/projects/${projectId}/analysis`)}
+                className="text-xs px-2 py-1 h-7 md:h-8 md:px-3"
+              >
+                분석제안서
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push(`/projects/${projectId}/report`)}
+                className="text-xs px-2 py-1 h-7 md:h-8 md:px-3 bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-100"
+              >
+                비주얼 레포트
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs px-2 py-1 h-7 md:h-8 md:px-3 bg-green-100 text-green-800 border-green-300"
+                disabled
+              >
+                후속 미팅
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push("/dashboard")}
+                className="text-xs px-2 py-1 h-7 md:h-8 md:px-3"
+              >
+                대시보드
+              </Button>
+            </div>
           </div>
         </div>
       </header>
