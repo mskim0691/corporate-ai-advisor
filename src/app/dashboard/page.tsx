@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import prisma from "@/lib/prisma"
-import { getCurrentYearMonth } from "@/lib/utils"
+import { getUserPolicyInfo } from "@/lib/policy"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -13,21 +13,9 @@ import { UserMenu } from "@/components/user-menu"
 import { Footer } from "@/components/footer"
 
 async function getUserDashboardData(userId: string) {
-  const yearMonth = getCurrentYearMonth()
-  const startOfMonth = new Date(`${yearMonth}-01`)
-  const endOfMonth = new Date(startOfMonth.getFullYear(), startOfMonth.getMonth() + 1, 0, 23, 59, 59)
-
-  const [subscription, usageLog, projects, totalProjectCount, totalPresentationCount, monthlyPresentationCount] = await Promise.all([
+  const [subscription, projects, totalProjectCount, totalPresentationCount] = await Promise.all([
     prisma.subscription.findUnique({
       where: { userId },
-    }),
-    prisma.usageLog.findUnique({
-      where: {
-        userId_yearMonth: {
-          userId,
-          yearMonth,
-        },
-      },
     }),
     prisma.project.findMany({
       where: { userId },
@@ -55,21 +43,9 @@ async function getUserDashboardData(userId: string) {
         },
       },
     }),
-    prisma.report.count({
-      where: {
-        reportType: 'presentation',
-        project: {
-          userId,
-        },
-        createdAt: {
-          gte: startOfMonth,
-          lte: endOfMonth,
-        },
-      },
-    }),
   ])
 
-  return { subscription, usageLog, projects, totalProjectCount, totalPresentationCount, monthlyPresentationCount }
+  return { subscription, projects, totalProjectCount, totalPresentationCount }
 }
 
 export default async function DashboardPage() {
@@ -79,7 +55,7 @@ export default async function DashboardPage() {
     redirect("/")
   }
 
-  const { subscription, usageLog, projects, totalProjectCount, totalPresentationCount, monthlyPresentationCount } = await getUserDashboardData(session.user.id)
+  const { subscription, projects, totalProjectCount, totalPresentationCount } = await getUserDashboardData(session.user.id)
 
   // Get user role
   const fullUser = await prisma.user.findUnique({
@@ -88,18 +64,16 @@ export default async function DashboardPage() {
   })
   const isAdmin = fullUser?.role === "admin"
 
-  // Determine group and get policy
-  const groupName = isAdmin ? 'admin' : subscription?.plan === 'pro' ? 'pro' : 'free'
-  const policy = await prisma.groupPolicy.findUnique({
-    where: { groupName },
-  })
+  // Get policy info (uses subscription billing cycle for Pro/Expert)
+  const policyInfo = await getUserPolicyInfo(session.user.id)
+  const groupName = policyInfo?.groupName ?? 'free'
 
-  // Get limits from policy or use defaults
-  const solutionLimit = policy?.monthlyProjectLimit ?? (groupName === 'admin' ? 999999 : groupName === 'pro' ? 15 : 3)
-  const presentationLimit = policy?.monthlyPresentationLimit ?? (groupName === 'admin' ? 999999 : groupName === 'pro' ? 1 : 0)
+  // Get limits and usage from policy info
+  const solutionLimit = policyInfo?.monthlyLimit ?? 3
+  const presentationLimit = policyInfo?.monthlyPresentationLimit ?? 0
 
-  const solutionUsage = usageLog?.count || 0
-  const presentationUsage = monthlyPresentationCount
+  const solutionUsage = policyInfo?.currentUsage ?? 0
+  const presentationUsage = policyInfo?.currentPresentationUsage ?? 0
 
   const canCreateProject = solutionUsage < solutionLimit
   const remainingPresentations = presentationLimit === 999999 ? 999999 : Math.max(0, presentationLimit - presentationUsage)
