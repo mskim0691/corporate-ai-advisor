@@ -49,7 +49,7 @@ export default async function Home() {
         <section className="bg-white py-16">
           <div className="container mx-auto px-4">
             <h3 className="text-3xl font-bold text-center mb-12">주요 기능</h3>
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
               <div className="p-6 border rounded-lg">
                 <h4 className="text-xl font-semibold mb-3">간편한 문서 업로드</h4>
                 <p className="text-gray-600">
@@ -83,6 +83,12 @@ export default async function Home() {
                 >
                   샘플 레포트 보기
                 </a>
+              </div>
+              <div className="p-6 border rounded-lg">
+                <h4 className="text-xl font-semibold mb-3">1차 상담후 후속 대응 제안</h4>
+                <p className="text-gray-600">
+                  대표님과 상담 이후 결과를 반영하여 추가 대응방안 제공
+                </p>
               </div>
             </div>
           </div>
