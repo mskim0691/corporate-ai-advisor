@@ -214,10 +214,10 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
             <Button variant="outline" size="sm" asChild className="text-xs md:text-sm">
               <Link href={`/projects/${projectId}/analysis`}>분석제안서</Link>
             </Button>
-            <Button variant="outline" size="sm" className="bg-gray-100 text-xs md:text-sm" disabled>
+            <Button variant="outline" size="sm" className="bg-blue-100 text-blue-800 border-blue-300 text-xs md:text-sm" disabled>
               비주얼 레포트
             </Button>
-            <Button variant="outline" size="sm" asChild className="text-xs md:text-sm">
+            <Button variant="outline" size="sm" asChild className="text-xs md:text-sm bg-green-50 text-green-700 border-green-300 hover:bg-green-100">
               <Link href={`/projects/${projectId}/followup`}>후속 미팅 대응</Link>
             </Button>
             <Button variant="outline" size="sm" asChild className="text-xs md:text-sm">

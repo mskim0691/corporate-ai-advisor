@@ -189,7 +189,7 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
               variant="outline"
               size="sm"
               onClick={handlePresentationClick}
-              className="text-xs md:text-sm"
+              className="text-xs md:text-sm bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-100"
               disabled={!hasPdfReport && !canCreatePresentation}
             >
               비주얼 레포트
@@ -198,7 +198,7 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
               variant="outline"
               size="sm"
               onClick={() => router.push(`/projects/${projectId}/followup`)}
-              className="text-xs md:text-sm"
+              className="text-xs md:text-sm bg-green-50 text-green-700 border-green-300 hover:bg-green-100"
             >
               후속 미팅 대응
             </Button>

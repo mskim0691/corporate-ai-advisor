@@ -78,7 +78,7 @@ export async function ProjectHeader({
           <Button
             variant="outline"
             size="sm"
-            className={`text-xs md:text-sm ${currentPage === "report" ? "bg-gray-100" : ""}`}
+            className={`text-xs md:text-sm ${currentPage === "report" ? "bg-blue-100 text-blue-800 border-blue-300" : "bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-100"}`}
             disabled={currentPage === "report"}
             asChild={currentPage !== "report"}
           >
@@ -91,7 +91,7 @@ export async function ProjectHeader({
           <Button
             variant="outline"
             size="sm"
-            className={`text-xs md:text-sm ${currentPage === "followup" ? "bg-gray-100" : ""}`}
+            className={`text-xs md:text-sm ${currentPage === "followup" ? "bg-green-100 text-green-800 border-green-300" : "bg-green-50 text-green-700 border-green-300 hover:bg-green-100"}`}
             disabled={currentPage === "followup"}
             asChild={currentPage !== "followup"}
           >
