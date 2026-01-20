@@ -120,7 +120,7 @@ export default function FollowupPage({ params }: { params: Promise<{ id: string 
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 followup-page">
       <header className="bg-white border-b followup-print-hide">
         <div className="container mx-auto px-4 py-4">
           <div className="mb-4">
