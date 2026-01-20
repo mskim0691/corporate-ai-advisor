@@ -122,12 +122,19 @@ export default function FollowupPage({ params }: { params: Promise<{ id: string 
   return (
     <div className="min-h-screen bg-gray-50 followup-page">
       <header className="bg-white border-b followup-print-hide">
-        <div className="container mx-auto px-4 py-4">
-          <div className="mb-4">
-            <h1 className="text-xl md:text-2xl font-bold break-words">{companyName} 후속 미팅 대응</h1>
-            <p className="text-xs md:text-sm text-gray-600 mt-1">
-              미팅 결과를 입력하면 AI가 추가 분석 및 대응 전략을 제안합니다.
-            </p>
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl font-bold">{companyName} 후속 미팅 대응</h1>
+            {isAdmin && followupAnalysis && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowMarkdown(!showMarkdown)}
+                className="text-xs md:text-sm bg-yellow-50 text-yellow-700 border-yellow-300 hover:bg-yellow-100"
+              >
+                {showMarkdown ? "렌더링 보기" : "마크다운 보기"}
+              </Button>
+            )}
           </div>
           <div className="flex flex-wrap gap-2">
             <Button
@@ -170,16 +177,6 @@ export default function FollowupPage({ params }: { params: Promise<{ id: string 
             >
               대시보드
             </Button>
-            {isAdmin && followupAnalysis && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowMarkdown(!showMarkdown)}
-                className="text-xs md:text-sm bg-yellow-50 text-yellow-700 border-yellow-300 hover:bg-yellow-100"
-              >
-                {showMarkdown ? "렌더링 보기" : "마크다운 보기"}
-              </Button>
-            )}
           </div>
         </div>
       </header>
