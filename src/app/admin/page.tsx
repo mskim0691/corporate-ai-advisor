@@ -268,6 +268,15 @@ export default async function AdminDashboard() {
               <p className="text-sm text-gray-600">메인페이지 로테이션 배너를 관리합니다</p>
               <p className="mt-4 text-2xl font-bold text-teal-600">관리</p>
             </Link>
+
+            <Link
+              href="/admin/chatbot-knowledge"
+              className="p-6 bg-white border border-gray-200 rounded-lg hover:border-violet-300 hover:shadow-md transition-all"
+            >
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">챗봇 지식 베이스</h3>
+              <p className="text-sm text-gray-600">AI 챗봇이 참조하는 지식 베이스를 관리합니다</p>
+              <p className="mt-4 text-2xl font-bold text-violet-600">관리</p>
+            </Link>
           </div>
         </div>
 

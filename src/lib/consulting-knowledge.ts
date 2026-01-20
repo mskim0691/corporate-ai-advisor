@@ -3,6 +3,8 @@
  * 모든 정보에는 출처가 명시되어 있어야 함
  */
 
+import prisma from "@/lib/prisma"
+
 export interface KnowledgeEntry {
   id: string
   category: string
@@ -477,4 +479,93 @@ export function getCategories(): string[] {
  */
 export function getKnowledgeByCategory(category: string): KnowledgeEntry[] {
   return consultingKnowledge.filter(k => k.category === category)
+}
+
+/**
+ * DB에서 활성화된 지식 베이스를 가져옵니다.
+ */
+export async function getDbKnowledge(): Promise<KnowledgeEntry[]> {
+  try {
+    const dbEntries = await prisma.chatbotKnowledge.findMany({
+      where: { isActive: true }
+    })
+
+    return dbEntries.map(entry => ({
+      id: entry.id,
+      category: entry.category,
+      subcategory: entry.subcategory || "",
+      question: entry.question,
+      answer: entry.answer,
+      source: entry.source,
+      sourceUrl: entry.sourceUrl || undefined,
+      lastUpdated: entry.lastUpdated,
+      keywords: entry.keywords.split(",").map(k => k.trim())
+    }))
+  } catch (error) {
+    console.error("Failed to fetch DB knowledge:", error)
+    return []
+  }
+}
+
+/**
+ * DB와 정적 지식 베이스를 합쳐서 검색합니다.
+ * DB 지식이 우선적으로 검색됩니다.
+ */
+export async function searchKnowledgeWithDb(query: string, limit: number = 5): Promise<KnowledgeEntry[]> {
+  // DB에서 지식 가져오기
+  const dbKnowledge = await getDbKnowledge()
+
+  // DB 지식과 정적 지식 합치기 (DB 우선)
+  const allKnowledge = [...dbKnowledge, ...consultingKnowledge]
+
+  const queryLower = query.toLowerCase()
+  const queryWords = queryLower.split(/\s+/).filter(w => w.length > 1)
+
+  // 각 지식 항목에 대해 관련도 점수 계산
+  const scored = allKnowledge.map((entry, index) => {
+    let score = 0
+
+    // DB 지식에 가중치 부여 (더 최신이고 관리되는 데이터)
+    if (index < dbKnowledge.length) {
+      score += 2
+    }
+
+    // 질문과의 유사도
+    if (entry.question.toLowerCase().includes(queryLower)) {
+      score += 10
+    }
+
+    // 키워드 매칭
+    for (const keyword of entry.keywords) {
+      if (queryLower.includes(keyword.toLowerCase())) {
+        score += 5
+      }
+      for (const word of queryWords) {
+        if (keyword.toLowerCase().includes(word)) {
+          score += 2
+        }
+      }
+    }
+
+    // 카테고리 매칭
+    if (queryLower.includes(entry.category.toLowerCase())) {
+      score += 3
+    }
+
+    // 답변 내용에 쿼리 단어 포함 여부
+    for (const word of queryWords) {
+      if (entry.answer.toLowerCase().includes(word)) {
+        score += 1
+      }
+    }
+
+    return { entry, score }
+  })
+
+  // 점수 높은 순으로 정렬 후 상위 N개 반환
+  return scored
+    .filter(item => item.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit)
+    .map(item => item.entry)
 }

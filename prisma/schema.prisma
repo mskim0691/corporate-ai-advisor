@@ -312,3 +312,22 @@ model Coupon {
   @@index([redeemedBy])
   @@index([batchId])
 }
+
+model ChatbotKnowledge {
+  id          String   @id @default(uuid())
+  category    String   // Category (e.g., '법인세', '가업승계', '퇴직금')
+  subcategory String?  // Subcategory
+  question    String   // Sample question or topic
+  answer      String   @db.Text // Answer content
+  source      String   // Source reference (e.g., '국세청, 법인세법 제55조')
+  sourceUrl   String?  @map("source_url") // Optional source URL
+  keywords    String   // Comma-separated keywords for search
+  isActive    Boolean  @default(true) @map("is_active") // Whether to include in search
+  lastUpdated String   @map("last_updated") // Last verified date (e.g., '2025-01')
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("chatbot_knowledge")
+  @@index([category])
+  @@index([isActive])
+}
