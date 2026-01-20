@@ -11,6 +11,7 @@ import { AnnouncementsBanner } from "@/components/announcements-banner"
 import { CustomerServiceSection } from "@/components/customer-service-section"
 import { UserMenu } from "@/components/user-menu"
 import { Footer } from "@/components/footer"
+import { ConsultingChatbot } from "@/components/consulting-chatbot"
 
 async function getUserDashboardData(userId: string) {
   const [subscription, projects, totalProjectCount, totalPresentationCount] = await Promise.all([
@@ -309,6 +310,7 @@ export default async function DashboardPage() {
       </main>
 
       <Footer />
+      <ConsultingChatbot />
     </div>
   )
 }
