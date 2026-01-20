@@ -144,10 +144,29 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="mb-4">
-            <h1 className="text-xl md:text-2xl font-bold break-words">{companyName} 경영컨설팅 분석 제안서</h1>
-            <p className="text-xs md:text-sm text-gray-600 mt-1">첨부된 파일을 바탕으로 맞춤형 솔루션을 제안합니다.</p>
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl font-bold">{companyName} 분석제안서</h1>
+            {isAdmin && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowMarkdown(!showMarkdown)}
+                  className={`text-xs md:text-sm ${showMarkdown ? "bg-yellow-100 text-yellow-800 border-yellow-300" : "bg-yellow-50 text-yellow-700 border-yellow-300"}`}
+                >
+                  {showMarkdown ? "렌더링 보기" : "마크다운 보기"}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCopyToClipboard}
+                  className={`text-xs md:text-sm ${copySuccess ? "bg-blue-100 text-blue-800 border-blue-300" : ""}`}
+                >
+                  {copySuccess ? "✓ 복사완료" : "📋 클립보드 복사"}
+                </Button>
+              </>
+            )}
           </div>
           <div className="flex flex-wrap gap-2">
             <Button
@@ -191,26 +210,6 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
             >
               대시보드
             </Button>
-            {isAdmin && (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowMarkdown(!showMarkdown)}
-                  className={`text-xs md:text-sm ${showMarkdown ? "bg-yellow-100 text-yellow-800 border-yellow-300" : "bg-yellow-50 text-yellow-700 border-yellow-300"}`}
-                >
-                  {showMarkdown ? "렌더링 보기" : "마크다운 보기"}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCopyToClipboard}
-                  className={`text-xs md:text-sm ${copySuccess ? "bg-blue-100 text-blue-800 border-blue-300" : ""}`}
-                >
-                  {copySuccess ? "✓ 복사완료" : "📋 클립보드 복사"}
-                </Button>
-              </>
-            )}
           </div>
         </div>
       </header>

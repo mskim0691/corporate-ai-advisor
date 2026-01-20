@@ -43,8 +43,8 @@ export async function ProjectHeader({
 
   return (
     <header className="bg-white border-b">
-      <div className="container mx-auto px-4 py-4">
-        <div className="mb-4">
+      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+        <div>
           <h1 className="text-xl md:text-2xl font-bold break-words">{companyName} {getPageTitle()}</h1>
           {subtitle && <p className="text-xs md:text-sm text-gray-600 mt-1">{subtitle}</p>}
         </div>
