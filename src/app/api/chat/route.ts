@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { GoogleGenerativeAI } from "@google/generative-ai"
-import { searchKnowledge, KnowledgeEntry } from "@/lib/consulting-knowledge"
+import { searchKnowledgeWithDb, KnowledgeEntry } from "@/lib/consulting-knowledge"
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY || "")
 
@@ -41,8 +41,8 @@ export async function POST(req: Request) {
       )
     }
 
-    // 1. 지식 베이스에서 관련 정보 검색 (RAG)
-    const relevantKnowledge = searchKnowledge(message, 5)
+    // 1. 지식 베이스에서 관련 정보 검색 (RAG) - DB와 정적 지식 모두 검색
+    const relevantKnowledge = await searchKnowledgeWithDb(message, 5)
 
     // 2. 컨텍스트 구성
     const knowledgeContext = buildKnowledgeContext(relevantKnowledge)

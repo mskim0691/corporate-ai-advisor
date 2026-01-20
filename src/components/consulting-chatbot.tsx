@@ -119,7 +119,7 @@ export function ConsultingChatbot() {
   }
 
   return (
-    <Card className="fixed bottom-6 right-6 w-[360px] md:w-[420px] h-[600px] shadow-2xl z-50 flex flex-col">
+    <Card className="fixed bottom-6 right-6 w-[360px] md:w-[420px] h-[600px] shadow-2xl z-50 flex flex-col bg-white">
       <CardHeader className="py-3 px-4 border-b bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-lg">
         <div className="flex justify-between items-center">
           <CardTitle className="text-lg font-semibold flex items-center gap-2">
