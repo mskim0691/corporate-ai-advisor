@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 interface KnowledgeEntry {
   id: string;
@@ -30,13 +30,24 @@ const CATEGORIES = [
   '기타'
 ];
 
+// PDF 업로드 최대 크기: 10MB
+const MAX_PDF_SIZE = 10 * 1024 * 1024;
+
 export default function ChatbotKnowledgePage() {
   const [entries, setEntries] = useState<KnowledgeEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [showPdfUpload, setShowPdfUpload] = useState(false);
+  const [pdfUploading, setPdfUploading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [filterCategory, setFilterCategory] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
+  const pdfInputRef = useRef<HTMLInputElement>(null);
+  const [pdfFormData, setPdfFormData] = useState({
+    category: '',
+    source: '',
+    sourceUrl: ''
+  });
   const [formData, setFormData] = useState({
     category: '',
     subcategory: '',
@@ -170,6 +181,69 @@ export default function ChatbotKnowledgePage() {
     setShowForm(false);
   };
 
+  const handlePdfUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const fileInput = pdfInputRef.current;
+    if (!fileInput?.files?.[0]) {
+      alert('PDF 파일을 선택해주세요.');
+      return;
+    }
+
+    const file = fileInput.files[0];
+
+    if (file.type !== 'application/pdf') {
+      alert('PDF 파일만 업로드할 수 있습니다.');
+      return;
+    }
+
+    if (file.size > MAX_PDF_SIZE) {
+      alert(`파일 크기는 ${MAX_PDF_SIZE / (1024 * 1024)}MB 이하여야 합니다.`);
+      return;
+    }
+
+    if (!pdfFormData.category || !pdfFormData.source) {
+      alert('카테고리와 출처는 필수입니다.');
+      return;
+    }
+
+    setPdfUploading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('category', pdfFormData.category);
+      formData.append('source', pdfFormData.source);
+      if (pdfFormData.sourceUrl) {
+        formData.append('sourceUrl', pdfFormData.sourceUrl);
+      }
+
+      const response = await fetch('/api/admin/chatbot-knowledge/upload-pdf', {
+        method: 'POST',
+        body: formData
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert(`성공: ${result.message}\n\n총 ${result.entriesCount}개의 지식 항목이 생성되었습니다.\nPDF 페이지: ${result.totalPages}장`);
+        await fetchEntries();
+        setShowPdfUpload(false);
+        setPdfFormData({ category: '', source: '', sourceUrl: '' });
+        if (pdfInputRef.current) {
+          pdfInputRef.current.value = '';
+        }
+      } else {
+        alert(result.error || 'PDF 업로드 중 오류가 발생했습니다.');
+      }
+    } catch (error) {
+      console.error('PDF upload error:', error);
+      alert('PDF 업로드 중 오류가 발생했습니다.');
+    } finally {
+      setPdfUploading(false);
+    }
+  };
+
   // Filter entries
   const filteredEntries = entries.filter(entry => {
     const matchesCategory = !filterCategory || entry.category === filterCategory;
@@ -206,13 +280,120 @@ export default function ChatbotKnowledgePage() {
             AI 챗봇이 참조하는 지식 베이스를 관리합니다. 출처가 명확한 정보만 등록해주세요.
           </p>
         </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          {showForm ? '취소' : '새 지식 추가'}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => { setShowPdfUpload(!showPdfUpload); setShowForm(false); }}
+            className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+          >
+            {showPdfUpload ? '취소' : 'PDF 업로드'}
+          </button>
+          <button
+            onClick={() => { setShowForm(!showForm); setShowPdfUpload(false); }}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            {showForm ? '취소' : '새 지식 추가'}
+          </button>
+        </div>
       </div>
+
+      {/* PDF Upload Form */}
+      {showPdfUpload && (
+        <div className="mb-8 bg-white shadow rounded-lg p-6">
+          <h2 className="text-lg font-medium text-gray-900 mb-4">
+            PDF 파일에서 지식 추출
+          </h2>
+          <p className="text-sm text-gray-600 mb-4">
+            PDF 파일을 업로드하면 텍스트를 추출하여 자동으로 지식 베이스 항목으로 변환합니다.
+            <br />
+            <span className="text-amber-600">※ 이미지 기반 PDF는 지원하지 않습니다. 텍스트가 포함된 PDF만 가능합니다.</span>
+          </p>
+          <form onSubmit={handlePdfUpload} className="space-y-4">
+            <div>
+              <label htmlFor="pdfFile" className="block text-sm font-medium text-gray-700">
+                PDF 파일 * (최대 10MB)
+              </label>
+              <input
+                ref={pdfInputRef}
+                type="file"
+                id="pdfFile"
+                accept="application/pdf"
+                required
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="pdfCategory" className="block text-sm font-medium text-gray-700">
+                  카테고리 *
+                </label>
+                <select
+                  id="pdfCategory"
+                  required
+                  value={pdfFormData.category}
+                  onChange={(e) => setPdfFormData({ ...pdfFormData, category: e.target.value })}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500"
+                >
+                  <option value="">선택하세요</option>
+                  {CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="pdfSource" className="block text-sm font-medium text-gray-700">
+                  출처 *
+                </label>
+                <input
+                  type="text"
+                  id="pdfSource"
+                  required
+                  value={pdfFormData.source}
+                  onChange={(e) => setPdfFormData({ ...pdfFormData, source: e.target.value })}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500"
+                  placeholder="예: 국세청, 2024년 법인세 안내서"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="pdfSourceUrl" className="block text-sm font-medium text-gray-700">
+                출처 URL (선택)
+              </label>
+              <input
+                type="url"
+                id="pdfSourceUrl"
+                value={pdfFormData.sourceUrl}
+                onChange={(e) => setPdfFormData({ ...pdfFormData, sourceUrl: e.target.value })}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500"
+                placeholder="https://..."
+              />
+            </div>
+
+            <div className="flex space-x-3">
+              <button
+                type="submit"
+                disabled={pdfUploading}
+                className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {pdfUploading ? '업로드 중...' : 'PDF 업로드 및 추출'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowPdfUpload(false);
+                  setPdfFormData({ category: '', source: '', sourceUrl: '' });
+                  if (pdfInputRef.current) pdfInputRef.current.value = '';
+                }}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+              >
+                취소
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {showForm && (
         <div className="mb-8 bg-white shadow rounded-lg p-6">
