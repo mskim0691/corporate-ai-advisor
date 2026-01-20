@@ -300,6 +300,13 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
             🖨️ 프린터 출력
           </Button>
         </div>
+
+        {/* 강조 문구 */}
+        <div className="mt-8 mb-4 text-center">
+          <p className="text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+            기업컨설팅을 위한 가장 빠르고 편리한 도구, AI-GFC
+          </p>
+        </div>
       </main>
     </div>
   )
