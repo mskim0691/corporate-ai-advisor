@@ -116,8 +116,8 @@ export default function MyInfoPage() {
       <header className="border-b bg-white">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold">AI-GFC</h1>
-          <div className="space-x-4">
-            <Button variant="ghost" onClick={() => router.push("/dashboard")}>
+          <div className="flex items-center gap-4">
+            <Button variant="outline" onClick={() => router.push("/dashboard")}>
               대시보드
             </Button>
           </div>

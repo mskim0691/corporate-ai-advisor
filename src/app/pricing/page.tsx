@@ -242,7 +242,7 @@ export default function PricingPage() {
             ) : (
               <>
                 <Link href="/auth/login">
-                  <Button variant="ghost">로그인</Button>
+                  <Button variant="outline">로그인</Button>
                 </Link>
                 <Link href="/auth/register">
                   <Button>회원가입</Button>
