@@ -121,7 +121,7 @@ export default function FollowupPage({ params }: { params: Promise<{ id: string 
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b">
+      <header className="bg-white border-b followup-print-hide">
         <div className="container mx-auto px-4 py-4">
           <div className="mb-4">
             <h1 className="text-xl md:text-2xl font-bold break-words">{companyName} 후속 미팅 대응</h1>
@@ -170,12 +170,12 @@ export default function FollowupPage({ params }: { params: Promise<{ id: string 
 
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         {/* 면책 문구 */}
-        <p className="text-xs text-gray-500 mb-4 text-center">
+        <p className="text-xs text-gray-500 mb-4 text-center followup-print-hide">
           본 자료는 영업 참고용이며, 정확한 금액 계산과 법률적 판단은 전문가와 상담하시기 바랍니다.
         </p>
 
         {/* 미팅 결과 입력 섹션 */}
-        <Card className="mb-6">
+        <Card className="mb-6 followup-print-hide">
           <CardHeader>
             <CardTitle className="text-lg">미팅 결과 입력</CardTitle>
             <CardDescription>
@@ -273,7 +273,7 @@ export default function FollowupPage({ params }: { params: Promise<{ id: string 
             </Card>
 
             {/* 프린터 출력 버튼 */}
-            <div className="mt-4 flex justify-end print:hidden">
+            <div className="mt-4 flex justify-end followup-print-hide">
               <Button
                 variant="outline"
                 size="sm"
@@ -283,35 +283,12 @@ export default function FollowupPage({ params }: { params: Promise<{ id: string 
                 🖨️ 프린터 출력
               </Button>
             </div>
-
-            {/* 프린트용 스타일 */}
-            <style jsx global>{`
-              @media print {
-                body * {
-                  visibility: hidden;
-                }
-                #followup-print-content,
-                #followup-print-content * {
-                  visibility: visible;
-                }
-                #followup-print-content {
-                  position: absolute;
-                  left: 0;
-                  top: 0;
-                  width: 100%;
-                  padding: 20px;
-                }
-                header, .print\\:hidden, details {
-                  display: none !important;
-                }
-              }
-            `}</style>
           </>
         )}
 
         {/* 기존 분석 요약 (접을 수 있는 섹션) */}
         {textAnalysis && (
-          <details className="mt-6">
+          <details className="mt-6 followup-print-hide">
             <summary className="cursor-pointer text-sm text-gray-600 hover:text-gray-800 py-2">
               기존 분석 제안서 보기 (참고용)
             </summary>

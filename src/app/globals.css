@@ -211,3 +211,27 @@ body {
 .wmde-markdown ul > li {
   list-style-type: disc !important;
 }
+
+/* Followup page print styles */
+@media print {
+  .followup-print-hide {
+    display: none !important;
+  }
+
+  #followup-print-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 20px;
+  }
+
+  #followup-print-content,
+  #followup-print-content * {
+    visibility: visible !important;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+}
