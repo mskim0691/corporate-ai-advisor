@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import prisma from "@/lib/prisma"
-
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdfParse = require("pdf-parse")
+import { extractText } from "unpdf"
 
 // PDF 파일 최대 크기: 10MB
 const MAX_PDF_SIZE = 10 * 1024 * 1024
@@ -64,12 +62,11 @@ export async function POST(req: Request) {
 
     // Read PDF file
     const arrayBuffer = await file.arrayBuffer()
-    const buffer = Buffer.from(arrayBuffer)
 
-    // Extract text from PDF
-    let pdfData
+    // Extract text from PDF using unpdf
+    let pdfResult
     try {
-      pdfData = await pdfParse(buffer)
+      pdfResult = await extractText(new Uint8Array(arrayBuffer), { mergePages: true })
     } catch (parseError) {
       console.error("PDF parse error:", parseError)
       return NextResponse.json(
@@ -78,7 +75,7 @@ export async function POST(req: Request) {
       )
     }
 
-    const extractedText = pdfData.text
+    const extractedText = pdfResult.text
 
     if (!extractedText || extractedText.trim().length < 50) {
       return NextResponse.json(
@@ -124,7 +121,7 @@ export async function POST(req: Request) {
       success: true,
       message: `PDF에서 ${createdEntries.length}개의 지식 항목이 생성되었습니다.`,
       entriesCount: createdEntries.length,
-      totalPages: pdfData.numpages,
+      totalPages: pdfResult.totalPages,
       totalCharacters: extractedText.length
     })
 
