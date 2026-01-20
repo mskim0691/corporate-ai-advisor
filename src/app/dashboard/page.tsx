@@ -78,6 +78,11 @@ export default async function DashboardPage() {
   const canCreateProject = solutionUsage < solutionLimit
   const remainingPresentations = presentationLimit === 999999 ? 999999 : Math.max(0, presentationLimit - presentationUsage)
 
+  // Format billing period end date
+  const billingEndDate = policyInfo?.billingPeriodEnd
+    ? `${policyInfo.billingPeriodEnd.getFullYear()}-${String(policyInfo.billingPeriodEnd.getMonth() + 1).padStart(2, '0')}-${String(policyInfo.billingPeriodEnd.getDate()).padStart(2, '0')}`
+    : null
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b">
@@ -122,6 +127,11 @@ export default async function DashboardPage() {
               <div className="text-2xl font-bold">
                 {subscription?.plan === "expert" ? "Expert" : subscription?.plan === "pro" ? "Pro" : "Free"}
               </div>
+              {billingEndDate && (
+                <p className="text-sm text-gray-600 mt-1">
+                  이번달 만료일: {billingEndDate}
+                </p>
+              )}
               {groupName === 'free' && (
                 <Link href="/pricing" className="text-sm text-blue-600 hover:underline">
                   업그레이드
