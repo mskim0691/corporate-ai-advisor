@@ -5,6 +5,26 @@ import { z } from "zod"
 import { getCurrentYearMonth } from "@/lib/utils"
 import { checkProjectCreationPolicy } from "@/lib/policy"
 
+/**
+ * Get yearMonth key for usage log based on subscription
+ * Pro/Expert uses subscription period start date, Free/Admin uses calendar month
+ */
+async function getUsageYearMonthKey(userId: string, plan?: string): Promise<string> {
+  if (plan === 'pro' || plan === 'expert') {
+    const subscription = await prisma.subscription.findUnique({
+      where: { userId },
+      select: { currentPeriodStart: true },
+    });
+
+    if (subscription?.currentPeriodStart) {
+      const date = subscription.currentPeriodStart;
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    }
+  }
+
+  return getCurrentYearMonth();
+}
+
 const projectSchema = z.object({
   companyName: z.string().min(1),
   businessNumber: z.string().optional(),
@@ -72,8 +92,8 @@ export async function POST(req: Request) {
       },
     })
 
-    // Increment usage log for monthly quota tracking
-    const yearMonth = getCurrentYearMonth()
+    // Increment usage log for quota tracking (uses subscription period for Pro/Expert)
+    const yearMonth = await getUsageYearMonthKey(session.user.id, user.subscription?.plan)
     await prisma.usageLog.upsert({
       where: {
         userId_yearMonth: {
