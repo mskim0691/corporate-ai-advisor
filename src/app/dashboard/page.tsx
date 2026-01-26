@@ -119,12 +119,12 @@ export default async function DashboardPage() {
         {/* 메인 영역: 왼쪽 챗봇 + 오른쪽 (카드 + 프로젝트 목록) */}
         <div className="grid lg:grid-cols-2 gap-6 mb-8">
           {/* 왼쪽: AI 챗봇 (전체 높이) */}
-          <div className="h-[700px]">
+          <div className="h-[640px]">
             <ConsultingChatbot inline />
           </div>
 
           {/* 오른쪽: 카드들 + 프로젝트 목록 */}
-          <div className="grid grid-rows-[240px_1fr] gap-4 h-[700px]">
+          <div className="grid grid-rows-[300px_1fr] gap-4 h-[640px]">
             {/* 4개 카드 2x2 배치 */}
             <div className="grid grid-cols-2 gap-3 overflow-hidden">
               <Card className="flex flex-col overflow-hidden">
