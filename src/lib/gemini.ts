@@ -30,7 +30,7 @@ interface GeminiModel {
  * 우선순위: Flash > Pro (Flash가 더 빠르고 비용 효율적)
  * 버전: 최신 버전 우선 (2.5 > 2.0 > 1.5)
  */
-async function getLatestAvailableModel(): Promise<string> {
+export async function getLatestAvailableModel(): Promise<string> {
   // 이미 모델을 선택했다면 캐시된 값 사용
   if (cachedModelName) {
     return cachedModelName
