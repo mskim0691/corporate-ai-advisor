@@ -124,9 +124,9 @@ export default async function DashboardPage() {
           </div>
 
           {/* 오른쪽: 카드들 + 프로젝트 목록 */}
-          <div className="flex flex-col gap-4 h-[700px]">
+          <div className="flex flex-col gap-4 h-[700px] min-h-0">
             {/* 4개 카드 2x2 배치 */}
-            <div className="grid grid-cols-2 gap-3 h-[180px] flex-shrink-0">
+            <div className="grid grid-cols-2 gap-3 min-h-[180px] max-h-[180px]">
               <Card className="flex flex-col">
                 <CardHeader className="py-2 px-3">
                   <CardTitle className="text-sm">구독 플랜</CardTitle>
@@ -222,7 +222,7 @@ export default async function DashboardPage() {
             </div>
 
             {/* 기업분석 이력 */}
-            <Card className="flex-1 flex flex-col overflow-hidden">
+            <Card className="flex-1 flex flex-col overflow-hidden min-h-0">
               <CardHeader className="flex flex-row items-center justify-between py-3 px-4 flex-shrink-0">
                 <div>
                   <CardTitle className="text-base">기업분석 이력</CardTitle>
@@ -234,7 +234,7 @@ export default async function DashboardPage() {
                   </Button>
                 </Link>
               </CardHeader>
-              <CardContent className="flex-1 overflow-y-auto px-4 pb-4">
+              <CardContent className="flex-1 overflow-y-auto px-4 pb-4 min-h-0">
                 {projects.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
                     <p className="mb-3 text-sm">아직 기업분석 내용이 없습니다</p>
