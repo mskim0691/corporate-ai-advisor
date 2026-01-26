@@ -41,13 +41,20 @@ export function ConsultingChatbot({ inline = false }: ConsultingChatbotProps) {
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    // 컨테이너 내부에서만 스크롤 (페이지 전체 스크롤 방지)
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight
+    }
   }
 
   useEffect(() => {
-    scrollToBottom()
+    // 초기 로드시에는 스크롤하지 않음 (인라인 모드에서 페이지 자동 스크롤 방지)
+    if (messages.length > 1) {
+      scrollToBottom()
+    }
   }, [messages])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -126,7 +133,7 @@ export function ConsultingChatbot({ inline = false }: ConsultingChatbotProps) {
           </CardTitle>
         </CardHeader>
 
-        <CardContent className="flex-1 overflow-y-auto p-3 space-y-2 min-h-0">
+        <CardContent ref={messagesContainerRef} className="flex-1 overflow-y-auto p-3 space-y-2 min-h-0">
           {messages.length === 1 && (
             <div className="mb-2">
               <p className="text-[10px] text-gray-500 font-medium mb-1">추천 질문</p>
@@ -302,7 +309,7 @@ export function ConsultingChatbot({ inline = false }: ConsultingChatbotProps) {
         </div>
       </CardHeader>
 
-      <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
+      <CardContent ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((msg, index) => (
           <div
             key={index}
