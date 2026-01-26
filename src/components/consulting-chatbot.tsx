@@ -210,7 +210,7 @@ export function ConsultingChatbot() {
               </div>
             </div>
           ))
-        )}
+        }
 
         {isLoading && (
           <div className="flex justify-start">
