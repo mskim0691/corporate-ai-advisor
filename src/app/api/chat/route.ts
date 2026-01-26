@@ -50,8 +50,9 @@ export async function POST(req: Request) {
     // 3. 시스템 프롬프트 구성
     const systemPrompt = buildSystemPrompt(knowledgeContext, relevantKnowledge.length > 0)
 
-    // 4. Gemini API 호출
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
+    // 4. Gemini API 호출 (환경변수로 모델 설정 가능, 기본값: 최신 Gemini 2.0)
+    const modelName = process.env.GEMINI_MODEL || "gemini-2.0-flash"
+    const model = genAI.getGenerativeModel({ model: modelName })
 
     // 대화 히스토리 구성
     const chatHistory = history.map(msg => ({
