@@ -108,22 +108,23 @@ export default async function DashboardPage() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2">대시보드</h2>
-          <p className="text-gray-700 text-lg">
-            <span className="text-xl font-bold text-blue-600">크레탑</span> 분석보고서, <span className="text-xl font-bold text-blue-600">재무제표</span> 파일을 <span className="text-xl font-bold text-blue-600">업로드</span> 하면 기업 컨설팅 <span className="text-xl font-bold text-blue-600">AI 분석</span>을 해드립니다.
+        <div className="mb-6 flex items-center gap-3">
+          <h2 className="text-2xl font-bold">대시보드</h2>
+          <span className="text-gray-500">|</span>
+          <p className="text-gray-600">
+            <span className="font-semibold text-blue-600">크레탑</span> 분석보고서, <span className="font-semibold text-blue-600">재무제표</span> 파일을 <span className="font-semibold text-blue-600">업로드</span> 하면 기업 컨설팅 <span className="font-semibold text-blue-600">AI 분석</span>을 해드립니다.
           </p>
         </div>
 
         {/* 상단 영역: 왼쪽 챗봇 + 오른쪽 2x2 카드 */}
         <div className="grid lg:grid-cols-2 gap-6 mb-8">
           {/* 왼쪽: AI 챗봇 */}
-          <div className="h-[280px]">
+          <div className="h-[360px]">
             <ConsultingChatbot inline />
           </div>
 
           {/* 오른쪽: 4개 카드 2x2 배치 */}
-          <div className="grid grid-cols-2 gap-3 h-[280px]">
+          <div className="grid grid-cols-2 gap-3 h-[360px]">
             <Card className="flex flex-col">
               <CardHeader className="py-2 px-3">
                 <CardTitle className="text-sm">구독 플랜</CardTitle>
