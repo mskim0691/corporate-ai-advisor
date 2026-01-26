@@ -106,15 +106,15 @@ export function ConsultingChatbot({ inline = false }: ConsultingChatbotProps) {
   if (inline) {
     return (
       <Card className="h-full flex flex-col bg-white">
-        <CardHeader className="py-3 px-4 border-b bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-lg">
-          <CardTitle className="text-lg font-semibold flex items-center gap-2">
+        <CardHeader className="py-2 px-3 border-b bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-lg">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
               strokeWidth={1.5}
               stroke="currentColor"
-              className="w-5 h-5"
+              className="w-4 h-4"
             >
               <path
                 strokeLinecap="round"
@@ -122,20 +122,20 @@ export function ConsultingChatbot({ inline = false }: ConsultingChatbotProps) {
                 d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z"
               />
             </svg>
-            법인컨설팅 AI 어시스턴트
+            법인컨설팅 AI
           </CardTitle>
         </CardHeader>
 
-        <CardContent className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[300px]">
+        <CardContent className="flex-1 overflow-y-auto p-3 space-y-2 min-h-0">
           {messages.length === 1 && (
-            <div className="mb-4">
-              <p className="text-xs text-gray-500 font-medium mb-2">추천 질문</p>
-              <div className="flex flex-wrap gap-2">
+            <div className="mb-2">
+              <p className="text-[10px] text-gray-500 font-medium mb-1">추천 질문</p>
+              <div className="flex flex-wrap gap-1">
                 {suggestedQuestions.map((q, i) => (
                   <button
                     key={i}
                     onClick={() => handleSuggestedQuestion(q)}
-                    className="text-xs px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full hover:bg-blue-100 transition-colors"
+                    className="text-[10px] px-2 py-1 bg-blue-50 text-blue-700 rounded-full hover:bg-blue-100 transition-colors"
                   >
                     {q}
                   </button>
@@ -204,16 +204,16 @@ export function ConsultingChatbot({ inline = false }: ConsultingChatbotProps) {
           <div ref={messagesEndRef} />
         </CardContent>
 
-        <div className="p-4 border-t bg-white rounded-b-lg">
+        <div className="p-2 border-t bg-white rounded-b-lg">
           <form onSubmit={handleSubmit} className="flex gap-2">
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="법인컨설팅 관련 질문을 입력하세요..."
               disabled={isLoading}
-              className="flex-1"
+              className="flex-1 h-8 text-sm"
             />
-            <Button type="submit" disabled={!input.trim() || isLoading} size="sm">
+            <Button type="submit" disabled={!input.trim() || isLoading} size="sm" className="h-8">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -230,9 +230,6 @@ export function ConsultingChatbot({ inline = false }: ConsultingChatbotProps) {
               </svg>
             </Button>
           </form>
-          <p className="text-[10px] text-gray-400 mt-2 text-center">
-            ※ 본 서비스는 일반적인 정보 제공 목적이며, 전문 세무/법률 자문이 아닙니다.
-          </p>
         </div>
       </Card>
     )
