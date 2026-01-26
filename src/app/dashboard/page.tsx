@@ -115,16 +115,21 @@ export default async function DashboardPage() {
           </p>
         </div>
 
-        {/* 상단 영역: 왼쪽 2x2 카드 + 오른쪽 챗봇 */}
+        {/* 상단 영역: 왼쪽 챗봇 + 오른쪽 2x2 카드 */}
         <div className="grid lg:grid-cols-2 gap-6 mb-8">
-          {/* 왼쪽: 4개 카드 2x2 배치 */}
-          <div className="grid grid-cols-2 gap-4">
-            <Card>
-              <CardHeader className="py-3 px-4">
+          {/* 왼쪽: AI 챗봇 */}
+          <div className="h-[280px]">
+            <ConsultingChatbot inline />
+          </div>
+
+          {/* 오른쪽: 4개 카드 2x2 배치 */}
+          <div className="grid grid-cols-2 gap-3 h-[280px]">
+            <Card className="flex flex-col">
+              <CardHeader className="py-2 px-3">
                 <CardTitle className="text-sm">구독 플랜</CardTitle>
                 <CardDescription className="text-xs">현재 사용 중인 플랜</CardDescription>
               </CardHeader>
-              <CardContent className="py-2 px-4">
+              <CardContent className="py-2 px-3 flex-1">
                 <div className="text-xl font-bold">
                   {subscription?.plan === "expert" ? "Expert" : subscription?.plan === "pro" ? "Pro" : "Free"}
                 </div>
@@ -145,12 +150,12 @@ export default async function DashboardPage() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className="py-3 px-4">
+            <Card className="flex flex-col">
+              <CardHeader className="py-2 px-3">
                 <CardTitle className="text-sm">분석제안서 권한</CardTitle>
                 <CardDescription className="text-xs">이번 달 생성 횟수</CardDescription>
               </CardHeader>
-              <CardContent className="py-2 px-4">
+              <CardContent className="py-2 px-3 flex-1">
                 <div className="text-xl font-bold">
                   {solutionLimit === 999999 ? (
                     <span className="text-green-600">무제한</span>
@@ -168,12 +173,12 @@ export default async function DashboardPage() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className="py-3 px-4">
+            <Card className="flex flex-col">
+              <CardHeader className="py-2 px-3">
                 <CardTitle className="text-sm">비주얼 레포트 권한</CardTitle>
                 <CardDescription className="text-xs">이번 달 생성 횟수</CardDescription>
               </CardHeader>
-              <CardContent className="py-2 px-4">
+              <CardContent className="py-2 px-3 flex-1">
                 <div className="text-xl font-bold">
                   {presentationLimit === 999999 ? (
                     <span className="text-green-600">무제한</span>
@@ -193,12 +198,12 @@ export default async function DashboardPage() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className="py-3 px-4">
+            <Card className="flex flex-col">
+              <CardHeader className="py-2 px-3">
                 <CardTitle className="text-sm">총 분석 건수</CardTitle>
                 <CardDescription className="text-xs">누적 생성 수</CardDescription>
               </CardHeader>
-              <CardContent className="py-2 px-4">
+              <CardContent className="py-2 px-3 flex-1">
                 <div className="space-y-1">
                   <div className="flex justify-between items-center">
                     <p className="text-xs text-gray-600">분석제안서</p>
@@ -211,11 +216,6 @@ export default async function DashboardPage() {
                 </div>
               </CardContent>
             </Card>
-          </div>
-
-          {/* 오른쪽: AI 챗봇 */}
-          <div className="h-[320px]">
-            <ConsultingChatbot inline />
           </div>
         </div>
 
