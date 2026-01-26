@@ -55,8 +55,14 @@ export async function POST(req: Request) {
     const modelName = await getLatestAvailableModel()
     const model = genAI.getGenerativeModel({ model: modelName })
 
-    // 대화 히스토리 구성
-    const chatHistory = history.map(msg => ({
+    // 대화 히스토리 구성 (Gemini는 user 메시지로 시작해야 함)
+    // 첫 번째 메시지가 assistant(model)이면 제외
+    const filteredHistory = history.filter((msg, index) => {
+      if (index === 0 && msg.role === "assistant") return false
+      return true
+    })
+
+    const chatHistory = filteredHistory.map(msg => ({
       role: msg.role === "user" ? "user" : "model",
       parts: [{ text: msg.content }]
     }))
