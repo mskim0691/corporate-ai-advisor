@@ -83,7 +83,7 @@ export async function getLatestAvailableModel(): Promise<string> {
   } catch (error) {
     console.error("Error fetching available models:", error)
     // 폴백: 안정적인 기본 모델 사용
-    cachedModelName = "gemini-2.5-pro"
+    cachedModelName = "gemini-1.5-flash"
     console.log(`⚠️  Using fallback model: ${cachedModelName}`)
     return cachedModelName
   }
