@@ -51,7 +51,7 @@ export async function POST(req: Request) {
     const systemPrompt = buildSystemPrompt(knowledgeContext, relevantKnowledge.length > 0)
 
     // 4. Gemini API 호출
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" })
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
 
     // 대화 히스토리 구성
     const chatHistory = history.map(msg => ({
@@ -91,8 +91,10 @@ export async function POST(req: Request) {
 
   } catch (error) {
     console.error("Chat API error:", error)
+    const errorMessage = error instanceof Error ? error.message : "Unknown error"
+    console.error("Error details:", errorMessage)
     return NextResponse.json(
-      { error: "답변 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요." },
+      { error: "답변 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.", details: errorMessage },
       { status: 500 }
     )
   }
