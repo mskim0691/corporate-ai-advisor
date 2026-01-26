@@ -124,10 +124,10 @@ export default async function DashboardPage() {
           </div>
 
           {/* 오른쪽: 카드들 + 프로젝트 목록 */}
-          <div className="flex flex-col gap-4 h-[700px]">
+          <div className="grid grid-rows-[180px_1fr] gap-4 h-[700px]">
             {/* 4개 카드 2x2 배치 */}
-            <div className="grid grid-cols-2 gap-3 h-[180px]">
-              <Card className="flex flex-col">
+            <div className="grid grid-cols-2 gap-3 overflow-hidden">
+              <Card className="flex flex-col overflow-hidden">
                 <CardHeader className="py-2 px-3">
                   <CardTitle className="text-sm">구독 플랜</CardTitle>
                   <CardDescription className="text-xs">현재 사용 중인 플랜</CardDescription>
@@ -153,7 +153,7 @@ export default async function DashboardPage() {
                 </CardContent>
               </Card>
 
-              <Card className="flex flex-col">
+              <Card className="flex flex-col overflow-hidden">
                 <CardHeader className="py-2 px-3">
                   <CardTitle className="text-sm">분석제안서 권한</CardTitle>
                   <CardDescription className="text-xs">이번 달 생성 횟수</CardDescription>
@@ -176,7 +176,7 @@ export default async function DashboardPage() {
                 </CardContent>
               </Card>
 
-              <Card className="flex flex-col">
+              <Card className="flex flex-col overflow-hidden">
                 <CardHeader className="py-2 px-3">
                   <CardTitle className="text-sm">비주얼 레포트 권한</CardTitle>
                   <CardDescription className="text-xs">이번 달 생성 횟수</CardDescription>
@@ -201,7 +201,7 @@ export default async function DashboardPage() {
                 </CardContent>
               </Card>
 
-              <Card className="flex flex-col">
+              <Card className="flex flex-col overflow-hidden">
                 <CardHeader className="py-2 px-3">
                   <CardTitle className="text-sm">총 분석 건수</CardTitle>
                   <CardDescription className="text-xs">누적 생성 수</CardDescription>
@@ -221,8 +221,8 @@ export default async function DashboardPage() {
               </Card>
             </div>
 
-            {/* 기업분석 이력 - 700px - 180px(카드) - 16px(gap) = 504px */}
-            <Card className="h-[504px] flex flex-col overflow-hidden">
+            {/* 기업분석 이력 */}
+            <Card className="flex flex-col overflow-hidden">
               <CardHeader className="flex flex-row items-center justify-between py-3 px-4 flex-shrink-0">
                 <div>
                   <CardTitle className="text-base">기업분석 이력</CardTitle>
