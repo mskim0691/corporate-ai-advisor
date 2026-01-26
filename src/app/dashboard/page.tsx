@@ -116,202 +116,204 @@ export default async function DashboardPage() {
           </p>
         </div>
 
-        {/* 상단 영역: 왼쪽 챗봇 + 오른쪽 2x2 카드 */}
+        {/* 메인 영역: 왼쪽 챗봇 + 오른쪽 (카드 + 프로젝트 목록) */}
         <div className="grid lg:grid-cols-2 gap-6 mb-8">
-          {/* 왼쪽: AI 챗봇 */}
-          <div className="h-[360px]">
+          {/* 왼쪽: AI 챗봇 (전체 높이) */}
+          <div className="h-[700px]">
             <ConsultingChatbot inline />
           </div>
 
-          {/* 오른쪽: 4개 카드 2x2 배치 */}
-          <div className="grid grid-cols-2 gap-3 h-[360px]">
-            <Card className="flex flex-col">
-              <CardHeader className="py-2 px-3">
-                <CardTitle className="text-sm">구독 플랜</CardTitle>
-                <CardDescription className="text-xs">현재 사용 중인 플랜</CardDescription>
-              </CardHeader>
-              <CardContent className="py-2 px-3 flex-1">
-                <div className="text-xl font-bold">
-                  {subscription?.plan === "expert" ? "Expert" : subscription?.plan === "pro" ? "Pro" : "Free"}
-                </div>
-                {groupName === 'free' ? (
-                  <>
-                    <p className="text-xs text-gray-500 mt-1">
-                      매달 1일 초기화
+          {/* 오른쪽: 카드들 + 프로젝트 목록 */}
+          <div className="flex flex-col gap-4 h-[700px]">
+            {/* 4개 카드 2x2 배치 */}
+            <div className="grid grid-cols-2 gap-3 h-[180px] flex-shrink-0">
+              <Card className="flex flex-col">
+                <CardHeader className="py-2 px-3">
+                  <CardTitle className="text-sm">구독 플랜</CardTitle>
+                  <CardDescription className="text-xs">현재 사용 중인 플랜</CardDescription>
+                </CardHeader>
+                <CardContent className="py-2 px-3 flex-1">
+                  <div className="text-xl font-bold">
+                    {subscription?.plan === "expert" ? "Expert" : subscription?.plan === "pro" ? "Pro" : "Free"}
+                  </div>
+                  {groupName === 'free' ? (
+                    <>
+                      <p className="text-xs text-gray-500 mt-1">
+                        매달 1일 초기화
+                      </p>
+                      <Link href="/pricing" className="text-xs text-blue-600 hover:underline">
+                        업그레이드
+                      </Link>
+                    </>
+                  ) : billingEndDate && (
+                    <p className="text-xs text-gray-600 mt-1">
+                      만료일: {billingEndDate}
                     </p>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card className="flex flex-col">
+                <CardHeader className="py-2 px-3">
+                  <CardTitle className="text-sm">분석제안서 권한</CardTitle>
+                  <CardDescription className="text-xs">이번 달 생성 횟수</CardDescription>
+                </CardHeader>
+                <CardContent className="py-2 px-3 flex-1">
+                  <div className="text-xl font-bold">
+                    {solutionLimit === 999999 ? (
+                      <span className="text-green-600">무제한</span>
+                    ) : (
+                      <span className={solutionUsage >= solutionLimit ? "text-red-600" : "text-green-600"}>
+                        {solutionLimit - solutionUsage} / {solutionLimit}
+                      </span>
+                    )}
+                  </div>
+                  {groupName === 'free' && solutionUsage >= solutionLimit && (
                     <Link href="/pricing" className="text-xs text-blue-600 hover:underline">
-                      업그레이드
+                      Pro로 업그레이드
                     </Link>
-                  </>
-                ) : billingEndDate && (
-                  <p className="text-xs text-gray-600 mt-1">
-                    만료일: {billingEndDate}
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="flex flex-col">
-              <CardHeader className="py-2 px-3">
-                <CardTitle className="text-sm">분석제안서 권한</CardTitle>
-                <CardDescription className="text-xs">이번 달 생성 횟수</CardDescription>
-              </CardHeader>
-              <CardContent className="py-2 px-3 flex-1">
-                <div className="text-xl font-bold">
-                  {solutionLimit === 999999 ? (
-                    <span className="text-green-600">무제한</span>
-                  ) : (
-                    <span className={solutionUsage >= solutionLimit ? "text-red-600" : "text-green-600"}>
-                      {solutionLimit - solutionUsage} / {solutionLimit}
-                    </span>
                   )}
-                </div>
-                {groupName === 'free' && solutionUsage >= solutionLimit && (
-                  <Link href="/pricing" className="text-xs text-blue-600 hover:underline">
-                    Pro로 업그레이드
-                  </Link>
-                )}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            <Card className="flex flex-col">
-              <CardHeader className="py-2 px-3">
-                <CardTitle className="text-sm">비주얼 레포트 권한</CardTitle>
-                <CardDescription className="text-xs">이번 달 생성 횟수</CardDescription>
-              </CardHeader>
-              <CardContent className="py-2 px-3 flex-1">
-                <div className="text-xl font-bold">
-                  {presentationLimit === 999999 ? (
-                    <span className="text-green-600">무제한</span>
-                  ) : presentationLimit === 0 ? (
-                    <span className="text-gray-400">사용 불가</span>
-                  ) : (
-                    <span className={presentationUsage >= presentationLimit ? "text-red-600" : "text-green-600"}>
-                      {presentationLimit - presentationUsage} / {presentationLimit}
-                    </span>
+              <Card className="flex flex-col">
+                <CardHeader className="py-2 px-3">
+                  <CardTitle className="text-sm">비주얼 레포트 권한</CardTitle>
+                  <CardDescription className="text-xs">이번 달 생성 횟수</CardDescription>
+                </CardHeader>
+                <CardContent className="py-2 px-3 flex-1">
+                  <div className="text-xl font-bold">
+                    {presentationLimit === 999999 ? (
+                      <span className="text-green-600">무제한</span>
+                    ) : presentationLimit === 0 ? (
+                      <span className="text-gray-400">사용 불가</span>
+                    ) : (
+                      <span className={presentationUsage >= presentationLimit ? "text-red-600" : "text-green-600"}>
+                        {presentationLimit - presentationUsage} / {presentationLimit}
+                      </span>
+                    )}
+                  </div>
+                  {groupName === 'free' && (
+                    <Link href="/pricing" className="text-xs text-blue-600 hover:underline">
+                      Pro로 업그레이드
+                    </Link>
                   )}
-                </div>
-                {groupName === 'free' && (
-                  <Link href="/pricing" className="text-xs text-blue-600 hover:underline">
-                    Pro로 업그레이드
-                  </Link>
-                )}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            <Card className="flex flex-col">
-              <CardHeader className="py-2 px-3">
-                <CardTitle className="text-sm">총 분석 건수</CardTitle>
-                <CardDescription className="text-xs">누적 생성 수</CardDescription>
-              </CardHeader>
-              <CardContent className="py-2 px-3 flex-1">
-                <div className="space-y-1">
-                  <div className="flex justify-between items-center">
-                    <p className="text-xs text-gray-600">분석제안서</p>
-                    <div className="text-lg font-bold">{totalProjectCount}건</div>
+              <Card className="flex flex-col">
+                <CardHeader className="py-2 px-3">
+                  <CardTitle className="text-sm">총 분석 건수</CardTitle>
+                  <CardDescription className="text-xs">누적 생성 수</CardDescription>
+                </CardHeader>
+                <CardContent className="py-2 px-3 flex-1">
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center">
+                      <p className="text-xs text-gray-600">분석제안서</p>
+                      <div className="text-lg font-bold">{totalProjectCount}건</div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <p className="text-xs text-gray-600">비주얼 레포트</p>
+                      <div className="text-lg font-bold">{totalPresentationCount}건</div>
+                    </div>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <p className="text-xs text-gray-600">비주얼 레포트</p>
-                    <div className="text-lg font-bold">{totalPresentationCount}건</div>
-                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* 기업분석 이력 */}
+            <Card className="flex-1 flex flex-col overflow-hidden">
+              <CardHeader className="flex flex-row items-center justify-between py-3 px-4 flex-shrink-0">
+                <div>
+                  <CardTitle className="text-base">기업분석 이력</CardTitle>
+                  <CardDescription className="text-xs">최근 생성한 분석 결과</CardDescription>
                 </div>
+                <Link href="/projects/new">
+                  <Button size="sm" disabled={!canCreateProject}>
+                    {canCreateProject ? "새 분석" : "초과"}
+                  </Button>
+                </Link>
+              </CardHeader>
+              <CardContent className="flex-1 overflow-y-auto px-4 pb-4">
+                {projects.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <p className="mb-3 text-sm">아직 기업분석 내용이 없습니다</p>
+                    <Link href="/projects/new">
+                      <Button size="sm" disabled={!canCreateProject}>첫 분석 시작하기</Button>
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {projects.map((project) => (
+                      <div
+                        key={project.id}
+                        className="flex flex-col p-3 border rounded-lg hover:bg-gray-50 gap-2"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <h3 className="font-semibold text-sm truncate">{project.companyName}</h3>
+                            <p className="text-xs text-gray-500">
+                              {new Date(project.createdAt).toLocaleDateString("ko-KR")}
+                            </p>
+                          </div>
+                          <span
+                            className={`px-2 py-0.5 text-xs rounded-full flex-shrink-0 ${
+                              project.status === "completed"
+                                ? "bg-green-100 text-green-800"
+                                : project.status === "processing"
+                                ? "bg-blue-100 text-blue-800"
+                                : project.status === "failed"
+                                ? "bg-red-100 text-red-800"
+                                : "bg-gray-100 text-gray-800"
+                            }`}
+                          >
+                            {project.status === "completed"
+                              ? "완료"
+                              : project.status === "processing"
+                              ? "분석 중"
+                              : project.status === "failed"
+                              ? "실패"
+                              : "대기"}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-1">
+                          {project.status === "completed" && (
+                            <>
+                              <Link href={`/projects/${project.id}/library`}>
+                                <Button variant="outline" size="sm" className="text-[10px] px-1.5 py-0.5 h-6">
+                                  라이브러리
+                                </Button>
+                              </Link>
+                              <Link href={`/projects/${project.id}/analysis`}>
+                                <Button variant="outline" size="sm" className="text-[10px] px-1.5 py-0.5 h-6">
+                                  분석제안서
+                                </Button>
+                              </Link>
+                              <VisualReportButton
+                                projectId={project.id}
+                                hasReport={!!project.report?.pdfUrl}
+                                remainingCount={remainingPresentations}
+                              />
+                              <Link href={`/projects/${project.id}/followup`}>
+                                <Button variant="outline" size="sm" className="text-[10px] px-1.5 py-0.5 h-6 bg-green-50 text-green-700 border-green-300 hover:bg-green-100">
+                                  후속 미팅
+                                </Button>
+                              </Link>
+                            </>
+                          )}
+                          <DeleteProjectButton
+                            projectId={project.id}
+                            companyName={project.companyName}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
         </div>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>기업분석 이력</CardTitle>
-              <CardDescription>최근 생성한 분석 결과</CardDescription>
-            </div>
-            <Link href="/projects/new">
-              <Button disabled={!canCreateProject}>
-                {canCreateProject ? "새 분석 시작" : "사용량 초과"}
-              </Button>
-            </Link>
-          </CardHeader>
-          <CardContent>
-            {projects.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
-                <p className="mb-4">아직 기업분석 내용이 없습니다</p>
-                <Link href="/projects/new">
-                  <Button disabled={!canCreateProject}>첫 분석 시작하기</Button>
-                </Link>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {projects.map((project) => (
-                  <div
-                    key={project.id}
-                    className="flex flex-col md:flex-row md:items-center md:justify-between p-3 md:p-4 border rounded-lg hover:bg-gray-50 gap-3"
-                  >
-                    <div className="min-w-0">
-                      <h3 className="font-semibold truncate">{project.companyName}</h3>
-                      <p className="text-sm text-gray-600 truncate">
-                        {project.businessNumber} · {project.representative}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        파일 {project._count.files}개 · {" "}
-                        {new Date(project.createdAt).toLocaleDateString("ko-KR")}
-                      </p>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
-                      <span
-                        className={`px-2 py-1 text-xs rounded-full ${
-                          project.status === "completed"
-                            ? "bg-green-100 text-green-800"
-                            : project.status === "processing"
-                            ? "bg-blue-100 text-blue-800"
-                            : project.status === "failed"
-                            ? "bg-red-100 text-red-800"
-                            : "bg-gray-100 text-gray-800"
-                        }`}
-                      >
-                        {project.status === "completed"
-                          ? "완료"
-                          : project.status === "processing"
-                          ? "분석 중"
-                          : project.status === "failed"
-                          ? "실패"
-                          : "대기"}
-                      </span>
-                      {project.status === "completed" && (
-                        <>
-                          <Link href={`/projects/${project.id}/library`}>
-                            <Button variant="outline" size="sm" className="text-xs px-2 py-1 h-7 md:h-8 md:px-3">
-                              라이브러리
-                            </Button>
-                          </Link>
-                          <Link href={`/projects/${project.id}/analysis`}>
-                            <Button variant="outline" size="sm" className="text-xs px-2 py-1 h-7 md:h-8 md:px-3">
-                              분석제안서
-                            </Button>
-                          </Link>
-                          <VisualReportButton
-                            projectId={project.id}
-                            hasReport={!!project.report?.pdfUrl}
-                            remainingCount={remainingPresentations}
-                          />
-                          <Link href={`/projects/${project.id}/followup`}>
-                            <Button variant="outline" size="sm" className="text-xs px-2 py-1 h-7 md:h-8 md:px-3 bg-green-50 text-green-700 border-green-300 hover:bg-green-100">
-                              후속 미팅
-                            </Button>
-                          </Link>
-                        </>
-                      )}
-                      <DeleteProjectButton
-                        projectId={project.id}
-                        companyName={project.companyName}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
 
         <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
           <AnnouncementsBanner />
