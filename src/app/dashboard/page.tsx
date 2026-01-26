@@ -115,99 +115,108 @@ export default async function DashboardPage() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>구독 플랜</CardTitle>
-              <CardDescription>현재 사용 중인 플랜</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {subscription?.plan === "expert" ? "Expert" : subscription?.plan === "pro" ? "Pro" : "Free"}
-              </div>
-              {groupName === 'free' ? (
-                <>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Free 플랜은 매달 1일 사용권이 초기화됩니다.
+        {/* 상단 영역: 왼쪽 2x2 카드 + 오른쪽 챗봇 */}
+        <div className="grid lg:grid-cols-2 gap-6 mb-8">
+          {/* 왼쪽: 4개 카드 2x2 배치 */}
+          <div className="grid grid-cols-2 gap-4">
+            <Card>
+              <CardHeader className="py-3 px-4">
+                <CardTitle className="text-sm">구독 플랜</CardTitle>
+                <CardDescription className="text-xs">현재 사용 중인 플랜</CardDescription>
+              </CardHeader>
+              <CardContent className="py-2 px-4">
+                <div className="text-xl font-bold">
+                  {subscription?.plan === "expert" ? "Expert" : subscription?.plan === "pro" ? "Pro" : "Free"}
+                </div>
+                {groupName === 'free' ? (
+                  <>
+                    <p className="text-xs text-gray-500 mt-1">
+                      매달 1일 초기화
+                    </p>
+                    <Link href="/pricing" className="text-xs text-blue-600 hover:underline">
+                      업그레이드
+                    </Link>
+                  </>
+                ) : billingEndDate && (
+                  <p className="text-xs text-gray-600 mt-1">
+                    만료일: {billingEndDate}
                   </p>
-                  <Link href="/pricing" className="text-sm text-blue-600 hover:underline">
-                    업그레이드
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="py-3 px-4">
+                <CardTitle className="text-sm">분석제안서 권한</CardTitle>
+                <CardDescription className="text-xs">이번 달 생성 횟수</CardDescription>
+              </CardHeader>
+              <CardContent className="py-2 px-4">
+                <div className="text-xl font-bold">
+                  {solutionLimit === 999999 ? (
+                    <span className="text-green-600">무제한</span>
+                  ) : (
+                    <span className={solutionUsage >= solutionLimit ? "text-red-600" : "text-green-600"}>
+                      {solutionLimit - solutionUsage} / {solutionLimit}
+                    </span>
+                  )}
+                </div>
+                {groupName === 'free' && solutionUsage >= solutionLimit && (
+                  <Link href="/pricing" className="text-xs text-blue-600 hover:underline">
+                    Pro로 업그레이드
                   </Link>
-                </>
-              ) : billingEndDate && (
-                <p className="text-sm text-gray-600 mt-1">
-                  이번달 만료일: {billingEndDate}
-                </p>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>이번 달 분석제안서 생성 권한</CardTitle>
-              <CardDescription>분석제안서 생성 횟수</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {solutionLimit === 999999 ? (
-                  <span className="text-green-600">무제한</span>
-                ) : (
-                  <span className={solutionUsage >= solutionLimit ? "text-red-600" : "text-green-600"}>
-                    {solutionLimit - solutionUsage} / {solutionLimit}
-                  </span>
                 )}
-              </div>
-              {groupName === 'free' && solutionUsage >= solutionLimit && (
-                <Link href="/pricing" className="text-sm text-blue-600 hover:underline">
-                  Pro로 업그레이드
-                </Link>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>이번 달 비주얼 레포트 생성 권한</CardTitle>
-              <CardDescription>비주얼 레포트 생성 횟수</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {presentationLimit === 999999 ? (
-                  <span className="text-green-600">무제한</span>
-                ) : presentationLimit === 0 ? (
-                  <span className="text-gray-400">사용 불가</span>
-                ) : (
-                  <span className={presentationUsage >= presentationLimit ? "text-red-600" : "text-green-600"}>
-                    {presentationLimit - presentationUsage} / {presentationLimit}
-                  </span>
+            <Card>
+              <CardHeader className="py-3 px-4">
+                <CardTitle className="text-sm">비주얼 레포트 권한</CardTitle>
+                <CardDescription className="text-xs">이번 달 생성 횟수</CardDescription>
+              </CardHeader>
+              <CardContent className="py-2 px-4">
+                <div className="text-xl font-bold">
+                  {presentationLimit === 999999 ? (
+                    <span className="text-green-600">무제한</span>
+                  ) : presentationLimit === 0 ? (
+                    <span className="text-gray-400">사용 불가</span>
+                  ) : (
+                    <span className={presentationUsage >= presentationLimit ? "text-red-600" : "text-green-600"}>
+                      {presentationLimit - presentationUsage} / {presentationLimit}
+                    </span>
+                  )}
+                </div>
+                {groupName === 'free' && (
+                  <Link href="/pricing" className="text-xs text-blue-600 hover:underline">
+                    Pro로 업그레이드
+                  </Link>
                 )}
-              </div>
-              {groupName === 'free' && (
-                <Link href="/pricing" className="text-sm text-blue-600 hover:underline">
-                  Pro로 업그레이드
-                </Link>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>총 분석 건수</CardTitle>
-              <CardDescription>누적 생성 수</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div>
-                  <p className="text-sm text-gray-600">분석제안서</p>
-                  <div className="text-xl font-bold">{totalProjectCount}건</div>
+            <Card>
+              <CardHeader className="py-3 px-4">
+                <CardTitle className="text-sm">총 분석 건수</CardTitle>
+                <CardDescription className="text-xs">누적 생성 수</CardDescription>
+              </CardHeader>
+              <CardContent className="py-2 px-4">
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center">
+                    <p className="text-xs text-gray-600">분석제안서</p>
+                    <div className="text-lg font-bold">{totalProjectCount}건</div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <p className="text-xs text-gray-600">비주얼 레포트</p>
+                    <div className="text-lg font-bold">{totalPresentationCount}건</div>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-600">비주얼 레포트</p>
-                  <div className="text-xl font-bold">{totalPresentationCount}건</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* 오른쪽: AI 챗봇 */}
+          <div className="h-[320px]">
+            <ConsultingChatbot inline />
+          </div>
         </div>
 
         <Card>
@@ -310,7 +319,6 @@ export default async function DashboardPage() {
       </main>
 
       <Footer />
-      <ConsultingChatbot />
     </div>
   )
 }
