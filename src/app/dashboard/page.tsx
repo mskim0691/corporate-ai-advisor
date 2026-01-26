@@ -124,7 +124,7 @@ export default async function DashboardPage() {
           </div>
 
           {/* 오른쪽: 카드들 + 프로젝트 목록 */}
-          <div className="grid grid-rows-[180px_1fr] gap-4 h-[700px]">
+          <div className="grid grid-rows-[240px_1fr] gap-4 h-[700px]">
             {/* 4개 카드 2x2 배치 */}
             <div className="grid grid-cols-2 gap-3 overflow-hidden">
               <Card className="flex flex-col overflow-hidden">
