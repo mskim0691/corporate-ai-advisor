@@ -70,7 +70,7 @@ export async function POST(req: Request) {
     const chat = model.startChat({
       history: chatHistory,
       generationConfig: {
-        maxOutputTokens: 2048,
+        maxOutputTokens: 8192,
         temperature: 0.3, // 낮은 온도로 더 정확한 답변
       },
     })
