@@ -26,9 +26,14 @@ interface ChatResponse {
   hasReliableSource: boolean
 }
 
+const INITIAL_MESSAGE: Message = {
+  role: "assistant",
+  content: "챗봇 시스템은 현재 검증되고 안전한 컨설팅 자료들을 확보해서 학습중입니다. (베타서비스중)"
+}
+
 export function ConsultingChatbot() {
   const [isOpen, setIsOpen] = useState(false)
-  const [messages, setMessages] = useState<Message[]>([])
+  const [messages, setMessages] = useState<Message[]>([INITIAL_MESSAGE])
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -160,32 +165,8 @@ export function ConsultingChatbot() {
       </CardHeader>
 
       <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.length === 0 ? (
-          <div className="space-y-4">
-            <div className="text-center text-gray-500 py-4">
-              <p className="text-sm mb-2">법인세, 가업승계, 세무 관련 질문을 해보세요!</p>
-              <p className="text-xs text-gray-400">
-                ※ 출처 기반 답변만 제공하며, 확실하지 않은 정보는 안내드리지 않습니다.
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <p className="text-xs text-gray-500 font-medium">추천 질문</p>
-              <div className="flex flex-wrap gap-2">
-                {suggestedQuestions.map((q, i) => (
-                  <button
-                    key={i}
-                    onClick={() => handleSuggestedQuestion(q)}
-                    className="text-xs px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full hover:bg-blue-100 transition-colors"
-                  >
-                    {q}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        ) : (
-          messages.map((msg, index) => (
+        {/* Always show messages */}
+        {messages.map((msg, index) => (
             <div
               key={index}
               className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
