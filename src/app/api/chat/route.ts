@@ -102,7 +102,7 @@ export async function POST(req: Request) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error"
     console.error("Error details:", errorMessage)
     return NextResponse.json(
-      { error: "답변 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.", details: errorMessage },
+      { error: "답변 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요." },
       { status: 500 }
     )
   }

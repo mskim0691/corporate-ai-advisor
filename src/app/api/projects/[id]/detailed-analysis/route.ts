@@ -183,7 +183,7 @@ export async function POST(
       })
 
       return NextResponse.json(
-        { error: "상세 분석 중 오류가 발생했습니다", details: errorMessage },
+        { error: "상세 분석 중 오류가 발생했습니다" },
         { status: 500 }
       )
     }
@@ -191,7 +191,7 @@ export async function POST(
     console.error("Detailed analysis API error:", error)
     const errorMessage = error instanceof Error ? error.message : String(error)
     return NextResponse.json(
-      { error: "서버 오류가 발생했습니다", details: errorMessage },
+      { error: "서버 오류가 발생했습니다" },
       { status: 500 }
     )
   }

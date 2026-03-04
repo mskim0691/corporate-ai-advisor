@@ -1,17 +1,28 @@
 import { NextResponse } from "next/server"
+import { auth } from "@/lib/auth"
 import prisma from "@/lib/prisma"
 
 export async function GET(req: Request) {
   try {
+    const session = await auth()
+
+    if (!session?.user) {
+      return NextResponse.redirect(new URL('/auth/login', req.url))
+    }
+
     const { searchParams } = new URL(req.url)
     const code = searchParams.get('code')
     const message = searchParams.get('message')
     const orderId = searchParams.get('orderId')
 
-    // 결제 로그 업데이트 (실패 상태)
+    // 결제 로그 업데이트 (실패 상태) - 본인 소유 결제만 업데이트
     if (orderId) {
       await prisma.paymentLog.updateMany({
-        where: { transactionId: orderId },
+        where: {
+          transactionId: orderId,
+          userId: session.user.id,
+          status: 'pending',
+        },
         data: {
           status: 'failed',
         },

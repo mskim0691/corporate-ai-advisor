@@ -62,6 +62,42 @@ export async function POST(
       )
     }
 
+    // 파일 타입/사이즈 검증
+    const ALLOWED_TYPES = [
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // docx
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // xlsx
+      'application/msword', // doc
+      'application/vnd.ms-excel', // xls
+      'image/jpeg',
+      'image/png',
+      'image/jpg',
+    ]
+    const MAX_FILE_SIZE = 4 * 1024 * 1024 // 4MB
+    const MAX_FILES = 5
+
+    if (files.length > MAX_FILES) {
+      return NextResponse.json(
+        { error: `파일은 최대 ${MAX_FILES}개까지 업로드할 수 있습니다` },
+        { status: 400 }
+      )
+    }
+
+    for (const file of files) {
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        return NextResponse.json(
+          { error: `허용되지 않는 파일 형식입니다: ${file.name}. PDF, DOCX, XLSX, JPG, PNG만 가능합니다.` },
+          { status: 400 }
+        )
+      }
+      if (file.size > MAX_FILE_SIZE) {
+        return NextResponse.json(
+          { error: `파일 크기가 4MB를 초과합니다: ${file.name}` },
+          { status: 400 }
+        )
+      }
+    }
+
     const uploadedFiles = []
     const userId = session.user.id
 
@@ -144,10 +180,7 @@ export async function POST(
       hasSupabaseClient: !!supabase
     })
     return NextResponse.json(
-      {
-        error: "파일 업로드 중 오류가 발생했습니다",
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
+      { error: "파일 업로드 중 오류가 발생했습니다" },
       { status: 500 }
     )
   }
