@@ -40,8 +40,13 @@ export async function GET(
 
     // If PDF already exists, return the existing file
     if (project.report.pdfUrl) {
+      const uploadsBase = path.resolve(process.cwd(), 'uploads')
+      const pdfPath = path.resolve(process.cwd(), project.report.pdfUrl)
 
-      const pdfPath = path.join(process.cwd(), project.report.pdfUrl)
+      // Path traversal 방지: uploads 디렉토리 내부인지 검증
+      if (!pdfPath.startsWith(uploadsBase)) {
+        return NextResponse.json({ error: "잘못된 파일 경로입니다" }, { status: 400 })
+      }
 
       try {
         const pdfBuffer = await fs.readFile(pdfPath)

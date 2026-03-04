@@ -14,10 +14,30 @@ export async function GET(req: Request) {
     const paymentKey = searchParams.get('paymentKey')
     const orderId = searchParams.get('orderId')
     const amount = searchParams.get('amount')
-    const planName = searchParams.get('planName')
 
-    if (!paymentKey || !orderId || !amount || !planName) {
+    if (!paymentKey || !orderId || !amount) {
       return NextResponse.redirect(new URL('/pricing?error=missing_params', req.url))
+    }
+
+    // 서버사이드 검증: PaymentLog에서 orderId로 원래 결제 정보 조회
+    const paymentLog = await prisma.paymentLog.findFirst({
+      where: { transactionId: orderId, userId: session.user.id, status: 'pending' },
+    })
+
+    if (!paymentLog) {
+      return NextResponse.redirect(new URL('/pricing?error=invalid_order', req.url))
+    }
+
+    // 금액 검증: 클라이언트 amount와 DB 저장 금액 비교
+    if (paymentLog.amount !== parseInt(amount)) {
+      console.error('Payment amount mismatch:', { expected: paymentLog.amount, received: amount, orderId })
+      return NextResponse.redirect(new URL('/pricing?error=amount_mismatch', req.url))
+    }
+
+    // description에서 planName 추출 (서버가 저장한 값 사용)
+    const planName = paymentLog.description?.replace(/ 플랜 구독$/, '').toLowerCase()
+    if (!planName || !['pro', 'expert'].includes(planName)) {
+      return NextResponse.redirect(new URL('/pricing?error=invalid_plan', req.url))
     }
 
     // 토스페이먼츠 결제 승인 API 호출
@@ -35,7 +55,7 @@ export async function GET(req: Request) {
       body: JSON.stringify({
         paymentKey,
         orderId,
-        amount: parseInt(amount),
+        amount: paymentLog.amount,
       }),
     })
 

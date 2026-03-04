@@ -6,6 +6,17 @@ interface TelegramMessage {
 }
 
 /**
+ * Escape HTML special characters to prevent injection in Telegram messages
+ */
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/**
  * Send a message to Telegram
  */
 export async function sendTelegramNotification(message: string): Promise<boolean> {
@@ -57,10 +68,10 @@ export async function notifyVisualReportOrder(data: {
   const message = `
 🔔 <b>비주얼 레포트 신청 알림</b>
 
-👤 <b>사용자:</b> ${data.userName} (${data.userEmail})
-🏢 <b>회사명:</b> ${data.companyName}
-🏭 <b>업종:</b> ${data.industry || '미지정'}
-📋 <b>프로젝트 ID:</b> <code>${data.projectId}</code>
+👤 <b>사용자:</b> ${escapeHtml(data.userName)} (${escapeHtml(data.userEmail)})
+🏢 <b>회사명:</b> ${escapeHtml(data.companyName)}
+🏭 <b>업종:</b> ${escapeHtml(data.industry || '미지정')}
+📋 <b>프로젝트 ID:</b> <code>${escapeHtml(data.projectId)}</code>
 
 ⏰ <b>신청 시간:</b> ${new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}
 
@@ -98,12 +109,12 @@ export async function notifyCustomerInquiry(data: {
   const message = `
 💬 <b>고객센터 문의 알림</b>
 
-👤 <b>사용자:</b> ${data.userName} (${data.userEmail})
-📝 <b>제목:</b> ${data.title}
+👤 <b>사용자:</b> ${escapeHtml(data.userName)} (${escapeHtml(data.userEmail)})
+📝 <b>제목:</b> ${escapeHtml(data.title)}
 💭 <b>내용:</b>
-${data.content}
+${escapeHtml(data.content)}
 
-📋 <b>문의 ID:</b> <code>${data.inquiryId}</code>
+📋 <b>문의 ID:</b> <code>${escapeHtml(data.inquiryId)}</code>
 ⏰ <b>문의 시간:</b> ${new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}
 
 👉 관리자 패널에서 답변하세요!
@@ -123,9 +134,9 @@ export async function notifyNewUserRegistration(data: {
   const message = `
 🎉 <b>신규 회원 가입 알림</b>
 
-👤 <b>이름:</b> ${data.userName}
-📧 <b>이메일:</b> ${data.userEmail}
-🆔 <b>사용자 ID:</b> <code>${data.userId}</code>
+👤 <b>이름:</b> ${escapeHtml(data.userName)}
+📧 <b>이메일:</b> ${escapeHtml(data.userEmail)}
+🆔 <b>사용자 ID:</b> <code>${escapeHtml(data.userId)}</code>
 
 ⏰ <b>가입 시간:</b> ${new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}
 

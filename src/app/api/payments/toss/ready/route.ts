@@ -11,9 +11,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "인증이 필요합니다" }, { status: 401 })
     }
 
-    const { planName, amount } = await req.json()
+    const { planName } = await req.json()
 
-    if (!planName || amount === undefined) {
+    if (!planName) {
       return NextResponse.json({ error: "플랜 정보가 필요합니다" }, { status: 400 })
     }
 
@@ -22,6 +22,17 @@ export async function POST(req: Request) {
     if (!validPlans.includes(planName)) {
       return NextResponse.json({ error: "유효하지 않은 플랜입니다" }, { status: 400 })
     }
+
+    // DB에서 플랜 가격 조회 (서버사이드 검증)
+    const pricingPlan = await prisma.pricingPlan.findFirst({
+      where: { name: { equals: planName, mode: 'insensitive' } },
+    })
+
+    if (!pricingPlan) {
+      return NextResponse.json({ error: "플랜 가격 정보를 찾을 수 없습니다" }, { status: 400 })
+    }
+
+    const amount = pricingPlan.price
 
     // 주문 ID 생성
     const orderId = `SUB_${uuidv4().replace(/-/g, '').substring(0, 20)}`

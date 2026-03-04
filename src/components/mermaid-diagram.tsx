@@ -19,7 +19,7 @@ export function MermaidDiagram({ chart }: MermaidDiagramProps) {
         mermaid.initialize({
           startOnLoad: false,
           theme: "default",
-          securityLevel: "loose",
+          securityLevel: "strict",
           themeVariables: {
             fontSize: "8px", // 50% of default 16px body text
             fontFamily: "ui-sans-serif, system-ui, sans-serif",

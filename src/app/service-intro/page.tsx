@@ -7,11 +7,30 @@ import prisma from "@/lib/prisma"
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
+function sanitizeHtml(html: string): string {
+  // 위험한 태그 제거
+  let sanitized = html.replace(/<script[\s\S]*?<\/script>/gi, '')
+  sanitized = sanitized.replace(/<iframe[\s\S]*?<\/iframe>/gi, '')
+  sanitized = sanitized.replace(/<object[\s\S]*?<\/object>/gi, '')
+  sanitized = sanitized.replace(/<embed[\s\S]*?>/gi, '')
+  sanitized = sanitized.replace(/<form[\s\S]*?<\/form>/gi, '')
+  sanitized = sanitized.replace(/<input[\s\S]*?>/gi, '')
+  sanitized = sanitized.replace(/<textarea[\s\S]*?<\/textarea>/gi, '')
+  sanitized = sanitized.replace(/<select[\s\S]*?<\/select>/gi, '')
+  sanitized = sanitized.replace(/<button[\s\S]*?<\/button>/gi, '')
+  // 이벤트 핸들러 속성 제거
+  sanitized = sanitized.replace(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]*)/gi, '')
+  // javascript: URL 제거
+  sanitized = sanitized.replace(/href\s*=\s*["']javascript:[^"']*["']/gi, 'href="#"')
+  sanitized = sanitized.replace(/src\s*=\s*["']javascript:[^"']*["']/gi, 'src=""')
+  return sanitized
+}
+
 async function getServiceIntro() {
   const serviceIntro = await prisma.serviceIntro.findFirst({
     orderBy: { updatedAt: "desc" },
   })
-  return serviceIntro?.content || ""
+  return serviceIntro?.content ? sanitizeHtml(serviceIntro.content) : ""
 }
 
 export default async function ServiceIntroPage() {

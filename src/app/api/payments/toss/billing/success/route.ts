@@ -14,13 +14,28 @@ export async function GET(req: Request) {
     const authKey = searchParams.get('authKey')
     const customerKey = searchParams.get('customerKey')
     const planName = searchParams.get('planName')
-    const amount = searchParams.get('amount')
 
-    if (!authKey || !customerKey || !planName || !amount) {
+    if (!authKey || !customerKey || !planName) {
       return NextResponse.redirect(
         new URL('/pricing?error=missing_params', req.url)
       )
     }
+
+    // 유효한 플랜 검증
+    if (!['pro', 'expert'].includes(planName)) {
+      return NextResponse.redirect(new URL('/pricing?error=invalid_plan', req.url))
+    }
+
+    // DB에서 플랜 가격 조회 (서버사이드 검증)
+    const pricingPlan = await prisma.pricingPlan.findFirst({
+      where: { name: { equals: planName, mode: 'insensitive' } },
+    })
+
+    if (!pricingPlan) {
+      return NextResponse.redirect(new URL('/pricing?error=plan_not_found', req.url))
+    }
+
+    const amount = pricingPlan.price.toString()
 
     const secretKey = process.env.TOSS_SECRET_KEY
     if (!secretKey) {
