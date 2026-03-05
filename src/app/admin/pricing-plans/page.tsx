@@ -10,7 +10,7 @@ interface PricingPlan {
   originalPrice: number | null;
   currency: string;
   monthlyAnalysis: number;
-  monthlyPresentation: number;
+  monthlyVisualReport: number;
   features: string;
   isPopular: boolean;
   isActive: boolean;
@@ -35,7 +35,7 @@ export default function PricingPlansPage() {
     originalPrice: '',
     currency: 'KRW',
     monthlyAnalysis: 0,
-    monthlyPresentation: 0,
+    monthlyVisualReport: 0,
     features: '',
     isPopular: false,
     isActive: true,
@@ -90,7 +90,7 @@ export default function PricingPlansPage() {
           badgeText: formData.badgeText || null,
           badgeColor: formData.badgeColor || null,
           features: featuresArray,
-          monthlyPresentation: formData.monthlyPresentation,
+          monthlyVisualReport: formData.monthlyVisualReport,
         }),
       });
 
@@ -127,7 +127,7 @@ export default function PricingPlansPage() {
       originalPrice: plan.originalPrice?.toString() || '',
       currency: plan.currency,
       monthlyAnalysis: plan.monthlyAnalysis,
-      monthlyPresentation: plan.monthlyPresentation || 0,
+      monthlyVisualReport: plan.monthlyVisualReport || 0,
       features: featuresText,
       isPopular: plan.isPopular,
       isActive: plan.isActive,
@@ -170,7 +170,7 @@ export default function PricingPlansPage() {
       originalPrice: '',
       currency: 'KRW',
       monthlyAnalysis: 0,
-      monthlyPresentation: 0,
+      monthlyVisualReport: 0,
       features: '',
       isPopular: false,
       isActive: true,
@@ -286,15 +286,15 @@ export default function PricingPlansPage() {
               </div>
 
               <div>
-                <label htmlFor="monthlyPresentation" className="block text-sm font-medium text-gray-700">
-                  월간 비주얼레포트 *
+                <label htmlFor="monthlyVisualReport" className="block text-sm font-medium text-gray-700">
+                  월간 비주얼리포트 *
                 </label>
                 <input
                   type="number"
-                  id="monthlyPresentation"
+                  id="monthlyVisualReport"
                   required
-                  value={formData.monthlyPresentation}
-                  onChange={(e) => setFormData({ ...formData, monthlyPresentation: parseInt(e.target.value) || 0 })}
+                  value={formData.monthlyVisualReport}
+                  onChange={(e) => setFormData({ ...formData, monthlyVisualReport: parseInt(e.target.value) || 0 })}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -480,7 +480,7 @@ export default function PricingPlansPage() {
                           <strong>월간 분석솔루션:</strong> {plan.monthlyAnalysis}회
                         </p>
                         <p className="text-sm text-gray-600">
-                          <strong>월간 비주얼레포트:</strong> {plan.monthlyPresentation}회
+                          <strong>월간 비주얼리포트:</strong> {plan.monthlyVisualReport}회
                         </p>
                         <p className="text-sm text-gray-600">
                           <strong>표시 순서:</strong> {plan.displayOrder}

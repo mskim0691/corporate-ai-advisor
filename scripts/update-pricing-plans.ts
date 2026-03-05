@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Updating pricing plans with monthlyPresentation...');
+  console.log('Updating pricing plans with monthlyVisualReport...');
 
   // Update Free plan
   const freePlan = await prisma.pricingPlan.findUnique({
@@ -14,10 +14,10 @@ async function main() {
     await prisma.pricingPlan.update({
       where: { name: 'free' },
       data: {
-        monthlyPresentation: 1,
+        monthlyVisualReport: 1,
       },
     });
-    console.log('✓ Updated free plan: monthlyPresentation = 1');
+    console.log('✓ Updated free plan: monthlyVisualReport = 1');
   }
 
   // Update Pro plan
@@ -29,10 +29,10 @@ async function main() {
     await prisma.pricingPlan.update({
       where: { name: 'pro' },
       data: {
-        monthlyPresentation: 15,
+        monthlyVisualReport: 15,
       },
     });
-    console.log('✓ Updated pro plan: monthlyPresentation = 15');
+    console.log('✓ Updated pro plan: monthlyVisualReport = 15');
   }
 
   // Update Expert plan
@@ -44,10 +44,10 @@ async function main() {
     await prisma.pricingPlan.update({
       where: { name: 'expert' },
       data: {
-        monthlyPresentation: 100,
+        monthlyVisualReport: 100,
       },
     });
-    console.log('✓ Updated expert plan: monthlyPresentation = 100');
+    console.log('✓ Updated expert plan: monthlyVisualReport = 100');
   }
 
   console.log('Done!');

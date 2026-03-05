@@ -35,11 +35,11 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { groupName, monthlyProjectLimit, monthlyPresentationLimit, description } = body;
+    const { groupName, monthlyAnalysisLimit, monthlyVisualReportLimit, description } = body;
 
-    if (!groupName || monthlyProjectLimit === undefined) {
+    if (!groupName || monthlyAnalysisLimit === undefined) {
       return NextResponse.json(
-        { error: '그룹명과 월간 솔루션 제한은 필수입니다.' },
+        { error: '그룹명과 월간 분석솔루션 제한은 필수입니다.' },
         { status: 400 }
       );
     }
@@ -52,18 +52,18 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate monthlyProjectLimit
-    if (typeof monthlyProjectLimit !== 'number' || monthlyProjectLimit < 0) {
+    // Validate monthlyAnalysisLimit
+    if (typeof monthlyAnalysisLimit !== 'number' || monthlyAnalysisLimit < 0) {
       return NextResponse.json(
-        { error: '월간 솔루션 제한은 0 이상의 숫자여야 합니다.' },
+        { error: '월간 분석솔루션 제한은 0 이상의 숫자여야 합니다.' },
         { status: 400 }
       );
     }
 
-    // Validate monthlyPresentationLimit
-    if (monthlyPresentationLimit !== undefined && (typeof monthlyPresentationLimit !== 'number' || monthlyPresentationLimit < 0)) {
+    // Validate monthlyVisualReportLimit
+    if (monthlyVisualReportLimit !== undefined && (typeof monthlyVisualReportLimit !== 'number' || monthlyVisualReportLimit < 0)) {
       return NextResponse.json(
-        { error: '월간 PT레포트 제한은 0 이상의 숫자여야 합니다.' },
+        { error: '월간 비주얼리포트 제한은 0 이상의 숫자여야 합니다.' },
         { status: 400 }
       );
     }
@@ -72,14 +72,14 @@ export async function POST(request: Request) {
     const policy = await prisma.groupPolicy.upsert({
       where: { groupName },
       update: {
-        monthlyProjectLimit,
-        monthlyPresentationLimit: monthlyPresentationLimit ?? 0,
+        monthlyAnalysisLimit,
+        monthlyVisualReportLimit: monthlyVisualReportLimit ?? 0,
         description,
       },
       create: {
         groupName,
-        monthlyProjectLimit,
-        monthlyPresentationLimit: monthlyPresentationLimit ?? 0,
+        monthlyAnalysisLimit,
+        monthlyVisualReportLimit: monthlyVisualReportLimit ?? 0,
         description,
       },
     });

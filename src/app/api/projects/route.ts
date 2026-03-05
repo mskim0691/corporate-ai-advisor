@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth"
 import prisma from "@/lib/prisma"
 import { z } from "zod"
 import { getCurrentYearMonth } from "@/lib/utils"
-import { checkProjectCreationPolicy } from "@/lib/policy"
+import { checkAnalysisPolicy } from "@/lib/policy"
 
 /**
  * Get yearMonth key for usage log based on subscription
@@ -66,7 +66,7 @@ export async function POST(req: Request) {
     }
 
     // Check project creation policy based on user's group
-    const policyCheck = await checkProjectCreationPolicy(
+    const policyCheck = await checkAnalysisPolicy(
       user.id,
       user.role,
       user.subscription?.plan

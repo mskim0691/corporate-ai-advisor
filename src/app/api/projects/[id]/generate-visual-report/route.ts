@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import prisma from "@/lib/prisma"
 import { generatePresentationSlides, generateAllSlideImages, generateCoverImage } from "@/lib/gemini"
-import { checkPresentationCreationPolicy } from "@/lib/policy"
+import { checkVisualReportPolicy } from "@/lib/policy"
 import { PDFDocument } from "pdf-lib"
 import { createClient } from "@supabase/supabase-js"
 
@@ -69,7 +69,7 @@ export async function POST(
     }
 
     // 사용량 체크 (기존 policy 함수 사용)
-    const policyCheck = await checkPresentationCreationPolicy(
+    const policyCheck = await checkVisualReportPolicy(
       session.user.id!,
       user.role,
       user.subscription?.plan

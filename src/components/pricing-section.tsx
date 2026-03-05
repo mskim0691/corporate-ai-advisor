@@ -12,7 +12,7 @@ interface PricingPlan {
   originalPrice: number | null;
   currency: string;
   monthlyAnalysis: number;
-  monthlyPresentation: number;
+  monthlyVisualReport: number;
   features: string[];
   isPopular: boolean;
   isActive: boolean;

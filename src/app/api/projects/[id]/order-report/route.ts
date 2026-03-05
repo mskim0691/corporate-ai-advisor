@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import prisma from "@/lib/prisma"
-import { checkPresentationCreationPolicy } from "@/lib/policy"
+import { checkVisualReportPolicy } from "@/lib/policy"
 import { notifyVisualReportOrder } from "@/lib/telegram"
 
 export async function POST(
@@ -53,8 +53,8 @@ export async function POST(
       where: { userId: session.user.id },
     })
 
-    // Check PT report creation policy
-    const policyCheck = await checkPresentationCreationPolicy(
+    // 비주얼리포트 사용량 체크
+    const policyCheck = await checkVisualReportPolicy(
       session.user.id,
       project.user.role,
       subscription?.plan
