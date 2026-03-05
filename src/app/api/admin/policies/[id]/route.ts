@@ -48,12 +48,12 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { monthlyProjectLimit, description } = body;
+    const { monthlyAnalysisLimit, description } = body;
 
-    if (monthlyProjectLimit !== undefined) {
-      if (typeof monthlyProjectLimit !== 'number' || monthlyProjectLimit < 0) {
+    if (monthlyAnalysisLimit !== undefined) {
+      if (typeof monthlyAnalysisLimit !== 'number' || monthlyAnalysisLimit < 0) {
         return NextResponse.json(
-          { error: '월간 프로젝트 제한은 0 이상의 숫자여야 합니다.' },
+          { error: '월간 분석솔루션 제한은 0 이상의 숫자여야 합니다.' },
           { status: 400 }
         );
       }
@@ -62,7 +62,7 @@ export async function PATCH(
     const policy = await prisma.groupPolicy.update({
       where: { id },
       data: {
-        ...(monthlyProjectLimit !== undefined && { monthlyProjectLimit }),
+        ...(monthlyAnalysisLimit !== undefined && { monthlyAnalysisLimit }),
         ...(description !== undefined && { description }),
       },
     });

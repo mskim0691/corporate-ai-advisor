@@ -136,8 +136,8 @@ model PaymentLog {
 model GroupPolicy {
   id                      String   @id @default(uuid())
   groupName               String   @unique @map("group_name") // 'admin', 'pro', 'free'
-  monthlyProjectLimit     Int      @map("monthly_project_limit") // Number of analysis solutions allowed per month
-  monthlyPresentationLimit Int     @default(0) @map("monthly_presentation_limit") // Number of PT reports allowed per month
+  monthlyAnalysisLimit    Int      @map("monthly_project_limit") // 월간 분석솔루션 허용 횟수
+  monthlyVisualReportLimit Int     @default(0) @map("monthly_presentation_limit") // 월간 비주얼리포트 허용 횟수
   description             String?  // Description of the policy
   updatedAt               DateTime @updatedAt @map("updated_at")
   createdAt               DateTime @default(now()) @map("created_at")
@@ -168,8 +168,8 @@ model PricingPlan {
   price             Float    // Monthly price
   originalPrice     Float?   @map("original_price") // Original price (for showing discount)
   currency          String   @default("KRW") // Currency
-  monthlyAnalysis   Int      @map("monthly_analysis") // Number of analysis solutions per month
-  monthlyPresentation Int    @default(0) @map("monthly_presentation") // Number of visual reports per month
+  monthlyAnalysis   Int      @map("monthly_analysis") // 월간 분석솔루션 허용 횟수
+  monthlyVisualReport Int    @default(0) @map("monthly_presentation") // 월간 비주얼리포트 허용 횟수
   features          String   // JSON string of features array
   isPopular         Boolean  @default(false) @map("is_popular") // Show "popular" badge
   isActive          Boolean  @default(true) @map("is_active") // Whether the plan is visible

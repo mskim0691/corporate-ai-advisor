@@ -69,11 +69,11 @@ export default async function DashboardPage() {
   const groupName = policyInfo?.groupName ?? 'free'
 
   // Get limits and usage from policy info
-  const solutionLimit = policyInfo?.monthlyLimit ?? 3
-  const presentationLimit = policyInfo?.monthlyPresentationLimit ?? 0
+  const solutionLimit = policyInfo?.monthlyAnalysisLimit ?? 3
+  const presentationLimit = policyInfo?.monthlyVisualReportLimit ?? 0
 
-  const solutionUsage = policyInfo?.currentUsage ?? 0
-  const presentationUsage = policyInfo?.currentPresentationUsage ?? 0
+  const solutionUsage = policyInfo?.currentAnalysisUsage ?? 0
+  const presentationUsage = policyInfo?.currentVisualReportUsage ?? 0
 
   const canCreateProject = solutionUsage < solutionLimit
   const remainingPresentations = presentationLimit === 999999 ? 999999 : Math.max(0, presentationLimit - presentationUsage)

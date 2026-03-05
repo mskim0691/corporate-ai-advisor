@@ -5,8 +5,8 @@ import { useEffect, useState } from 'react';
 interface GroupPolicy {
   id: string;
   groupName: string;
-  monthlyProjectLimit: number;
-  monthlyPresentationLimit: number;
+  monthlyAnalysisLimit: number;
+  monthlyVisualReportLimit: number;
   description: string | null;
   createdAt: string;
   updatedAt: string;
@@ -16,7 +16,7 @@ export default function PoliciesPage() {
   const [policies, setPolicies] = useState<GroupPolicy[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
-  const [editValues, setEditValues] = useState<{ [key: string]: { project: number; presentation: number } }>({});
+  const [editValues, setEditValues] = useState<{ [key: string]: { analysis: number; visualReport: number } }>({});
 
   useEffect(() => {
     fetchPolicies();
@@ -29,11 +29,11 @@ export default function PoliciesPage() {
         const data = await response.json();
         setPolicies(data);
         // Initialize edit values
-        const initialValues: { [key: string]: { project: number; presentation: number } } = {};
+        const initialValues: { [key: string]: { analysis: number; visualReport: number } } = {};
         data.forEach((policy: GroupPolicy) => {
           initialValues[policy.groupName] = {
-            project: policy.monthlyProjectLimit,
-            presentation: policy.monthlyPresentationLimit || 0,
+            analysis: policy.monthlyAnalysisLimit,
+            visualReport: policy.monthlyVisualReportLimit || 0,
           };
         });
         setEditValues(initialValues);
@@ -55,8 +55,8 @@ export default function PoliciesPage() {
         },
         body: JSON.stringify({
           groupName,
-          monthlyProjectLimit: editValues[groupName].project,
-          monthlyPresentationLimit: editValues[groupName].presentation,
+          monthlyAnalysisLimit: editValues[groupName].analysis,
+          monthlyVisualReportLimit: editValues[groupName].visualReport,
           description: getGroupDescription(groupName),
         }),
       });
@@ -76,7 +76,7 @@ export default function PoliciesPage() {
     }
   };
 
-  const handleChange = (groupName: string, type: 'project' | 'presentation', value: string) => {
+  const handleChange = (groupName: string, type: 'analysis' | 'visualReport', value: string) => {
     const numValue = parseInt(value) || 0;
     setEditValues((prev) => ({
       ...prev,
@@ -90,7 +90,7 @@ export default function PoliciesPage() {
   const getGroupDescription = (groupName: string) => {
     switch (groupName) {
       case 'admin':
-        return '관리자 그룹 - 무제한 솔루션 및 비주얼 레포트 생성';
+        return '관리자 그룹 - 무제한 분석솔루션 및 비주얼리포트 생성';
       case 'expert':
         return 'Expert 그룹 - 전문가/기업 사용자';
       case 'pro':
@@ -122,11 +122,11 @@ export default function PoliciesPage() {
     const existingGroups = policies.map((p) => p.groupName);
     const allPolicies = [...policies];
 
-    const defaultLimits: { [key: string]: { project: number; presentation: number } } = {
-      admin: { project: 999999, presentation: 999999 },
-      expert: { project: 30, presentation: 10 },
-      pro: { project: 15, presentation: 1 },
-      free: { project: 3, presentation: 0 },
+    const defaultLimits: { [key: string]: { analysis: number; visualReport: number } } = {
+      admin: { analysis: 999999, visualReport: 999999 },
+      expert: { analysis: 30, visualReport: 10 },
+      pro: { analysis: 15, visualReport: 1 },
+      free: { analysis: 3, visualReport: 0 },
     };
 
     groups.forEach((group) => {
@@ -134,8 +134,8 @@ export default function PoliciesPage() {
         allPolicies.push({
           id: '',
           groupName: group,
-          monthlyProjectLimit: defaultLimits[group].project,
-          monthlyPresentationLimit: defaultLimits[group].presentation,
+          monthlyAnalysisLimit: defaultLimits[group].analysis,
+          monthlyVisualReportLimit: defaultLimits[group].visualReport,
           description: getGroupDescription(group),
           createdAt: '',
           updatedAt: '',
@@ -164,7 +164,7 @@ export default function PoliciesPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">그룹 정책 관리</h1>
         <p className="mt-2 text-sm text-gray-600">
-          사용자 그룹별 월간 분석솔루션 및 비주얼 레포트 생성 제한을 설정합니다.
+          사용자 그룹별 월간 분석솔루션 및 비주얼리포트 생성 제한을 설정합니다.
         </p>
       </div>
 
@@ -188,38 +188,38 @@ export default function PoliciesPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div className="flex items-center space-x-2">
                     <label
-                      htmlFor={`solution-${policy.groupName}`}
+                      htmlFor={`analysis-${policy.groupName}`}
                       className="text-sm font-medium text-gray-700 min-w-[140px]"
                     >
                       월간 분석솔루션 제한:
                     </label>
                     <input
-                      id={`solution-${policy.groupName}`}
+                      id={`analysis-${policy.groupName}`}
                       type="number"
                       min="0"
-                      value={editValues[policy.groupName]?.project ?? policy.monthlyProjectLimit}
-                      onChange={(e) => handleChange(policy.groupName, 'project', e.target.value)}
+                      value={editValues[policy.groupName]?.analysis ?? policy.monthlyAnalysisLimit}
+                      onChange={(e) => handleChange(policy.groupName, 'analysis', e.target.value)}
                       className="w-24 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
-                    <span className="text-sm text-gray-600">개</span>
+                    <span className="text-sm text-gray-600">회</span>
                   </div>
 
                   <div className="flex items-center space-x-2">
                     <label
-                      htmlFor={`presentation-${policy.groupName}`}
+                      htmlFor={`visualReport-${policy.groupName}`}
                       className="text-sm font-medium text-gray-700 min-w-[140px]"
                     >
-                      월간 비주얼 레포트 제한:
+                      월간 비주얼리포트 제한:
                     </label>
                     <input
-                      id={`presentation-${policy.groupName}`}
+                      id={`visualReport-${policy.groupName}`}
                       type="number"
                       min="0"
-                      value={editValues[policy.groupName]?.presentation ?? policy.monthlyPresentationLimit}
-                      onChange={(e) => handleChange(policy.groupName, 'presentation', e.target.value)}
+                      value={editValues[policy.groupName]?.visualReport ?? policy.monthlyVisualReportLimit}
+                      onChange={(e) => handleChange(policy.groupName, 'visualReport', e.target.value)}
                       className="w-24 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
-                    <span className="text-sm text-gray-600">개</span>
+                    <span className="text-sm text-gray-600">회</span>
                   </div>
                 </div>
 
@@ -228,13 +228,13 @@ export default function PoliciesPage() {
                     onClick={() => handleSave(policy.groupName)}
                     disabled={
                       saving === policy.groupName ||
-                      (editValues[policy.groupName]?.project === policy.monthlyProjectLimit &&
-                        editValues[policy.groupName]?.presentation === policy.monthlyPresentationLimit)
+                      (editValues[policy.groupName]?.analysis === policy.monthlyAnalysisLimit &&
+                        editValues[policy.groupName]?.visualReport === policy.monthlyVisualReportLimit)
                     }
                     className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
                       saving === policy.groupName ||
-                      (editValues[policy.groupName]?.project === policy.monthlyProjectLimit &&
-                        editValues[policy.groupName]?.presentation === policy.monthlyPresentationLimit)
+                      (editValues[policy.groupName]?.analysis === policy.monthlyAnalysisLimit &&
+                        editValues[policy.groupName]?.visualReport === policy.monthlyVisualReportLimit)
                         ? 'bg-gray-400 cursor-not-allowed'
                         : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
                     }`}
@@ -250,17 +250,17 @@ export default function PoliciesPage() {
                   <ul className="mt-2 text-sm text-gray-700 space-y-1">
                     <li>
                       • 분석솔루션: 월{' '}
-                      {policy.monthlyProjectLimit === 999999
+                      {policy.monthlyAnalysisLimit === 999999
                         ? '무제한'
-                        : `${policy.monthlyProjectLimit}개`}{' '}
-                      생성 가능
+                        : `${policy.monthlyAnalysisLimit}회`}{' '}
+                      사용 가능
                     </li>
                     <li>
-                      • 비주얼 레포트: 월{' '}
-                      {policy.monthlyPresentationLimit === 999999
+                      • 비주얼리포트: 월{' '}
+                      {policy.monthlyVisualReportLimit === 999999
                         ? '무제한'
-                        : `${policy.monthlyPresentationLimit}개`}{' '}
-                      생성 가능
+                        : `${policy.monthlyVisualReportLimit}회`}{' '}
+                      사용 가능
                     </li>
                   </ul>
                   {policy.updatedAt && (
@@ -294,14 +294,14 @@ export default function PoliciesPage() {
                 <div className="mt-2 text-sm text-yellow-700">
                   <ul className="list-disc list-inside space-y-1">
                     <li>
-                      사용자의 구독 플랜(free/pro)과 역할(admin)에 따라 정책이 적용됩니다.
+                      사용자의 구독 플랜(free/pro/expert)과 역할(admin)에 따라 정책이 적용됩니다.
                     </li>
                     <li>
                       관리자 역할의 사용자는 구독 플랜과 관계없이 admin 정책이 적용됩니다.
                     </li>
-                    <li>월간 제한은 매달 1일에 초기화됩니다.</li>
+                    <li>Pro/Expert는 구독 결제 주기 기준, Free/Admin은 매월 1일에 초기화됩니다.</li>
                     <li>분석솔루션: 기업 분석 프로젝트 생성 횟수를 제한합니다.</li>
-                    <li>비주얼 레포트: 고급 프레젠테이션 제작 횟수를 제한합니다.</li>
+                    <li>비주얼리포트: 고급 비주얼 리포트 생성 횟수를 제한합니다.</li>
                   </ul>
                 </div>
               </div>

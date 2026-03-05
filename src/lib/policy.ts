@@ -56,26 +56,28 @@ function getYearMonthKey(periodStart: Date, groupName: string): string {
 }
 
 /**
- * Check if user can create a new project based on their group policy
+ * Determine the group name based on user role and subscription plan
+ */
+function resolveGroupName(userRole: string, subscriptionPlan?: string): string {
+  if (userRole === 'admin') return 'admin';
+  if (subscriptionPlan === 'expert') return 'expert';
+  if (subscriptionPlan === 'pro') return 'pro';
+  return 'free';
+}
+
+/**
+ * 분석솔루션 사용 가능 여부 체크
  * @param userId - The user ID
  * @param userRole - The user's role (admin/user)
- * @param subscriptionPlan - The user's subscription plan (free/pro)
+ * @param subscriptionPlan - The user's subscription plan (free/pro/expert)
  * @returns PolicyCheckResult
  */
-export async function checkProjectCreationPolicy(
+export async function checkAnalysisPolicy(
   userId: string,
   userRole: string,
   subscriptionPlan?: string
 ): Promise<PolicyCheckResult> {
-  // Determine the group based on role and subscription
-  let groupName = 'free'; // default
-  if (userRole === 'admin') {
-    groupName = 'admin';
-  } else if (subscriptionPlan === 'expert') {
-    groupName = 'expert';
-  } else if (subscriptionPlan === 'pro') {
-    groupName = 'pro';
-  }
+  const groupName = resolveGroupName(userRole, subscriptionPlan);
 
   // Fetch the policy for this group
   const policy = await prisma.groupPolicy.findUnique({
@@ -83,7 +85,7 @@ export async function checkProjectCreationPolicy(
   });
 
   // If no policy exists, use default limits
-  const monthlyLimit = policy?.monthlyProjectLimit ?? (groupName === 'admin' ? 999999 : groupName === 'expert' ? 30 : groupName === 'pro' ? 10 : 3);
+  const monthlyLimit = policy?.monthlyAnalysisLimit ?? (groupName === 'admin' ? 999999 : groupName === 'expert' ? 30 : groupName === 'pro' ? 10 : 3);
 
   // Get billing period based on subscription type
   const billingPeriod = await getBillingPeriod(userId, groupName);
@@ -107,7 +109,7 @@ export async function checkProjectCreationPolicy(
       allowed: false,
       limit: monthlyLimit,
       current: currentUsage,
-      message: `이번 결제 주기 프로젝트 생성 제한(${monthlyLimit}개)을 초과했습니다. 현재 ${currentUsage}개 생성됨.`,
+      message: `이번 결제 주기 분석솔루션 제한(${monthlyLimit}회)을 초과했습니다. 현재 ${currentUsage}회 사용됨.`,
     };
   }
 
@@ -119,26 +121,18 @@ export async function checkProjectCreationPolicy(
 }
 
 /**
- * Check if user can create a PT report based on their group policy
+ * 비주얼리포트 사용 가능 여부 체크
  * @param userId - The user ID
  * @param userRole - The user's role (admin/user)
- * @param subscriptionPlan - The user's subscription plan (free/pro)
+ * @param subscriptionPlan - The user's subscription plan (free/pro/expert)
  * @returns PolicyCheckResult
  */
-export async function checkPresentationCreationPolicy(
+export async function checkVisualReportPolicy(
   userId: string,
   userRole: string,
   subscriptionPlan?: string
 ): Promise<PolicyCheckResult> {
-  // Determine the group based on role and subscription
-  let groupName = 'free'; // default
-  if (userRole === 'admin') {
-    groupName = 'admin';
-  } else if (subscriptionPlan === 'expert') {
-    groupName = 'expert';
-  } else if (subscriptionPlan === 'pro') {
-    groupName = 'pro';
-  }
+  const groupName = resolveGroupName(userRole, subscriptionPlan);
 
   // Fetch the policy for this group
   const policy = await prisma.groupPolicy.findUnique({
@@ -146,12 +140,12 @@ export async function checkPresentationCreationPolicy(
   });
 
   // If no policy exists, use default limits
-  const monthlyLimit = policy?.monthlyPresentationLimit ?? (groupName === 'admin' ? 999999 : groupName === 'expert' ? 10 : groupName === 'pro' ? 1 : 0);
+  const monthlyLimit = policy?.monthlyVisualReportLimit ?? (groupName === 'admin' ? 999999 : groupName === 'expert' ? 10 : groupName === 'pro' ? 1 : 0);
 
   // Get billing period based on subscription type
   const billingPeriod = await getBillingPeriod(userId, groupName);
 
-  const presentationCount = await prisma.report.count({
+  const visualReportCount = await prisma.report.count({
     where: {
       reportType: 'presentation',
       project: {
@@ -165,26 +159,26 @@ export async function checkPresentationCreationPolicy(
   });
 
   // Check if user has exceeded their limit
-  if (presentationCount >= monthlyLimit) {
+  if (visualReportCount >= monthlyLimit) {
     return {
       allowed: false,
       limit: monthlyLimit,
-      current: presentationCount,
-      message: `이번 결제 주기 PT레포트 생성 제한(${monthlyLimit}개)을 초과했습니다. 현재 ${presentationCount}개 생성됨.`,
+      current: visualReportCount,
+      message: `이번 결제 주기 비주얼리포트 제한(${monthlyLimit}회)을 초과했습니다. 현재 ${visualReportCount}회 사용됨.`,
     };
   }
 
   return {
     allowed: true,
     limit: monthlyLimit,
-    current: presentationCount,
+    current: visualReportCount,
   };
 }
 
 /**
- * Get user's group policy information
+ * 사용자의 정책 정보 조회 (대시보드 등에서 사용)
  * @param userId - The user ID
- * @returns Group name, limit, and current usage
+ * @returns Group name, limits, and current usage
  */
 export async function getUserPolicyInfo(userId: string) {
   const user = await prisma.user.findUnique({
@@ -198,20 +192,14 @@ export async function getUserPolicyInfo(userId: string) {
     return null;
   }
 
-  const groupName = user.role === 'admin'
-    ? 'admin'
-    : user.subscription?.plan === 'expert'
-      ? 'expert'
-      : user.subscription?.plan === 'pro'
-        ? 'pro'
-        : 'free';
+  const groupName = resolveGroupName(user.role, user.subscription?.plan);
 
   const policy = await prisma.groupPolicy.findUnique({
     where: { groupName },
   });
 
-  const monthlyLimit = policy?.monthlyProjectLimit ?? (groupName === 'admin' ? 999999 : groupName === 'expert' ? 30 : groupName === 'pro' ? 10 : 3);
-  const monthlyPresentationLimit = policy?.monthlyPresentationLimit ?? (groupName === 'admin' ? 999999 : groupName === 'expert' ? 10 : groupName === 'pro' ? 1 : 0);
+  const monthlyAnalysisLimit = policy?.monthlyAnalysisLimit ?? (groupName === 'admin' ? 999999 : groupName === 'expert' ? 30 : groupName === 'pro' ? 10 : 3);
+  const monthlyVisualReportLimit = policy?.monthlyVisualReportLimit ?? (groupName === 'admin' ? 999999 : groupName === 'expert' ? 10 : groupName === 'pro' ? 1 : 0);
 
   // Get billing period based on subscription type
   const billingPeriod = await getBillingPeriod(userId, groupName);
@@ -226,8 +214,8 @@ export async function getUserPolicyInfo(userId: string) {
     },
   });
 
-  // Count PT reports for the billing period
-  const presentationCount = await prisma.report.count({
+  // Count visual reports for the billing period
+  const visualReportCount = await prisma.report.count({
     where: {
       reportType: 'presentation',
       project: {
@@ -242,13 +230,17 @@ export async function getUserPolicyInfo(userId: string) {
 
   return {
     groupName,
-    monthlyLimit,
-    monthlyPresentationLimit,
-    currentUsage: usageLog?.count ?? 0,
-    currentPresentationUsage: presentationCount,
-    remaining: Math.max(0, monthlyLimit - (usageLog?.count ?? 0)),
-    remainingPresentation: Math.max(0, monthlyPresentationLimit - presentationCount),
+    monthlyAnalysisLimit,
+    monthlyVisualReportLimit,
+    currentAnalysisUsage: usageLog?.count ?? 0,
+    currentVisualReportUsage: visualReportCount,
+    remainingAnalysis: Math.max(0, monthlyAnalysisLimit - (usageLog?.count ?? 0)),
+    remainingVisualReport: Math.max(0, monthlyVisualReportLimit - visualReportCount),
     billingPeriodStart: billingPeriod.start,
     billingPeriodEnd: billingPeriod.end,
   };
 }
+
+// Backward compatibility aliases (deprecated)
+export const checkProjectCreationPolicy = checkAnalysisPolicy;
+export const checkPresentationCreationPolicy = checkVisualReportPolicy;

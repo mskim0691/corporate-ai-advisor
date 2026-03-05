@@ -62,7 +62,7 @@ export async function PATCH(
       'originalPrice',
       'currency',
       'monthlyAnalysis',
-      'monthlyPresentation',
+      'monthlyVisualReport',
       'features',
       'isPopular',
       'isActive',

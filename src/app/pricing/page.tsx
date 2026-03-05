@@ -23,7 +23,7 @@ interface PricingPlan {
   originalPrice: number | null;
   currency: string;
   monthlyAnalysis: number;
-  monthlyPresentation: number;
+  monthlyVisualReport: number;
   features: string[];
   isPopular: boolean;
   isActive: boolean;
@@ -350,11 +350,11 @@ export default function PricingPage() {
                     <div className="flex items-center justify-between py-2 border-b">
                       <span className="text-gray-600">월간 비주얼 레포트</span>
                       <span className="font-semibold">
-                        {plan.monthlyPresentation === 999999
+                        {plan.monthlyVisualReport === 999999
                           ? '무제한'
-                          : plan.monthlyPresentation === 0
+                          : plan.monthlyVisualReport === 0
                           ? '-'
-                          : `${plan.monthlyPresentation}회`}
+                          : `${plan.monthlyVisualReport}회`}
                       </span>
                     </div>
                   </div>
