@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import prisma from "@/lib/prisma"
-import { GoogleGenerativeAI } from "@google/generative-ai"
+import { GoogleGenAI } from "@google/genai"
 import { buildFollowupPrompt } from "@/lib/prompts/followup"
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY || "")
+const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_GEMINI_API_KEY || "" })
 
 // 사용 가능한 최신 Gemini 모델 선택
 let cachedModelName: string | null = null
@@ -103,10 +103,6 @@ export async function POST(
 
     // Gemini API로 후속 분석 생성
     const modelName = await getLatestAvailableModel()
-    const model = genAI.getGenerativeModel({
-      model: modelName,
-      tools: [{ googleSearch: {} as any }] as any,
-    })
 
     const prompt = buildFollowupPrompt({
       companyName: project.companyName,
@@ -119,9 +115,15 @@ export async function POST(
 
     console.log(`🔍 Generating followup analysis for ${project.companyName}...`)
 
-    const result = await model.generateContent(prompt)
-    const response = await result.response
-    const followupAnalysis = response.text()
+    const result = await ai.models.generateContent({
+      model: modelName,
+      contents: prompt,
+      config: {
+        tools: [{ googleSearch: {} }],
+      },
+    })
+
+    const followupAnalysis = result.text ?? ""
 
     console.log(`✓ Followup analysis completed for ${project.companyName}`)
 

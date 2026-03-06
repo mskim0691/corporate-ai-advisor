@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
-import { GoogleGenerativeAI } from "@google/generative-ai"
+import { GoogleGenAI } from "@google/genai"
 import { searchKnowledgeWithDb, KnowledgeEntry } from "@/lib/consulting-knowledge"
 import { getLatestAvailableModel } from "@/lib/gemini"
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY || "")
+const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_GEMINI_API_KEY || "" })
 
 interface ChatMessage {
   role: "user" | "assistant"
@@ -53,7 +53,6 @@ export async function POST(req: Request) {
 
     // 4. Gemini API 호출 (자동으로 최신 모델 선택)
     const modelName = await getLatestAvailableModel()
-    const model = genAI.getGenerativeModel({ model: modelName })
 
     // 대화 히스토리 구성 (Gemini는 user 메시지로 시작해야 함)
     // 첫 번째 메시지가 assistant(model)이면 제외
@@ -63,13 +62,14 @@ export async function POST(req: Request) {
     })
 
     const chatHistory = filteredHistory.map(msg => ({
-      role: msg.role === "user" ? "user" : "model",
+      role: msg.role === "user" ? ("user" as const) : ("model" as const),
       parts: [{ text: msg.content }]
     }))
 
-    const chat = model.startChat({
+    const chat = ai.chats.create({
+      model: modelName,
       history: chatHistory,
-      generationConfig: {
+      config: {
         maxOutputTokens: 8192,
         temperature: 0.3, // 낮은 온도로 더 정확한 답변
       },
@@ -80,9 +80,8 @@ export async function POST(req: Request) {
 
 사용자 질문: ${message}`
 
-    const result = await chat.sendMessage(fullPrompt)
-    const response = await result.response
-    const answer = response.text()
+    const result = await chat.sendMessage({ message: fullPrompt })
+    const answer = result.text ?? ""
 
     // 5. 사용된 출처 정보 추출
     const sources = relevantKnowledge.map(k => ({

@@ -1,7 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai"
-import { GoogleAIFileManager, FileState } from "@google/generative-ai/server"
-import { GoogleGenAI } from "@google/genai"
-import { Blob } from "buffer"
+import { GoogleGenAI, FileState } from "@google/genai"
 import prisma from "./prisma"
 
 // Conditionally import supabase only if env vars are present
@@ -13,9 +10,7 @@ if (USE_SUPABASE) {
   supabase = supabaseClient
 }
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY || "")
-const fileManager = new GoogleAIFileManager(process.env.GOOGLE_GEMINI_API_KEY || "")
-const genAIImage = new GoogleGenAI({ apiKey: process.env.GOOGLE_GEMINI_API_KEY || "" })
+const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_GEMINI_API_KEY || "" })
 
 // 캐시된 모델 이름 (서버 재시작 시까지 유지)
 let cachedModelName: string | null = null
@@ -27,7 +22,7 @@ interface GeminiModel {
 
 /**
  * 사용 가능한 최신 Gemini 모델을 자동으로 선택합니다.
- * 우선순위: Flash > Pro (Flash가 더 빠르고 비용 효율적)
+ * 우선순위: Pro > Flash (Pro가 더 높은 품질의 분석)
  * 버전: 최신 버전 우선 (2.5 > 2.0 > 1.5)
  */
 export async function getLatestAvailableModel(): Promise<string> {
@@ -106,11 +101,13 @@ export interface TextAnalysisResult {
   analysis: string
 }
 
-// The new return type from the fileManager.uploadFile method
-type UploadedFile = Awaited<ReturnType<typeof fileManager.uploadFile>>["file"]
-
 export interface UploadedGeminiFile {
-  file: UploadedFile
+  file: {
+    name?: string
+    uri?: string
+    mimeType?: string
+    state?: string
+  }
   filename: string
 }
 
@@ -225,36 +222,40 @@ export async function uploadFileToGemini(filePath: string, mimeType: string) {
     }
   }
 
-  // 2. Upload to Gemini using a temporary file
+  // 2. Upload to Gemini using the new SDK
   try {
-    const tempDir = os.tmpdir()
-    const tempFilePath = path.join(tempDir, `gemini-upload-${Date.now()}-${filePath.split("/").pop()}`)
-
-    await fs.writeFile(tempFilePath, buffer)
-
     const displayName = filePath.split("/").pop() || "uploaded-file"
 
     console.log(`Uploading ${displayName} to Gemini...`)
-    const uploadResult = await fileManager.uploadFile(tempFilePath, {
-      mimeType,
-      displayName,
+
+    // Write buffer to temp file for upload
+    const tempDir = os.tmpdir()
+    const tempFilePath = path.join(tempDir, `gemini-upload-${Date.now()}-${displayName}`)
+    await fs.writeFile(tempFilePath, buffer)
+
+    const uploadResult = await ai.files.upload({
+      file: tempFilePath,
+      config: {
+        mimeType,
+        displayName,
+      },
     })
 
     // Clean up temp file
     await fs.unlink(tempFilePath)
 
-    console.log(`✓ File uploaded: ${uploadResult.file.displayName} (${uploadResult.file.uri})`)
+    console.log(`✓ File uploaded: ${uploadResult.displayName} (${uploadResult.uri})`)
 
     // Wait until the file is processed and ready
-    let file = uploadResult.file
+    let file = uploadResult
     while (file.state === FileState.PROCESSING) {
       process.stdout.write(".");
-      await new Promise(resolve => setTimeout(resolve, 5_000)); // Wait 5 seconds
-      file = await fileManager.getFile(file.name);
+      await new Promise(resolve => setTimeout(resolve, 5_000))
+      file = await ai.files.get({ name: file.name! })
     }
 
     if (file.state === FileState.FAILED) {
-      throw new Error("File processing failed on Gemini.");
+      throw new Error("File processing failed on Gemini.")
     }
 
     return file
@@ -279,7 +280,6 @@ export async function analyzeInitialRisk(
   additionalRequest?: string
 ): Promise<TextAnalysisResult> {
   const modelName = await getLatestAvailableModel()
-  const model = genAI.getGenerativeModel({ model: modelName })
 
   const fileList = uploadedFiles.map(f => `- ${f.filename}`).join("\n")
 
@@ -294,7 +294,7 @@ export async function analyzeInitialRisk(
   })
 
   try {
-    const parts = [
+    const parts: any[] = [
       { text: prompt },
       ...uploadedFiles.map(f => ({
         fileData: {
@@ -304,9 +304,12 @@ export async function analyzeInitialRisk(
       }))
     ]
 
-    const result = await model.generateContent(parts)
-    const response = await result.response
-    const text = response.text()
+    const result = await ai.models.generateContent({
+      model: modelName,
+      contents: parts,
+    })
+
+    const text = result.text ?? ""
 
     return {
       analysis: text
@@ -332,16 +335,6 @@ export async function analyzeCompanyText(
 ): Promise<TextAnalysisResult> {
   const modelName = await getLatestAvailableModel()
 
-  // Google Search Grounding을 위한 도구 설정
-  const model = genAI.getGenerativeModel({
-    model: modelName,
-    tools: [
-      {
-        googleSearch: {} as any
-      }
-    ] as any
-  })
-
   const fileList = uploadedFiles.map(f => `- ${f.filename}`).join("\n")
 
   // 데이터베이스에서 프롬프트 가져오기
@@ -356,7 +349,7 @@ export async function analyzeCompanyText(
   })
 
   try {
-    const parts = [
+    const parts: any[] = [
       { text: prompt },
       ...uploadedFiles.map(f => ({
         fileData: {
@@ -368,9 +361,15 @@ export async function analyzeCompanyText(
 
     console.log(`🔍 Starting detailed analysis with Google Search Grounding for ${companyInfo.companyName}...`)
 
-    const result = await model.generateContent(parts)
-    const response = await result.response
-    const text = response.text()
+    const result = await ai.models.generateContent({
+      model: modelName,
+      contents: parts,
+      config: {
+        tools: [{ googleSearch: {} }],
+      },
+    })
+
+    const text = result.text ?? ""
 
     console.log(`✓ Detailed analysis completed with grounding`)
 
@@ -392,7 +391,6 @@ export async function generatePresentationSlides(
   companyName: string
 ): Promise<AnalysisResult> {
   const modelName = await getLatestAvailableModel()
-  const model = genAI.getGenerativeModel({ model: modelName })
 
   // 데이터베이스에서 프롬프트 가져오기
   const prompt = await getPrompt('step3-presentation-generation', {
@@ -401,9 +399,12 @@ export async function generatePresentationSlides(
   })
 
   try {
-    const result = await model.generateContent(prompt)
-    const response = await result.response
-    const text = response.text()
+    const result = await ai.models.generateContent({
+      model: modelName,
+      contents: prompt,
+    })
+
+    const text = result.text ?? ""
 
     // JSON 부분만 추출 (가끔 마크다운 블록으로 감싸져 나오는 경우 대비)
     let jsonText = text
@@ -477,7 +478,7 @@ async function generateImage(prompt: string): Promise<string> {
     try {
       console.log(`🎨 Generating image with ${IMAGE_MODEL}... (attempt ${attempt}/${MAX_RETRIES})`)
 
-      const response = await genAIImage.models.generateContent({
+      const response = await ai.models.generateContent({
         model: IMAGE_MODEL,
         contents: prompt,
         config: {
