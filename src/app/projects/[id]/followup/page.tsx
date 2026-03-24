@@ -8,6 +8,7 @@ import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import remarkBreaks from "remark-breaks"
 import rehypeRaw from "rehype-raw"
+import rehypeSanitize from "rehype-sanitize"
 
 export default function FollowupPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
@@ -278,7 +279,7 @@ export default function FollowupPage({ params }: { params: Promise<{ id: string 
                   ">
                     <ReactMarkdown
                       remarkPlugins={[remarkGfm, remarkBreaks]}
-                      rehypePlugins={[rehypeRaw]}
+                      rehypePlugins={[rehypeRaw, rehypeSanitize]}
                     >
                       {followupAnalysis}
                     </ReactMarkdown>
@@ -312,7 +313,7 @@ export default function FollowupPage({ params }: { params: Promise<{ id: string 
                 <div className="prose prose-sm max-w-none text-gray-600 max-h-96 overflow-y-auto">
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm, remarkBreaks]}
-                    rehypePlugins={[rehypeRaw]}
+                    rehypePlugins={[rehypeRaw, rehypeSanitize]}
                   >
                     {textAnalysis}
                   </ReactMarkdown>

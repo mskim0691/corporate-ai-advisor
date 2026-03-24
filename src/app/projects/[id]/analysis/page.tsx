@@ -8,6 +8,7 @@ import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import remarkBreaks from "remark-breaks"
 import rehypeRaw from "rehype-raw"
+import rehypeSanitize from "rehype-sanitize"
 import { MermaidDiagram } from "@/components/mermaid-diagram"
 
 export default function AnalysisPage({ params }: { params: Promise<{ id: string }> }) {
@@ -253,7 +254,7 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
                 ">
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm, remarkBreaks]}
-                  rehypePlugins={[rehypeRaw]}
+                  rehypePlugins={[rehypeRaw, rehypeSanitize]}
                   components={{
                     code({ node, className, children, ...props }) {
                       const match = /language-(\w+)/.exec(className || '')

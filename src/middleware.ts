@@ -18,9 +18,34 @@ export function middleware(request: NextRequest) {
     "camera=(), microphone=(), geolocation=()"
   )
 
+  // CSRF protection for state-changing API requests
+  const method = request.method
+  const path = request.nextUrl.pathname
+  if (
+    path.startsWith("/api/") &&
+    !path.startsWith("/api/auth/") &&
+    !path.startsWith("/api/cron/") &&
+    ["POST", "PUT", "PATCH", "DELETE"].includes(method)
+  ) {
+    const origin = request.headers.get("origin")
+    const host = request.headers.get("host")
+    if (origin && host) {
+      const allowedOrigins = [
+        `https://${host}`,
+        `http://${host}`,
+        process.env.NEXT_PUBLIC_APP_URL,
+      ].filter(Boolean)
+      if (!allowedOrigins.some((allowed) => origin === allowed)) {
+        return NextResponse.json(
+          { error: "Forbidden: invalid origin" },
+          { status: 403 }
+        )
+      }
+    }
+  }
+
   // Rate limiting for sensitive endpoints
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown"
-  const path = request.nextUrl.pathname
 
   if (isRateLimitedPath(path)) {
     const key = `${ip}:${path}`

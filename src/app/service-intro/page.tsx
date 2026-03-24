@@ -2,28 +2,26 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { auth } from "@/lib/auth"
 import prisma from "@/lib/prisma"
+import DOMPurify from "isomorphic-dompurify"
 
 // Disable caching to always show the latest content
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 function sanitizeHtml(html: string): string {
-  // 위험한 태그 제거
-  let sanitized = html.replace(/<script[\s\S]*?<\/script>/gi, '')
-  sanitized = sanitized.replace(/<iframe[\s\S]*?<\/iframe>/gi, '')
-  sanitized = sanitized.replace(/<object[\s\S]*?<\/object>/gi, '')
-  sanitized = sanitized.replace(/<embed[\s\S]*?>/gi, '')
-  sanitized = sanitized.replace(/<form[\s\S]*?<\/form>/gi, '')
-  sanitized = sanitized.replace(/<input[\s\S]*?>/gi, '')
-  sanitized = sanitized.replace(/<textarea[\s\S]*?<\/textarea>/gi, '')
-  sanitized = sanitized.replace(/<select[\s\S]*?<\/select>/gi, '')
-  sanitized = sanitized.replace(/<button[\s\S]*?<\/button>/gi, '')
-  // 이벤트 핸들러 속성 제거
-  sanitized = sanitized.replace(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]*)/gi, '')
-  // javascript: URL 제거
-  sanitized = sanitized.replace(/href\s*=\s*["']javascript:[^"']*["']/gi, 'href="#"')
-  sanitized = sanitized.replace(/src\s*=\s*["']javascript:[^"']*["']/gi, 'src=""')
-  return sanitized
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [
+      'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'hr',
+      'ul', 'ol', 'li', 'a', 'img', 'strong', 'em', 'b', 'i', 'u',
+      'table', 'thead', 'tbody', 'tr', 'th', 'td',
+      'div', 'span', 'blockquote', 'pre', 'code',
+    ],
+    ALLOWED_ATTR: [
+      'href', 'src', 'alt', 'title', 'class', 'id', 'style',
+      'target', 'rel', 'width', 'height', 'colspan', 'rowspan',
+    ],
+    ALLOW_DATA_ATTR: false,
+  })
 }
 
 async function getServiceIntro() {
