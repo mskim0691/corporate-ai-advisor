@@ -2,25 +2,28 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { auth } from "@/lib/auth"
 import prisma from "@/lib/prisma"
-import DOMPurify from "isomorphic-dompurify"
+import sanitize from "sanitize-html"
 
 // Disable caching to always show the latest content
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 function sanitizeHtml(html: string): string {
-  return DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: [
+  return sanitize(html, {
+    allowedTags: [
       'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'hr',
       'ul', 'ol', 'li', 'a', 'img', 'strong', 'em', 'b', 'i', 'u',
       'table', 'thead', 'tbody', 'tr', 'th', 'td',
       'div', 'span', 'blockquote', 'pre', 'code',
     ],
-    ALLOWED_ATTR: [
-      'href', 'src', 'alt', 'title', 'class', 'id', 'style',
-      'target', 'rel', 'width', 'height', 'colspan', 'rowspan',
-    ],
-    ALLOW_DATA_ATTR: false,
+    allowedAttributes: {
+      'a': ['href', 'target', 'rel'],
+      'img': ['src', 'alt', 'title', 'width', 'height'],
+      '*': ['class', 'id', 'style'],
+      'td': ['colspan', 'rowspan'],
+      'th': ['colspan', 'rowspan'],
+    },
+    allowedSchemes: ['http', 'https', 'mailto'],
   })
 }
 
