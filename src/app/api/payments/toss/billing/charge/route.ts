@@ -4,30 +4,22 @@ import prisma from "@/lib/prisma"
 
 export async function POST(req: Request) {
   try {
-    const { userId, cronSecret } = await req.json()
+    const { userId } = await req.json()
 
-    // CRON 잡으로부터의 요청인지 확인
-    if (cronSecret) {
-      const validCronSecret = process.env.CRON_SECRET
-      if (!validCronSecret || cronSecret !== validCronSecret) {
+    // 관리자 권한 확인 (cron job은 직접 billing 로직 실행, 이 API는 관리자 전용)
+    const session = await auth()
+    if (!session?.user) {
+      return NextResponse.json({ error: "인증이 필요합니다" }, { status: 401 })
+    }
+
+    // 관리자가 아니면 자신의 결제만 가능
+    if (userId !== session.user.id) {
+      const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { role: true },
+      })
+      if (user?.role !== 'admin') {
         return NextResponse.json({ error: "권한이 없습니다" }, { status: 403 })
-      }
-    } else {
-      // 일반 요청인 경우 관리자 권한 확인
-      const session = await auth()
-      if (!session?.user) {
-        return NextResponse.json({ error: "인증이 필요합니다" }, { status: 401 })
-      }
-
-      // 관리자가 아니면 자신의 결제만 가능
-      if (userId !== session.user.id) {
-        const user = await prisma.user.findUnique({
-          where: { id: session.user.id },
-          select: { role: true },
-        })
-        if (user?.role !== 'admin') {
-          return NextResponse.json({ error: "권한이 없습니다" }, { status: 403 })
-        }
       }
     }
 

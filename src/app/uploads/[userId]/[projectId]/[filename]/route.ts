@@ -1,13 +1,31 @@
 import { NextResponse } from "next/server"
 import { readFile } from "fs/promises"
 import path from "path"
+import { auth } from "@/lib/auth"
 
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ userId: string; projectId: string; filename: string }> }
 ) {
   try {
+    // Authentication check
+    const session = await auth()
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      )
+    }
+
     const { userId, projectId, filename } = await params
+
+    // Only allow access to own files (admins can access all)
+    if (session.user.id !== userId && session.user.role !== 'admin') {
+      return NextResponse.json(
+        { error: "Forbidden" },
+        { status: 403 }
+      )
+    }
 
     // Security: Prevent directory traversal
     if (

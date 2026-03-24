@@ -48,7 +48,10 @@ export async function GET(
       )
     }
 
-    return NextResponse.json({ user })
+    // Remove sensitive fields
+    const { passwordHash, ...safeUser } = user
+
+    return NextResponse.json({ user: safeUser })
   } catch (error) {
     console.error("Failed to fetch user:", error)
     return NextResponse.json(
