@@ -63,12 +63,9 @@ export async function POST(
     }
 
     // 파일 타입/사이즈 검증
+    // Gemini 모델이 Office 문서 MIME(xls/xlsx/doc/docx)을 거부하므로 PDF/이미지만 허용
     const ALLOWED_TYPES = [
       'application/pdf',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // docx
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // xlsx
-      'application/msword', // doc
-      'application/vnd.ms-excel', // xls
       'image/jpeg',
       'image/png',
       'image/jpg',
@@ -86,7 +83,7 @@ export async function POST(
     for (const file of files) {
       if (!ALLOWED_TYPES.includes(file.type)) {
         return NextResponse.json(
-          { error: `허용되지 않는 파일 형식입니다: ${file.name}. PDF, DOCX, XLSX, JPG, PNG만 가능합니다.` },
+          { error: `허용되지 않는 파일 형식입니다: ${file.name}. PDF, JPG, PNG만 가능합니다.` },
           { status: 400 }
         )
       }

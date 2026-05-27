@@ -272,14 +272,14 @@ export default function NewProjectPage() {
                   파일을 드래그 앤 드롭하거나 클릭하여 업로드
                 </p>
                 <p className="text-xs text-gray-500 mb-4">
-                  PDF, DOCX, XLSX, JPG, PNG (파일당 최대 4MB)
+                  PDF, JPG, PNG (파일당 최대 4MB)
                 </p>
                 <input
                   type="file"
                   id="file-upload"
                   className="hidden"
                   multiple
-                  accept=".pdf,.docx,.xlsx,.jpg,.jpeg,.png"
+                  accept=".pdf,.jpg,.jpeg,.png"
                   onChange={handleFileChange}
                 />
                 <label htmlFor="file-upload">
