@@ -52,21 +52,23 @@ export async function getLatestAvailableModel(): Promise<string> {
       throw new Error("No compatible models found")
     }
 
-    // 모델 이름에서 버전 추출 및 정렬 (최신 버전 우선)
+    // 모델 이름에서 버전 추출 및 정렬 (최신 버전 우선, 동일 버전 내에서는 Pro 우선)
     const sortedModels = availableModels.sort((a, b) => {
       const aName = a.name.replace("models/", "")
       const bName = b.name.replace("models/", "")
 
-      // Pro 모델 우선 (더 높은 품질의 분석)
+      // 1순위: 버전 번호 (3.5 > 3.1 > 2.5 > 2.0)
+      const aVersion = parseFloat(aName.match(/\d+\.\d+/)?.[0] || "0")
+      const bVersion = parseFloat(bName.match(/\d+\.\d+/)?.[0] || "0")
+      if (aVersion !== bVersion) return bVersion - aVersion
+
+      // 2순위: 동일 버전 내 Pro > Flash (품질 우선)
       const aIsPro = aName.includes("pro")
       const bIsPro = bName.includes("pro")
       if (aIsPro && !bIsPro) return -1
       if (!aIsPro && bIsPro) return 1
 
-      // 버전 번호 비교 (2.5 > 2.0 > 1.5)
-      const aVersion = parseFloat(aName.match(/\d+\.\d+/)?.[0] || "0")
-      const bVersion = parseFloat(bName.match(/\d+\.\d+/)?.[0] || "0")
-      return bVersion - aVersion
+      return 0
     })
 
     // 최적의 모델 선택
